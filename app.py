@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "bac
 from core.task_manager import task_manager
 from engines import get_engine, list_engines
 from scenarios import get_scenario, list_scenarios
-from stories import get_story_runner, list_stories
+from stories import get_story_runner, list_stories, warmup_ray_data
 from pricing import calculate_roi, list_regions, LAST_UPDATED as PRICING_LAST_UPDATED
 
 app = Flask(__name__)
@@ -530,6 +530,21 @@ def api_stories_list():
     return jsonify(list_stories())
 
 
+@app.route('/api/stories/warmup', methods=['POST'])
+def api_stories_warmup():
+    """预热 Ray Data：消除首次点击的 5s 冷启动。
+
+    路演前应当在浏览器加载完页面时静默触发一次。
+    返回 {ok: bool, elapsed_ms: int}。
+    """
+    t0 = time.perf_counter()
+    ok = warmup_ray_data()
+    return jsonify({
+        "ok": ok,
+        "elapsed_ms": int((time.perf_counter() - t0) * 1000),
+    })
+
+
 def _sse_format(event: str, data: dict) -> str:
     """编码 SSE 单条消息。"""
     return f"event: {event}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
@@ -719,4 +734,6 @@ def list_tasks():
 
 if __name__ == '__main__':
     print("Ray Data Demo Server starting...")
-    app.run(host='0.0.0.0', port=15556, debug=True)
+    # 关掉 reloader 避免双进程导致 Ray init 状态错位（预热只暖父进程，请求落子进程）
+    # debug=True 仍保留：错误页 + 调试器 PIN 都能用
+    app.run(host='0.0.0.0', port=15556, debug=True, use_reloader=False)

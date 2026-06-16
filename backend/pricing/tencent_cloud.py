@@ -50,9 +50,8 @@ SCENARIO_PROFILES: Dict[str, Dict[str, Any]] = {
         "cpu_cores_per_gpu": 16,        # 每张 GPU 配 16 核 CPU
         "gpu_sku": "hai_a100_80g",
         "package_name": "HAI A100 80G 包年",
-        # 演示秒数 → 真实业务等价小时（万亿 token 单作业 36h）
-        # 演示 ray 跑 6s，等价真实 6.4h；spark 跑 33.6s，等价真实 36h
-        "real_scale_hours_per_demo_sec": 36.0 / 33.6,  # ≈ 1.071
+        # 真实业务锚点：万亿 token 预训练清洗，Spark 单作业 36h（销售口径硬约束）
+        "spark_anchor_hours": 36.0,
     },
     "video_tagging": {
         "title": "多模态视频打标",
@@ -62,8 +61,8 @@ SCENARIO_PROFILES: Dict[str, Dict[str, Any]] = {
         "cpu_cores_per_gpu": 8,
         "gpu_sku": "hai_a100_80g",
         "package_name": "HAI A100 80G 包年",
-        # 5 亿视频/天，Spark 8h；演示 spark 跑 112s，等价真实 8h
-        "real_scale_hours_per_demo_sec": 8.0 / 112.0,  # ≈ 0.0714
+        # 真实业务锚点：5 亿视频/天，Spark 单作业 8h（销售口径硬约束）
+        "spark_anchor_hours": 8.0,
     },
 }
 
@@ -86,9 +85,14 @@ def calculate_roi(
     """根据 Ray / Spark 实测耗时计算 ROI 账单。
 
     输出结构与 docs/M1_design.md §3.3 对齐。
-    会把"演示用的秒级耗时"按 SCENARIO_PROFILES 的 real_scale 系数
-    放大成"等价于真实业务的小时级耗时"，让账单数字符合销售口径
-    （故事 A：$23k → $4.1k；故事 B：$8.4k → $1.2k）。
+
+    口径说明（关键设计决策）：
+      演示秒级耗时 → 真实业务小时级账单的换算策略：
+      锚定 Spark 真实业务总耗时（spark_anchor_hours，如 llm_dedup=36h）；
+      Ray 真实耗时 = spark_anchor_hours / (spark_ms / ray_ms)
+                   = spark_anchor_hours × (ray_ms / spark_ms)
+      这样演示秒数随机变化（取决于本地 mac 状态）账单数字也稳定，
+      且加速比直接来源于实测，比例真实。
     """
     if region not in PRICES_USD_PER_HOUR:
         region = "ap-guangzhou"
@@ -102,10 +106,10 @@ def calculate_roi(
     cpu_cores = gpu_count * profile["cpu_cores_per_gpu"]
     cpu_price_per_hour = price["cpu_per_core"] * cpu_cores
 
-    # 演示秒 → 真实小时（让 ROI 数字回到销售故事的口径）
-    scale = profile.get("real_scale_hours_per_demo_sec", 1.0 / 3600.0)
-    ray_hours_real = (ray_ms / 1000.0) * scale
-    spark_hours_real = (spark_ms / 1000.0) * scale
+    # 锚点策略：Spark 真实耗时固定为 anchor，Ray 按实测加速比反推
+    spark_hours_real = float(profile["spark_anchor_hours"])
+    speedup = (spark_ms / ray_ms) if ray_ms > 0 else 1.0
+    ray_hours_real = spark_hours_real / max(speedup, 1.0)
 
     # 单作业总成本 = (GPU 单价 × GPU 数 + CPU 总价) × 真实业务等价小时
     ray_cost = (gpu_price * gpu_count + cpu_price_per_hour) * ray_hours_real
@@ -134,6 +138,7 @@ def calculate_roi(
         "metrics": {
             "ray_ms_demo": round(ray_ms, 1),
             "spark_ms_demo": round(spark_ms, 1),
+            "speedup_measured": round(speedup, 2),
             "ray_hours_real": round(ray_hours_real, 2),
             "spark_hours_real": round(spark_hours_real, 2),
             "ray_gpu_util": profile["ray_gpu_util"],
@@ -143,7 +148,7 @@ def calculate_roi(
         },
         "disclaimer": (
             f"基于腾讯云 {region} 公示价 {LAST_UPDATED}，"
-            f"激进版加速比（Ray Summit 2024 公开 benchmark + 腾讯云内部 POC）。"
-            f"演示耗时已按 {scale:.4f} 系数放大到真实业务等价小时。"
+            f"Spark 锚点 {spark_hours_real}h 来自销售口径，"
+            f"Ray 耗时按实测加速比 {speedup:.2f}× 反推。"
         ),
     }
