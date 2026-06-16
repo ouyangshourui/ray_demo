@@ -666,6 +666,37 @@
             color: #0a1530;
             font-weight: 700;
         }
+        .arch-record-btn {
+            padding: 6px 14px;
+            border: 1.5px solid rgba(255,119,119,0.5);
+            border-radius: 999px;
+            background: rgba(255,119,119,0.12);
+            color: #ffb0b0;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s;
+            margin-left: 6px;
+            white-space: nowrap;
+        }
+        .arch-record-btn:hover:not(:disabled) {
+            background: rgba(255,119,119,0.25);
+            color: #fff;
+        }
+        .arch-record-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.85;
+        }
+        .arch-record-btn.recording {
+            background: linear-gradient(135deg, #ff5577 0%, #c43355 100%);
+            border-color: #ff5577;
+            color: #fff;
+            animation: recPulse 1s ease-in-out infinite;
+        }
+        @keyframes recPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(255,85,119,0.55); }
+            50%      { box-shadow: 0 0 0 8px rgba(255,85,119,0); }
+        }
         .arch-scene {
             display: none;
         }
@@ -1257,7 +1288,14 @@ for name in ["ray", "spark"]:
                         <button class="arch-speed-btn" data-speed="1.5">1.5×</button>
                         <button class="arch-speed-btn" data-speed="2">2×</button>
                     </div>
-                    <span class="arch-caption" id="arch-caption">动画自动循环 · 拖动速度按钮可放慢观察</span>
+                    <button class="arch-record-btn" id="arch-record-btn" title="录制当前场景为 WebM 动图（默认 5s，可在右侧按钮里选时长）">⏺ 录制动图</button>
+                    <select class="arch-record-btn" id="arch-record-dur" style="padding:6px 10px;" title="录制时长">
+                        <option value="3">3s</option>
+                        <option value="5" selected>5s</option>
+                        <option value="8">8s</option>
+                        <option value="12">12s</option>
+                    </select>
+                    <span class="arch-caption" id="arch-caption">动画自动循环 · 速度可调 · 点 ⏺ 录制当前场景为 WebM 动图</span>
                 </div>
 
                 <div class="arch-stage">
@@ -2510,6 +2548,143 @@ ray.data.read_parquet("s3://...") \
                 archState.speed = parseFloat(btn.dataset.speed);
             });
         });
+
+        // ============== 录制当前场景为 WebM 动图 ==============
+        // 思路：每帧把当前 active scene 的 SVG 序列化 → drawImage 到 offscreen canvas
+        //      → canvas.captureStream() 喂给 MediaRecorder → 到时长后 stop() 触发 blob 下载
+        // 纯前端、零依赖；导出 WebM（VP9/VP8）。需要 GIF 可本地 ffmpeg -i x.webm x.gif
+        (function setupArchRecorder() {
+            const btn = document.getElementById('arch-record-btn');
+            const durSel = document.getElementById('arch-record-dur');
+            if (!btn || !durSel) return;
+
+            let recording = false;
+
+            function getActiveSvg() {
+                const scene = document.querySelector('.arch-scene.active');
+                return scene ? scene.querySelector('svg') : null;
+            }
+
+            function pickMime() {
+                const cands = [
+                    'video/webm;codecs=vp9',
+                    'video/webm;codecs=vp8',
+                    'video/webm',
+                ];
+                for (const m of cands) {
+                    if (window.MediaRecorder && MediaRecorder.isTypeSupported(m)) return m;
+                }
+                return '';
+            }
+
+            async function startRecord() {
+                if (recording) return;
+                if (!window.MediaRecorder) {
+                    alert('当前浏览器不支持 MediaRecorder API，无法录制。请使用 Chrome / Edge / 新版 Safari。');
+                    return;
+                }
+                const svg = getActiveSvg();
+                if (!svg) { alert('未找到当前场景 SVG'); return; }
+
+                const sceneId = svg.closest('.arch-scene').id;
+                const durSec = Math.max(1, parseInt(durSel.value, 10) || 5);
+
+                // 用 SVG viewBox 作为画布尺寸（保证比例），统一放大到 1.5x 提升清晰度
+                const vb = svg.getAttribute('viewBox') || '0 0 900 380';
+                const [, , vbW, vbH] = vb.split(/\s+/).map(Number);
+                const SCALE = 1.5;
+                const W = Math.round(vbW * SCALE);
+                const H = Math.round(vbH * SCALE);
+
+                const canvas = document.createElement('canvas');
+                canvas.width = W; canvas.height = H;
+                const ctx = canvas.getContext('2d');
+
+                // 深色底，避免透明帧在某些播放器里发白
+                function paintBg() {
+                    const grad = ctx.createLinearGradient(0, 0, 0, H);
+                    grad.addColorStop(0, '#0f1535');
+                    grad.addColorStop(1, '#1a1f4d');
+                    ctx.fillStyle = grad;
+                    ctx.fillRect(0, 0, W, H);
+                }
+
+                const mime = pickMime();
+                const stream = canvas.captureStream(30); // 30fps
+                const recorder = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: 2_500_000 } : undefined);
+                const chunks = [];
+                recorder.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
+                recorder.onstop = () => {
+                    const blob = new Blob(chunks, { type: mime || 'video/webm' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    const ts = new Date().toISOString().replace(/[-:T]/g, '').slice(0, 14);
+                    a.href = url;
+                    a.download = `ray-arch-${sceneId}-${ts}.webm`;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    setTimeout(() => URL.revokeObjectURL(url), 1500);
+                };
+
+                recording = true;
+                btn.classList.add('recording');
+                btn.disabled = true;
+                durSel.disabled = true;
+                const tick0 = performance.now();
+                const updateLabel = () => {
+                    const left = Math.max(0, durSec - (performance.now() - tick0) / 1000);
+                    btn.textContent = `● 录制中 ${left.toFixed(1)}s`;
+                };
+                updateLabel();
+
+                recorder.start();
+
+                // 每帧：序列化 SVG → Image → drawImage
+                let stopped = false;
+                async function frame() {
+                    if (stopped) return;
+                    try {
+                        const xml = new XMLSerializer().serializeToString(svg);
+                        // 确保 svg 命名空间，否则 Safari 可能解析失败
+                        const xmlWithNs = xml.includes('xmlns="http://www.w3.org/2000/svg"')
+                            ? xml
+                            : xml.replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"');
+                        const blob = new Blob([xmlWithNs], { type: 'image/svg+xml;charset=utf-8' });
+                        const url = URL.createObjectURL(blob);
+                        const img = new Image();
+                        img.decoding = 'async';
+                        await new Promise((res, rej) => {
+                            img.onload = res;
+                            img.onerror = rej;
+                            img.src = url;
+                        });
+                        paintBg();
+                        ctx.drawImage(img, 0, 0, W, H);
+                        URL.revokeObjectURL(url);
+                    } catch (err) {
+                        // 单帧失败不致命，继续
+                        console.warn('record frame failed', err);
+                    }
+                    updateLabel();
+                    requestAnimationFrame(frame);
+                }
+                frame();
+
+                setTimeout(() => {
+                    stopped = true;
+                    if (recorder.state !== 'inactive') recorder.stop();
+                    stream.getTracks().forEach(t => t.stop());
+                    recording = false;
+                    btn.classList.remove('recording');
+                    btn.disabled = false;
+                    durSel.disabled = false;
+                    btn.textContent = '⏺ 录制动图';
+                }, durSec * 1000);
+            }
+
+            btn.addEventListener('click', startRecord);
+        })();
 
         // 当切换到 demo5 tab 时启动场景 1
         document.querySelectorAll('.tab-btn').forEach(btn => {
