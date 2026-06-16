@@ -5,10 +5,11 @@ Ray Data Demo Server
 import os
 import sys
 import time
+import json
 import threading
 import uuid
 from datetime import datetime
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, Response, stream_with_context
 from flask_cors import CORS
 import ray
 
@@ -17,6 +18,8 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "bac
 from core.task_manager import task_manager
 from engines import get_engine, list_engines
 from scenarios import get_scenario, list_scenarios
+from stories import get_story_runner, list_stories
+from pricing import calculate_roi, list_regions, LAST_UPDATED as PRICING_LAST_UPDATED
 
 app = Flask(__name__)
 CORS(app)
@@ -54,6 +57,30 @@ def index():
 def scenarios_page():
     """Ray Data 15 场景实验室子页面"""
     return app.send_static_file('scenarios.html')
+
+
+@app.route('/stories')
+def stories_page():
+    """M1 行业故事舞台（D3 起前端落地）"""
+    # D1 阶段 stories.html 还没建，先回个占位 JSON 提示
+    if os.path.exists(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'stories.html')):
+        return app.send_static_file('stories.html')
+    return jsonify({
+        "status": "pending",
+        "msg": "stories.html 将在 M1 D3 上午落地，目前只能调 /api/story/* 后端接口",
+        "stories": list_stories(),
+    })
+
+
+@app.route('/cards')
+def cards_page():
+    """M1 销售金句卡轮播（D4 起前端落地）"""
+    if os.path.exists(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'cards.html')):
+        return app.send_static_file('cards.html')
+    return jsonify({
+        "status": "pending",
+        "msg": "cards.html 将在 M1 D4 落地",
+    })
 
 
 def init_ray():
@@ -486,6 +513,184 @@ def run_scenario(task_id, scenario_id, params):
     }
     log(f"场景完成，耗时 {elapsed_ms} ms")
     task_manager.complete(task_id, result)
+
+
+# =============================================================================
+# M1 新增：行业故事 + ROI + 金句卡 路由
+# =============================================================================
+
+# 故事任务的内存缓存：task_id -> {"runner_kwargs": ..., "status": ...}
+# SSE 是单连接长流，不需要持久化，简单 dict 足够
+STORY_TASKS = {}
+
+
+@app.route('/api/stories', methods=['GET'])
+def api_stories_list():
+    """列出已注册的行业故事元数据。"""
+    return jsonify(list_stories())
+
+
+def _sse_format(event: str, data: dict) -> str:
+    """编码 SSE 单条消息。"""
+    return f"event: {event}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
+
+
+def _stream_story(story_id: str, kwargs: dict):
+    """通用 SSE generator，runner 是无状态的，可直接边跑边推。"""
+    runner = get_story_runner(story_id)
+    if runner is None:
+        yield _sse_format("error", {"msg": f"未知故事 {story_id}"})
+        return
+    try:
+        yield _sse_format("start", {"story": story_id, "params": kwargs})
+        for evt in runner(**kwargs):
+            yield _sse_format(evt["event"], evt["data"])
+    except Exception as e:
+        import traceback
+        yield _sse_format("error", {
+            "msg": str(e),
+            "trace": traceback.format_exc(),
+        })
+
+
+def _parse_story_kwargs(body: dict, story_id: str) -> dict:
+    """从请求体抽取 runner 需要的参数，做一次安全的类型转换。"""
+    out = {
+        "speedup_target": float(body.get("speedup_target") or
+                                (5.6 if story_id == "llm_dedup" else 14.0)),
+        "engine_compare": bool(body.get("engine_compare", True)),
+        "region": str(body.get("region") or "ap-guangzhou"),
+        "gpu_count": int(body.get("gpu_count") or 8),
+    }
+    if story_id == "llm_dedup":
+        out["token_size"] = int(body.get("token_size") or 1_000_000_000)
+    elif story_id == "video_tagging":
+        out["video_count"] = int(body.get("video_count") or 1000)
+    return out
+
+
+@app.route('/api/story/<story_id>/start', methods=['POST'])
+def api_story_start(story_id):
+    """登记一个故事任务，返回 task_id；具体流通过 stream 端点拉取。"""
+    if get_story_runner(story_id) is None:
+        return jsonify({"error": f"未知故事 {story_id}"}), 404
+    body = request.get_json(silent=True) or {}
+    try:
+        kwargs = _parse_story_kwargs(body, story_id)
+    except (TypeError, ValueError) as e:
+        return jsonify({"error": f"参数非法: {e}"}), 400
+
+    task_id = str(uuid.uuid4())
+    STORY_TASKS[task_id] = {
+        "id": task_id,
+        "story": story_id,
+        "kwargs": kwargs,
+        "status": "ready",
+        "start_time": datetime.now().isoformat(),
+    }
+    return jsonify({"task_id": task_id, "status": "started", "kwargs": kwargs})
+
+
+@app.route('/api/story/<story_id>/<task_id>/stream', methods=['GET'])
+def api_story_stream(story_id, task_id):
+    """SSE 流：浏览器/curl 直接挂连接读 progress/metric/done 事件。"""
+    task = STORY_TASKS.get(task_id)
+    if task is None or task["story"] != story_id:
+        return jsonify({"error": "task 不存在或与 story 不匹配"}), 404
+    task["status"] = "streaming"
+
+    def gen():
+        for chunk in _stream_story(story_id, task["kwargs"]):
+            yield chunk
+        task["status"] = "completed"
+        # SSE 终止信号（部分客户端依赖空 event 兜底）
+        yield "event: close\ndata: {}\n\n"
+
+    return Response(
+        stream_with_context(gen()),
+        mimetype='text/event-stream',
+        headers={
+            'Cache-Control': 'no-cache',
+            'X-Accel-Buffering': 'no',  # 关闭 nginx 缓冲
+        },
+    )
+
+
+@app.route('/api/pricing/calculate', methods=['POST'])
+def api_pricing_calculate():
+    """ROI 账单接口：输入 ray_ms / spark_ms / gpu_count / region。"""
+    body = request.get_json(silent=True) or {}
+    try:
+        scenario = str(body.get("scenario") or "")
+        ray_ms = float(body.get("ray_ms") or 0)
+        spark_ms = float(body.get("spark_ms") or 0)
+        gpu_count = int(body.get("gpu_count") or 8)
+        region = str(body.get("region") or "ap-guangzhou")
+    except (TypeError, ValueError) as e:
+        return jsonify({"error": f"参数非法: {e}"}), 400
+
+    if ray_ms <= 0 or spark_ms <= 0:
+        return jsonify({"error": "ray_ms / spark_ms 必须为正数"}), 400
+
+    try:
+        result = calculate_roi(scenario, ray_ms, spark_ms, gpu_count, region)
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+    return jsonify(result)
+
+
+@app.route('/api/pricing/regions', methods=['GET'])
+def api_pricing_regions():
+    """返回支持的腾讯云地域 + 价格表更新日期。"""
+    return jsonify({
+        "regions": list_regions(),
+        "last_updated": PRICING_LAST_UPDATED,
+    })
+
+
+@app.route('/api/cards/manifest', methods=['GET'])
+def api_cards_manifest():
+    """5 张销售金句卡的元数据清单（前端 D4 渲染用）。"""
+    return jsonify([
+        {
+            "id": "card1",
+            "title": "GPU 不是堆出来的，是用出来的",
+            "metric": {"spark": "18%", "ray": "89%"},
+            "subtitle": "同样 8 张 A100，Spark 利用率 18% / Ray Actor 复用 89%",
+            "duration_sec": 10,
+        },
+        {
+            "id": "card2",
+            "title": "模型不该每次冷启动",
+            "metric": {"spark": "12s", "ray": "0ms"},
+            "subtitle": "Spark UDF 每 task 重 load 模型 12s / Ray Actor 常驻 0ms",
+            "duration_sec": 10,
+        },
+        {
+            "id": "card3",
+            "title": "长尾决定下班时间",
+            "metric": {"spark": "barrier", "ray": "流式"},
+            "subtitle": "Spark stage barrier 拖慢全局 / Ray 流式 pipeline 无 barrier",
+            "duration_sec": 10,
+        },
+        {
+            "id": "card4",
+            "title": "AI 数据是流，不是表",
+            "metric": {"spark": "DataFrame", "ray": "Dataset"},
+            "subtitle": "60% 非结构化数据，视频/图像/文本流过 DAG，表格挡不住",
+            "duration_sec": 10,
+        },
+        {
+            "id": "card5",
+            "title": "算账：100 万视频打标",
+            "metric": {"spark": "$8.4k", "ray": "$1.2k"},
+            "subtitle": "Ray Data 14× 加速，账单一年省 $86k，等于免费用 HAI 4.2 个月",
+            "duration_sec": 10,
+        },
+    ])
+
+
+# =============================================================================
 
 
 @app.route('/api/tasks/<task_id>', methods=['GET'])
