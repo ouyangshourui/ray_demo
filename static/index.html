@@ -2259,7 +2259,11 @@ ray.data.read_parquet("s3://...") \
                 sparkBatchEls.push(g);
             }
 
-            const cycleStart = 0; // 虚拟时钟起点
+            // Spark 节奏：4 个 stage 各占 SUB_DUR，Sink 跑完后暂停 SINK_HOLD（等 Ray 跑完当前 batch）再开始下一轮
+            const SUB_DUR = SPARK_CYCLE_3 / 4;        // 1800ms / sub-stage
+            const SINK_HOLD = 3000;                   // Sink 后留白 3s，让 Ray 把流水线里的 block 排空
+            const FULL_CYCLE = SPARK_CYCLE_3 + SINK_HOLD; // 10200ms 一整轮
+            let cycleStart = 0;                       // 当前 cycle 的起点（虚拟时钟）
 
             // 用于高亮判断：stage 在哪些 x 区间被算作 active
             function rayStageBusy(blockX, stageIdx) {
@@ -2324,14 +2328,22 @@ ray.data.read_parquet("s3://...") \
                 }
 
                 // ===== Spark batch 推进（4 个 task 速度不一致，barrier 处先到的等慢的）=====
-                const phase = ((now - cycleStart) % SPARK_CYCLE_3) / SPARK_CYCLE_3;
-                // 4 个 stage（含 Sink），3 个 barrier；每个 sub-cycle 占 1/4
+                // 显式 cycle：4 个 sub-stage（共 SPARK_CYCLE_3）+ Sink 后的 SINK_HOLD 等 Ray 跑完
+                let cycleT = now - cycleStart;
+                if (cycleT >= FULL_CYCLE) {
+                    cycleStart += FULL_CYCLE;
+                    cycleT = now - cycleStart;
+                }
+                const inSinkHold = cycleT >= SPARK_CYCLE_3;       // 已跑完 4 个 stage，进入"等 Ray 排空"留白
+                const sinkHoldP = inSinkHold ? Math.min(1, (cycleT - SPARK_CYCLE_3) / SINK_HOLD) : 0;
+                // 4 个 stage（含 Sink），3 个 barrier；每个 sub-cycle 占 SUB_DUR
                 // 每个 sub-cycle 内：每个 task 各自从 sparkStages[subIdx] 走到 sparkStages[subIdx+1]
                 //   - 快 task 早到，停在 barrier 左侧"插旗等待"
                 //   - 慢 task 还在路上
                 //   - 全员到齐瞬间放行 → 同步进入下一 sub-cycle
-                const subIdx = Math.min(3, Math.floor(phase * 4));
-                const subP = (phase * 4) - subIdx; // 0~1
+                //   - Sink 完成后，整体卡住 SINK_HOLD（3s），让 Ray 把流水线里的 block 跑完，对比更鲜明
+                const subIdx = inSinkHold ? 3 : Math.min(3, Math.floor(cycleT / SUB_DUR));
+                const subP = inSinkHold ? 1 : ((cycleT - subIdx * SUB_DUR) / SUB_DUR); // 0~1
 
                 let activeStage = subIdx;
                 let activeBarrier = -1;
@@ -2349,7 +2361,15 @@ ray.data.read_parquet("s3://...") \
                     // 横向 offset 让 4 个 task 视觉上略微错开
                     const lateralOffset = (i - 1.5) * 6;
                     let x;
-                    if (myP >= 1) {
+                    if (inSinkHold) {
+                        // Sink 留白阶段：4 个 task 全部稳稳停在 Sink，淡出，等 Ray 跑完
+                        x = sparkStages[3] - i * 4;
+                        // 缓慢淡出，营造"已经写完了，但 stage 整体还卡着不能开下一轮"的氛围
+                        const fade = 1 - sinkHoldP * 0.55;
+                        el.setAttribute('transform', `translate(${x},${sparkY})`);
+                        el.setAttribute('opacity', String(fade));
+                        arrivedCount++;
+                    } else if (myP >= 1) {
                         // 已到达 barrier 等待区：左右轻微抖动 + 上下小幅"焦虑"位移
                         const wobble = Math.sin((now / 120) + i * 1.3) * 2.5;
                         const bob = Math.sin((now / 180) + i) * 1.5;
@@ -2380,8 +2400,15 @@ ray.data.read_parquet("s3://...") \
                 stageNodes.forEach((n, i) => {
                     if (!n) return;
                     n.classList.remove('busy', 'frozen');
-                    if (i === activeStage && !isWaiting) n.classList.add('busy');
-                    else if (isWaiting) n.classList.add('frozen');
+                    if (inSinkHold) {
+                        // Sink 留白：Sink 保持点亮（已写完），其他 stage 全部冻结，强调"整轮卡住等 Ray"
+                        if (i === 3) n.classList.add('busy');
+                        else n.classList.add('frozen');
+                    } else if (i === activeStage && !isWaiting) {
+                        n.classList.add('busy');
+                    } else if (isWaiting) {
+                        n.classList.add('frozen');
+                    }
                 });
 
                 // 更新 3 个 barrier 的"我在等待"面板
@@ -2438,7 +2465,10 @@ ray.data.read_parquet("s3://...") \
                 });
 
                 if (sparkStatusEl) {
-                    if (subIdx === 3) {
+                    if (inSinkHold) {
+                        const remain = Math.max(0, SINK_HOLD - (cycleT - SPARK_CYCLE_3));
+                        sparkStatusEl.textContent = `⏸ Sink 已写出，但整轮 stage 卡住 ${(remain/1000).toFixed(1)}s — 等上面 Ray 把流水线里的 block 跑完，下一轮才能起步`;
+                    } else if (subIdx === 3) {
                         sparkStatusEl.textContent = `▶ Sink 写出中（前面 3 个 stage 全部串行等齐）`;
                     } else if (arrivedCount === 4) {
                         sparkStatusEl.textContent = `✓ Stage ${subIdx + 1} 全员到齐 → barrier 放行 → 进入 Stage ${subIdx + 2}`;
