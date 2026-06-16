@@ -6,19 +6,27 @@ Apache Ray Data 功能演示项目，专为架构师客户演示设计。
 
 ```
 ray_demo/
-├── app.py                 # Flask 后端服务（含 Ray vs Spark 实测对比）
-├── requirements.txt       # Python 依赖
-├── backend/               # 引擎抽象 + 任务管理
-│   ├── config.py          # 配置中心（Spark/服务端口等）
-│   ├── core/
-│   │   └── task_manager.py    # 线程安全的异步任务管理器
-│   └── engines/
-│       ├── base.py            # 引擎抽象基类（统一 pipeline 接口）
-│       ├── ray_engine.py      # Ray Data 引擎实现
-│       ├── spark_engine.py    # 本地 Spark 3.5.8 引擎实现
-│       └── __init__.py        # 引擎注册中心 get_engine / list_engines
+├── app.py                 # Flask 后端服务（80+ 路由：基础 demo / 场景 / 故事 / ROI / 卡片）
+├── start.sh               # 一键启动脚本
+├── requirements.txt
+├── backend/
+│   ├── config.py          # 配置中心
+│   ├── core/task_manager.py
+│   ├── engines/           # Ray / Spark 引擎抽象（base + ray + spark）
+│   ├── scenarios/         # Ray Data 15 场景实验室（catalog + dataops + training + serve…）
+│   ├── stories/           # 【M1 销售路演】行业故事
+│   │   ├── llm_dedup.py       # 故事 A：大模型数据清洗（dedup/score/tokenize 全 ray.data 真跑）
+│   │   ├── video_tagging.py   # 故事 B：多模态打标（CLIPActor 全局 pool + numpy 模拟推理）
+│   │   └── __init__.py        # list_stories / get_story_runner / warmup_*
+│   └── pricing/           # 【M1 销售路演】ROI 计算器
+│       └── tencent_cloud.py   # 腾讯云 ap-guangzhou/sh/svl 价格表 + saved_usd/percent/months 锚点
 ├── static/
-│   └── index.html         # 前端演示页面（4 个实测 Demo + 1 个架构动画）
+│   ├── index.html         # 主页：4 实测 Demo + 架构动画 + 顶部 nav
+│   ├── scenarios.html     # 15 场景实验室
+│   ├── stories.html       # 【M1 D2】🎬 行业故事舞台（双故事 + DAG + ROI 双柱）
+│   └── cards.html         # 【M1 D4】💎 销售金句卡（5 张轮播 + 录 webm）
+├── docs/
+│   └── M1_design.md       # M1 销售路演 5 天冲刺设计文档
 └── README.md
 ```
 
@@ -129,27 +137,126 @@ python app.py
 
 ## API 接口
 
+### 基础 / 演示
 | 接口 | 方法 | 说明 |
 |------|------|------|
 | `/api/health` | GET | 健康检查 |
 | `/api/ray/init` | POST | 初始化 Ray |
 | `/api/engines` | GET | 列出已注册引擎（ray / spark） |
-| `/api/demo1/start` | POST | 启动 Demo 1 |
-| `/api/demo2/start` | POST | 启动 Demo 2 |
-| `/api/demo3/start` | POST | 启动 Demo 3 |
-| `/api/compare/start` | POST | 启动 Ray vs Spark 实测对比（body: `num_rows`, `threshold`） |
+| `/api/demo{1,2,3}/start` | POST | 启动 3 个基础 Demo |
+| `/api/compare/start` | POST | Ray vs Spark 实测对比（body: `num_rows`, `threshold`） |
+| `/api/scenarios` | GET | 15 场景实验室元数据 |
+| `/api/scenarios/<id>/start` | POST | 启动指定场景 |
 | `/api/tasks/<task_id>` | GET | 获取任务状态 |
+
+### 销售路演（M1 新增）
+| 接口 | 方法 | 说明 |
+|------|------|------|
+| `/api/stories` | GET | 行业故事元数据列表（含 speedup / 痛点叙事） |
+| `/api/stories/warmup` | POST | 一次性预热 Ray Data + video CLIPActor pool |
+| `/api/story/<story_id>/start` | POST | 登记故事任务，返回 `task_id`（body: 见下） |
+| `/api/story/<story_id>/<task_id>/stream` | GET | **SSE 流**：`progress` / `metric` / `done` / `close` 事件 |
+| `/api/pricing/calculate` | POST | ROI 账单（body: `scenario`, `ray_ms`, `spark_ms`, `gpu_count`, `region`） |
+| `/api/pricing/regions` | GET | 支持的腾讯云地域列表 |
+| `/api/cards/manifest` | GET | 5 张销售金句卡的元数据 |
+
+故事任务 body 示例：
+```json
+// llm_dedup
+{ "token_size": 1000000000, "gpu_count": 8, "region": "ap-guangzhou", "speedup_target": 5.6 }
+// video_tagging
+{ "video_count": 1000, "gpu_count": 8, "region": "ap-guangzhou", "speedup_target": 14.0 }
+```
+
+### 前端入口
+
+| 路径 | 用途 |
+|------|------|
+| `/` | 主页（4 实测 Demo + 架构动画 + 顶部 nav 跳转） |
+| `/scenarios` | Ray Data 15 场景实验室 |
+| `/stories` | **🎬 行业故事舞台**（故事 A 大模型清洗 / 故事 B 多模态打标 + ROI 账单） |
+| `/cards` | **💎 销售金句卡**（5 张轮播 + 一键录 webm） |
 
 ## 技术栈
 
 - **后端**: Flask + Ray Data 2.55.1
-- **前端**: HTML5 + CSS3 + JavaScript
-- **数据处理**: Ray Data
+- **前端**: HTML5 + CSS3 + 原生 JavaScript（无构建工具）
+- **数据处理**: Ray Data（ray.data.range / Actor pool / GPU stage）
+- **录制**: MediaRecorder + getDisplayMedia（webm 直接下载）
 
-## 演示建议
+---
+
+## 销售路演动线脚本（M1 D5 校准）
+
+### 🎯 动线 A：90 秒电梯 Pitch（销售自服务）
+
+**场景**：客户 BD 见面、cold call、展会扫码后转化。
+
+```
+1. 打开 /cards            ⏱ 0-50s   5 张金句卡自动 10s 轮播
+   口播：「同一份 AI 数据负载，Spark 18% GPU 利用 vs Ray 89%；
+          Spark 每 task 重 load 模型 12s vs Ray Actor 0ms 常驻；
+          长尾 task 拖死 stage barrier vs Ray 流式 DAG；
+          AI 数据是流不是表；100 万视频打标 $8.4k → $1.2k」
+2. 点 ⏺ 录当前卡 10s     ⏱ 50-60s  现场录 webm，发给客户群
+
+[转化目标：留二次约谈机会]
+```
+
+### 🎯 动线 B：5 分钟客户故事（CTO/架构师对话）
+
+**场景**：客户技术决策人在场，要拿数字说话。
+
+```
+1. /stories  →  故事 A 大模型清洗      ⏱ 0-90s
+   - 念痛点 quote（Top3 大模型公司 / 36h / $23k）
+   - 点 ▶ 开跑，规模 1B token，看 5 阶段 DAG 节点逐个亮起
+   - 实时指标条：Ray GPU 89% vs Spark GPU 18%
+   - 完成后右侧 ROI 账单：省 $908 / 单次 · 92% 折扣
+   - 锚点：等价于免费用 HAI A100 X 个月，全年 $360k
+
+2. /stories  →  故事 B 多模态打标      ⏱ 90-180s
+   - 念痛点（5 亿视频/天 · CLIP 12s 冷启 · 200 张 A100 跑不完）
+   - 点 ▶ 开跑，规模 1000 视频
+   - 关键看点：「这是第 N 次跑，actor uptime 已经累计 600+ 秒」
+     → 戳出 \"Actor 全局复用，模型 load 全局只付 1 次\" 的核心论点
+   - 实测 11.9× 加速 · 集群 1900 fps · 单卡推算 12 fps
+   - ROI：单次省 $206 · 91% · 全年放大 $75k
+
+3. /                       ⏱ 180-240s
+   架构动画 Demo 5 → 切到 ③ 数据流 DAG
+   - 现场对比：Ray 完成 30 个 block 的同时 Spark 才完成 1 轮
+   - 状态行直接念：「同期 Spark 才完成 1 轮，流水线密度碾压」
+
+4. 收尾留 30s 答疑 + 留资料  ⏱ 240-300s
+
+[转化目标：进 POC 阶段，资源券扫码申请]
+```
+
+### 🎯 动线 C：30 分钟大客户深聊（POC 立项前夜）
+
+```
+1.  /            10min   主页基础概念 + 4 实测 Demo + 架构动画 3 段
+2.  /scenarios   10min   15 场景实验室，针对客户业务点 3-4 个细谈
+3.  /stories     5min    故事 A + B 完整跑，ROI 数字按客户实际规模重算
+                         （改 GPU 数 / 地域 / 业务规模 -> 一键重新计算）
+4.  /cards       5min    5 张卡录屏带回，作为内部汇报材料
+```
+
+---
+
+## 演示建议（基础动线）
 
 1. 先展示 Ray vs Spark 对比，说明核心区别
 2. 介绍 Amazon 案例数据，展示实际价值
 3. 依次演示 3 个场景，每个场景 30-60 秒
 4. 强调 Ray Data 相比 Spark 的优势
 5. 展示代码示例，说明 API 简洁易用
+
+## 故障排查
+
+- **SSE 连接立刻断**：检查 Flask 是否启用 `stream_with_context` + `X-Accel-Buffering: no`（已配）
+- **首次点击故事按钮卡 5-8s**：未触发 warmup，刷新页面会自动 POST `/api/stories/warmup`
+- **video_tagging actor processed 不累计**：`STORY_FORCE_MOCK=1` 环境变量没清；重启 `app.py` 即可
+- **录 webm 弹屏幕共享窗口**：浏览器策略，必须用户手动选择窗口；选当前 Tab 即可
+
