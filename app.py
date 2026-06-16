@@ -18,7 +18,12 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "bac
 from core.task_manager import task_manager
 from engines import get_engine, list_engines
 from scenarios import get_scenario, list_scenarios
-from stories import get_story_runner, list_stories, warmup_ray_data
+from stories import (
+    get_story_runner,
+    list_stories,
+    warmup_ray_data,
+    warmup_video_actors,
+)
 from pricing import calculate_roi, list_regions, LAST_UPDATED as PRICING_LAST_UPDATED
 
 app = Flask(__name__)
@@ -532,15 +537,20 @@ def api_stories_list():
 
 @app.route('/api/stories/warmup', methods=['POST'])
 def api_stories_warmup():
-    """预热 Ray Data：消除首次点击的 5s 冷启动。
+    """预热 Ray Data + video CLIPActor pool：消除首次点击的冷启动。
 
+    - Ray Data 冷启动 ~5s（ObjectStore + worker pool）
+    - video Actor pool 冷启动 ~0.5s（4 个 actor 模型 load）
     路演前应当在浏览器加载完页面时静默触发一次。
-    返回 {ok: bool, elapsed_ms: int}。
+    返回 {ok, ray_data_ok, video_actors_ok, elapsed_ms}。
     """
     t0 = time.perf_counter()
-    ok = warmup_ray_data()
+    ray_data_ok = warmup_ray_data()
+    video_actors_ok = warmup_video_actors()
     return jsonify({
-        "ok": ok,
+        "ok": ray_data_ok and video_actors_ok,
+        "ray_data_ok": ray_data_ok,
+        "video_actors_ok": video_actors_ok,
         "elapsed_ms": int((time.perf_counter() - t0) * 1000),
     })
 

@@ -4,11 +4,15 @@ D1 阶段：提供 mock 流式 runner（用 generator 推进度），让 SSE 通
 D2 起把 Ray 真跑 pipeline 接入。
 """
 from .llm_dedup import run_llm_dedup, run_llm_dedup_mock, warmup_ray_data
-from .video_tagging import run_video_tagging_mock
+from .video_tagging import (
+    run_video_tagging,
+    run_video_tagging_mock,
+    warmup_video_actors,
+)
 
 STORY_RUNNERS = {
     "llm_dedup": run_llm_dedup,           # D1 下午：自动 real，失败降级 mock
-    "video_tagging": run_video_tagging_mock,
+    "video_tagging": run_video_tagging,   # D2 上午：Actor pool 真跑，失败降级 mock
 }
 
 
@@ -41,4 +45,10 @@ def list_stories():
     ]
 
 
-__all__ = ["get_story_runner", "list_stories", "STORY_RUNNERS", "warmup_ray_data"]
+__all__ = [
+    "get_story_runner",
+    "list_stories",
+    "STORY_RUNNERS",
+    "warmup_ray_data",
+    "warmup_video_actors",
+]
