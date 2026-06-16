@@ -2566,9 +2566,17 @@ ray.data.read_parquet("s3://...") \
         });
 
         // ============== 录制当前场景为 WebM 动图 ==============
-        // 思路：每帧把当前 active scene 的 SVG 序列化 → drawImage 到 offscreen canvas
-        //      → canvas.captureStream() 喂给 MediaRecorder → 到时长后 stop() 触发 blob 下载
-        // 纯前端、零依赖；导出 WebM（VP9/VP8）。需要 GIF 可本地 ffmpeg -i x.webm x.gif
+        // 思路：每帧把当前 active scene 的 SVG 克隆 → 把页面 CSS 内联进去 → 序列化 → drawImage
+        //      到 offscreen canvas → canvas.captureStream() 喂 MediaRecorder → 到时长 stop() 触发 blob 下载
+        // 纯前端、零依赖；导出 WebM。需要 GIF 可本地 ffmpeg -i x.webm x.gif
+        //
+        // ⚠️ 关键修复（2026-06-17）：原版录出来 Ray DAG 节点全消失、Spark stage 错位。
+        //   根因：序列化的 SVG 走独立 Image 加载环境，访问不到页面 stylesheet，所以
+        //         `.dag-node rect { fill, stroke }` 这类外部样式全部失效，节点变默认黑。
+        //   修复：① 把页面所有 <style> 文本聚合 → 注入 SVG 内 <defs><style>，确保自包含
+        //         ② 用 base64 data URL 替代 blob URL，绕过部分浏览器的跨源 image 限制
+        //         ③ 每帧 clearRect，杜绝上一帧残影叠加
+        //         ④ 加双缓冲：前一帧未 decode 完不发起新帧，避免错位/闪烁
         (function setupArchRecorder() {
             const btn = document.getElementById('arch-record-btn');
             const durSel = document.getElementById('arch-record-dur');
@@ -2593,6 +2601,46 @@ ray.data.read_parquet("s3://...") \
                 return '';
             }
 
+            // 把页面所有 <style> 节点的文本拼成一坨，准备塞进 SVG defs
+            // 只取一次，整个录制过程复用，避免每帧 N 个 DOM 查询
+            let _cachedPageCss = null;
+            function gatherPageCss() {
+                if (_cachedPageCss !== null) return _cachedPageCss;
+                let css = '';
+                document.querySelectorAll('style').forEach(s => {
+                    css += '\n' + (s.textContent || '');
+                });
+                // 同源 <link rel=stylesheet> 也拼进去（本项目目前没有外链 CSS，留作保险）
+                Array.from(document.styleSheets).forEach(sheet => {
+                    try {
+                        if (!sheet.cssRules) return;
+                        for (const r of sheet.cssRules) css += '\n' + r.cssText;
+                    } catch (e) { /* 跨域 stylesheet 访问 cssRules 抛 SecurityError，忽略 */ }
+                });
+                _cachedPageCss = css;
+                return css;
+            }
+
+            // unicode-safe base64：直接 btoa(svg) 在中文上会抛 InvalidCharacterError
+            function utf8ToBase64(str) {
+                return btoa(unescape(encodeURIComponent(str)));
+            }
+
+            // 把"当前实时 SVG"打包成自包含可独立渲染的 SVG 字符串
+            function svgToDataUrl(svg, css) {
+                // 深克隆，避免污染线上 DOM
+                const clone = svg.cloneNode(true);
+                if (!clone.getAttribute('xmlns')) clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+                // 注入 <style>，放在最前面以便覆盖默认值
+                const styleEl = document.createElementNS('http://www.w3.org/2000/svg', 'style');
+                styleEl.setAttribute('type', 'text/css');
+                // CDATA 包一下，规避 SVG 解析器对 & < > 的转义问题
+                styleEl.textContent = '/*<![CDATA[*/' + css + '/*]]>*/';
+                clone.insertBefore(styleEl, clone.firstChild);
+                const xml = new XMLSerializer().serializeToString(clone);
+                return 'data:image/svg+xml;base64,' + utf8ToBase64(xml);
+            }
+
             async function startRecord() {
                 if (recording) return;
                 if (!window.MediaRecorder) {
@@ -2605,19 +2653,22 @@ ray.data.read_parquet("s3://...") \
                 const sceneId = svg.closest('.arch-scene').id;
                 const durSec = Math.max(1, parseInt(durSel.value, 10) || 5);
 
-                // 用 SVG viewBox 作为画布尺寸（保证比例），统一放大到 1.5x 提升清晰度
+                // 用 SVG viewBox 作为画布尺寸（保证比例），统一放大到 2x 提升清晰度
                 const vb = svg.getAttribute('viewBox') || '0 0 900 380';
                 const [, , vbW, vbH] = vb.split(/\s+/).map(Number);
-                const SCALE = 1.5;
+                const SCALE = 2;
                 const W = Math.round(vbW * SCALE);
                 const H = Math.round(vbH * SCALE);
 
                 const canvas = document.createElement('canvas');
                 canvas.width = W; canvas.height = H;
                 const ctx = canvas.getContext('2d');
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
 
                 // 深色底，避免透明帧在某些播放器里发白
                 function paintBg() {
+                    ctx.clearRect(0, 0, W, H); // 先清空，杜绝残影
                     const grad = ctx.createLinearGradient(0, 0, 0, H);
                     grad.addColorStop(0, '#0f1535');
                     grad.addColorStop(1, '#1a1f4d');
@@ -2625,9 +2676,13 @@ ray.data.read_parquet("s3://...") \
                     ctx.fillRect(0, 0, W, H);
                 }
 
+                // 预先抓一次 CSS（整个录制周期复用，省 CPU）
+                _cachedPageCss = null;
+                const pageCss = gatherPageCss();
+
                 const mime = pickMime();
                 const stream = canvas.captureStream(30); // 30fps
-                const recorder = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: 2_500_000 } : undefined);
+                const recorder = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: 3_500_000 } : undefined);
                 const chunks = [];
                 recorder.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
                 recorder.onstop = () => {
@@ -2654,33 +2709,38 @@ ray.data.read_parquet("s3://...") \
                 };
                 updateLabel();
 
+                // 先画一帧底色，避免 recorder 起步阶段抓到完全黑帧
+                paintBg();
                 recorder.start();
 
-                // 每帧：序列化 SVG → Image → drawImage
+                // 每帧：克隆 SVG + 注 CSS → data URL → Image.decode() → drawImage
+                // 用"上一帧 decode 完才发起下一帧"避免错位（之前的 bug 就是多帧 image 同时
+                // 异步加载，回调时序乱了导致老帧 drawImage 覆盖新帧）
                 let stopped = false;
+                let busy = false;
                 async function frame() {
                     if (stopped) return;
+                    if (busy) { requestAnimationFrame(frame); return; }
+                    busy = true;
                     try {
-                        const xml = new XMLSerializer().serializeToString(svg);
-                        // 确保 svg 命名空间，否则 Safari 可能解析失败
-                        const xmlWithNs = xml.includes('xmlns="http://www.w3.org/2000/svg"')
-                            ? xml
-                            : xml.replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"');
-                        const blob = new Blob([xmlWithNs], { type: 'image/svg+xml;charset=utf-8' });
-                        const url = URL.createObjectURL(blob);
+                        const dataUrl = svgToDataUrl(svg, pageCss);
                         const img = new Image();
-                        img.decoding = 'async';
-                        await new Promise((res, rej) => {
-                            img.onload = res;
-                            img.onerror = rej;
-                            img.src = url;
-                        });
+                        img.decoding = 'sync';
+                        img.src = dataUrl;
+                        // decode() 比 onload 更可靠——保证图像数据已可用于 drawImage，
+                        // 不会出现"事件触发但内部还在 raster"的中间态
+                        if (img.decode) {
+                            await img.decode();
+                        } else {
+                            await new Promise((res, rej) => { img.onload = res; img.onerror = rej; });
+                        }
                         paintBg();
                         ctx.drawImage(img, 0, 0, W, H);
-                        URL.revokeObjectURL(url);
                     } catch (err) {
-                        // 单帧失败不致命，继续
+                        // 单帧失败不致命，下一帧重来；但要把 busy 复位
                         console.warn('record frame failed', err);
+                    } finally {
+                        busy = false;
                     }
                     updateLabel();
                     requestAnimationFrame(frame);
