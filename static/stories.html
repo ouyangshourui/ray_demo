@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🎬 Ray vs Spark · 行业故事舞台</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+            background: #0a0f2c;
+            color: #e6e9ff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 1480px; margin: 0 auto; }
+
+        /* 顶部 banner */
+        .top-bar {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 18px; flex-wrap: wrap; gap: 12px;
+        }
+        .top-bar h1 {
+            font-size: 26px; font-weight: 800;
+            background: linear-gradient(135deg, #7effaa, #80a4ff, #ffd166);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .top-bar .nav-back {
+            color: #80a4ff; text-decoration: none; font-size: 14px;
+            padding: 8px 16px; border: 1px solid rgba(128,164,255,0.4); border-radius: 20px;
+            transition: all 0.2s;
+        }
+        .top-bar .nav-back:hover { background: rgba(128,164,255,0.12); }
+
+        /* 故事切换器 */
+        .story-tabs { display: flex; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; }
+        .story-tab {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.14);
+            color: #d3d7ff;
+            padding: 14px 22px;
+            border-radius: 14px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s;
+            text-align: left;
+            min-width: 280px;
+        }
+        .story-tab .st-title { font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+        .story-tab .st-sub   { font-size: 11px; color: #9aa3d8; line-height: 1.5; }
+        .story-tab.active {
+            background: linear-gradient(135deg, rgba(126,255,170,0.18), rgba(128,164,255,0.18));
+            border-color: #7effaa;
+            box-shadow: 0 4px 18px rgba(126,255,170,0.18);
+        }
+        .story-tab.active .st-title { color: #7effaa; }
+
+        /* 主体 grid */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1.6fr 1fr;
+            gap: 18px;
+        }
+        @media (max-width: 1100px) { .main-grid { grid-template-columns: 1fr; } }
+
+        .panel {
+            background: linear-gradient(180deg, #0f1535 0%, #1a1f4d 100%);
+            border-radius: 14px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+        .panel h3 {
+            font-size: 14px; color: #80a4ff; margin-bottom: 12px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .panel h3::before { content: "▎"; color: #80a4ff; }
+
+        /* 痛点引用 */
+        .pain-quote {
+            background: rgba(255,119,119,0.08);
+            border-left: 3px solid #ff7777;
+            padding: 12px 16px;
+            border-radius: 0 8px 8px 0;
+            font-size: 13px;
+            color: #ffb3b3;
+            line-height: 1.7;
+            margin-bottom: 16px;
+            font-style: italic;
+        }
+        .pain-quote .pain-tag {
+            display: inline-block; background: #ff7777; color: #0a0f2c;
+            padding: 2px 8px; border-radius: 10px; font-size: 10px;
+            font-weight: 700; margin-right: 8px; font-style: normal;
+        }
+        .pain-quote b { color: #ff7777; }
+
+        /* DAG 动画区 */
+        .dag-stage {
+            background: rgba(15,21,53,0.6);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 10px;
+            padding: 14px;
+            margin-bottom: 14px;
+            min-height: 240px;
+            position: relative;
+        }
+        .dag-stage svg { width: 100%; height: auto; display: block; }
+        .dag-stage-status {
+            font-size: 11px; color: #7effaa; margin-top: 8px;
+            font-family: "SF Mono", Monaco, Consolas, monospace;
+        }
+
+        .dag-node rect {
+            fill: rgba(102,126,234,0.18);
+            stroke: #80a4ff;
+            stroke-width: 1.5;
+            transition: all 0.2s;
+        }
+        .dag-node text {
+            fill: #fff; font-size: 12px; font-weight: 600;
+        }
+        .dag-node.busy rect {
+            fill: rgba(126,255,170,0.45);
+            stroke: #7effaa; stroke-width: 2.5;
+            filter: drop-shadow(0 0 6px rgba(126,255,170,0.6));
+        }
+        .dag-arrow {
+            fill: none; stroke: #80a4ff; stroke-width: 1.5;
+        }
+
+        /* 实时指标条 */
+        .metrics-row {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+            margin-bottom: 12px;
+        }
+        @media (max-width: 700px) { .metrics-row { grid-template-columns: repeat(2, 1fr); } }
+        .metric-card {
+            background: rgba(15,21,53,0.7);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 10px;
+            padding: 12px 14px;
+            position: relative;
+            overflow: hidden;
+        }
+        .metric-card .mc-label {
+            font-size: 10px; color: #9aa3d8;
+            text-transform: uppercase; letter-spacing: 0.06em;
+            margin-bottom: 6px;
+        }
+        .metric-card .mc-value {
+            font-size: 22px; font-weight: 800; color: #7effaa;
+            font-family: "SF Mono", Monaco, Consolas, monospace;
+            line-height: 1.1;
+        }
+        .metric-card.spark .mc-value { color: #f5a623; }
+        .metric-card .mc-unit { font-size: 11px; color: #9aa3d8; margin-left: 4px; }
+        .metric-card .mc-bar {
+            height: 4px; background: rgba(255,255,255,0.06); border-radius: 2px;
+            margin-top: 8px; overflow: hidden;
+        }
+        .metric-card .mc-bar-fill {
+            height: 100%; width: 0%; background: linear-gradient(90deg,#7effaa,#36c787);
+            transition: width 0.3s;
+        }
+        .metric-card.spark .mc-bar-fill { background: linear-gradient(90deg,#f5a623,#ff7777); }
+
+        /* stage 进度条 */
+        .stage-track {
+            display: grid; gap: 6px; margin-bottom: 14px;
+        }
+        .stage-row {
+            display: grid; grid-template-columns: 100px 1fr 60px;
+            gap: 10px; align-items: center;
+            font-size: 11px;
+        }
+        .stage-row .sr-name { color: #9aa3d8; }
+        .stage-row .sr-bar {
+            height: 14px; background: rgba(255,255,255,0.05);
+            border-radius: 7px; overflow: hidden; position: relative;
+        }
+        .stage-row .sr-fill {
+            position: absolute; left: 0; top: 0; bottom: 0; width: 0%;
+            background: linear-gradient(90deg, rgba(126,255,170,0.7), #7effaa);
+            transition: width 0.25s ease-out;
+            border-radius: 7px;
+        }
+        .stage-row .sr-fill.active {
+            box-shadow: 0 0 12px rgba(126,255,170,0.6);
+        }
+        .stage-row.done .sr-fill { background: linear-gradient(90deg,#36c787,#7effaa); }
+        .stage-row .sr-time {
+            color: #7effaa; font-family: "SF Mono", Monaco, Consolas, monospace;
+            text-align: right;
+        }
+
+        /* 控制条 */
+        .control-bar {
+            display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+            padding-top: 14px;
+            border-top: 1px dashed rgba(255,255,255,0.1);
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 700;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #7effaa, #36c787);
+            color: #0a0f2c;
+            box-shadow: 0 4px 16px rgba(126,255,170,0.32);
+        }
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 22px rgba(126,255,170,0.45); }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .btn-ghost {
+            background: rgba(255,255,255,0.06);
+            color: #d3d7ff;
+            border: 1px solid rgba(255,255,255,0.14);
+        }
+        .btn-ghost:hover { background: rgba(255,255,255,0.12); }
+        .control-bar label {
+            font-size: 12px; color: #9aa3d8;
+        }
+        .control-bar input, .control-bar select {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.14);
+            color: #fff;
+            padding: 6px 10px; border-radius: 8px;
+            font-size: 12px;
+            width: 110px;
+        }
+
+        /* ROI 面板 */
+        .roi-headline {
+            font-size: 13px; color: #9aa3d8; margin-bottom: 6px;
+        }
+        .roi-saved {
+            font-size: 48px; font-weight: 800;
+            background: linear-gradient(135deg,#7effaa,#36c787);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.05;
+            margin-bottom: 4px;
+            font-family: "SF Mono", Monaco, Consolas, monospace;
+        }
+        .roi-saved-pct {
+            font-size: 14px; color: #7effaa; font-weight: 700;
+            margin-bottom: 14px;
+        }
+        .roi-bars {
+            display: grid; grid-template-rows: 1fr 1fr; gap: 12px; margin: 14px 0;
+        }
+        .roi-bar-row {
+            display: grid; grid-template-columns: 70px 1fr 110px;
+            gap: 10px; align-items: center;
+        }
+        .roi-bar-row .rbr-label {
+            font-size: 12px; font-weight: 700;
+        }
+        .roi-bar-row.spark .rbr-label { color: #f5a623; }
+        .roi-bar-row.ray .rbr-label { color: #7effaa; }
+        .roi-bar-row .rbr-bar {
+            height: 32px; background: rgba(255,255,255,0.04);
+            border-radius: 8px; overflow: hidden; position: relative;
+        }
+        .roi-bar-row .rbr-fill {
+            position: absolute; left: 0; top: 0; bottom: 0; width: 0%;
+            transition: width 0.6s ease-out;
+            border-radius: 8px;
+        }
+        .roi-bar-row.spark .rbr-fill {
+            background: linear-gradient(90deg, #ff7777, #f5a623);
+            box-shadow: 0 0 14px rgba(245,166,35,0.35) inset;
+        }
+        .roi-bar-row.ray .rbr-fill {
+            background: linear-gradient(90deg, #36c787, #7effaa);
+            box-shadow: 0 0 14px rgba(126,255,170,0.35) inset;
+        }
+        .roi-bar-row .rbr-value {
+            font-size: 14px; font-weight: 700;
+            font-family: "SF Mono", Monaco, Consolas, monospace;
+            text-align: right;
+        }
+        .roi-bar-row.spark .rbr-value { color: #ffb95a; }
+        .roi-bar-row.ray .rbr-value { color: #7effaa; }
+
+        .roi-anchor {
+            background: rgba(126,255,170,0.06);
+            border: 1px dashed rgba(126,255,170,0.3);
+            padding: 12px 14px;
+            border-radius: 10px;
+            font-size: 12px;
+            color: #c8e8d4;
+            line-height: 1.55;
+            margin: 12px 0;
+        }
+        .roi-anchor b { color: #7effaa; }
+
+        .testimonial {
+            background: rgba(255,255,255,0.04);
+            border-left: 3px solid #80a4ff;
+            padding: 12px 16px;
+            border-radius: 0 8px 8px 0;
+            font-size: 12px;
+            color: #c2caf5;
+            line-height: 1.7;
+        }
+        .testimonial .who {
+            font-size: 11px; color: #80a4ff; margin-top: 6px;
+        }
+
+        /* headline strip */
+        .headline-strip {
+            background: linear-gradient(135deg, rgba(126,255,170,0.14), rgba(128,164,255,0.14));
+            border: 1px solid rgba(126,255,170,0.3);
+            padding: 14px 18px;
+            border-radius: 10px;
+            margin-bottom: 14px;
+            font-size: 13px;
+            color: #fff;
+            font-weight: 600;
+            line-height: 1.6;
+            min-height: 50px;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .headline-strip .hl-pulse {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: #7effaa;
+            box-shadow: 0 0 10px #7effaa;
+            animation: hlpulse 1.5s infinite;
+            flex-shrink: 0;
+        }
+        @keyframes hlpulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.7); }
+        }
+        .headline-strip.idle .hl-pulse {
+            background: #555; box-shadow: none; animation: none;
+        }
+        .headline-strip.idle { color: #9aa3d8; }
+
+        /* 状态标记 */
+        .mode-tag {
+            display: inline-block;
+            padding: 2px 8px; border-radius: 10px;
+            font-size: 10px; font-weight: 700;
+            margin-left: 8px;
+        }
+        .mode-tag.real { background: rgba(126,255,170,0.18); color: #7effaa; }
+        .mode-tag.mock { background: rgba(245,166,35,0.18); color: #ffb95a; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="top-bar">
+        <h1>🎬 Ray vs Spark · 行业故事舞台</h1>
+        <a href="/" class="nav-back">← 返回主页</a>
+    </div>
+
+    <!-- 故事切换器：从 /api/stories 动态拉 -->
+    <div class="story-tabs" id="story-tabs"></div>
+
+    <!-- headline strip -->
+    <div class="headline-strip idle" id="headline-strip">
+        <span class="hl-pulse"></span>
+        <span id="headline-text">点击「▶ 开跑」即可加载真实数据集 · 实时打印 Ray Data pipeline 各 stage 耗时</span>
+    </div>
+
+    <div class="main-grid">
+        <!-- 左：故事 + DAG + 指标条 -->
+        <div class="panel" id="left-panel">
+            <h3 id="story-title">故事加载中…</h3>
+            <div class="pain-quote" id="pain-quote">
+                <span class="pain-tag">痛点</span>
+                <span id="pain-text">业务原话引用…</span>
+            </div>
+
+            <!-- DAG 动画 -->
+            <div class="dag-stage">
+                <svg viewBox="0 0 720 220" id="dag-svg"></svg>
+                <div class="dag-stage-status" id="dag-status">↑ 等待 pipeline 启动…</div>
+            </div>
+
+            <!-- 实时指标条 -->
+            <div class="metrics-row">
+                <div class="metric-card">
+                    <div class="mc-label">Ray 吞吐</div>
+                    <div class="mc-value"><span id="m-throughput">—</span><span class="mc-unit" id="m-throughput-unit"></span></div>
+                    <div class="mc-bar"><div class="mc-bar-fill" id="m-throughput-bar"></div></div>
+                </div>
+                <div class="metric-card">
+                    <div class="mc-label">Ray GPU 利用</div>
+                    <div class="mc-value"><span id="m-gpu-ray">—</span><span class="mc-unit">%</span></div>
+                    <div class="mc-bar"><div class="mc-bar-fill" id="m-gpu-ray-bar"></div></div>
+                </div>
+                <div class="metric-card spark">
+                    <div class="mc-label">Spark GPU 利用</div>
+                    <div class="mc-value"><span id="m-gpu-spark">—</span><span class="mc-unit">%</span></div>
+                    <div class="mc-bar"><div class="mc-bar-fill" id="m-gpu-spark-bar"></div></div>
+                </div>
+                <div class="metric-card">
+                    <div class="mc-label">已耗时</div>
+                    <div class="mc-value"><span id="m-elapsed">0.00</span><span class="mc-unit">s</span></div>
+                    <div class="mc-bar"><div class="mc-bar-fill" id="m-elapsed-bar"></div></div>
+                </div>
+            </div>
+
+            <!-- stage 进度条 -->
+            <div class="stage-track" id="stage-track"></div>
+
+            <!-- 控制条 -->
+            <div class="control-bar">
+                <button class="btn btn-primary" id="btn-run">▶ 开跑</button>
+                <button class="btn btn-ghost" id="btn-reset">↺ 重置</button>
+                <label id="param-size-label">规模 <input type="number" id="param-size" value="1000" min="1" step="1"/></label>
+                <label>GPU 数 <input type="number" id="param-gpu" value="8" min="1" max="64"/></label>
+                <label>地域
+                    <select id="param-region">
+                        <option value="ap-guangzhou" selected>ap-guangzhou</option>
+                        <option value="ap-shanghai">ap-shanghai</option>
+                        <option value="na-siliconvalley">na-siliconvalley</option>
+                    </select>
+                </label>
+                <span style="margin-left:auto;font-size:11px;color:#9aa3d8;">
+                    模式 <span class="mode-tag real" id="mode-tag">ray_real</span>
+                </span>
+            </div>
+        </div>
+
+        <!-- 右：ROI 账单 -->
+        <div class="panel" id="right-panel">
+            <h3>💰 ROI 账单（腾讯云价格表 2026-06）</h3>
+            <div class="roi-headline">每次作业可节省（按当前 GPU 数 × 耗时换算）</div>
+            <div class="roi-saved" id="roi-saved">$ —</div>
+            <div class="roi-saved-pct" id="roi-saved-pct">省 — % · 等待数据</div>
+
+            <div class="roi-bars">
+                <div class="roi-bar-row spark">
+                    <div class="rbr-label">Spark</div>
+                    <div class="rbr-bar"><div class="rbr-fill" id="roi-spark-fill"></div></div>
+                    <div class="rbr-value" id="roi-spark-value">$0</div>
+                </div>
+                <div class="roi-bar-row ray">
+                    <div class="rbr-label">Ray</div>
+                    <div class="rbr-bar"><div class="rbr-fill" id="roi-ray-fill"></div></div>
+                    <div class="rbr-value" id="roi-ray-value">$0</div>
+                </div>
+            </div>
+
+            <div class="roi-anchor" id="roi-anchor">
+                折算腾讯云锚点：等价于免费用 <b id="roi-months">—</b> 月 HAI A100，
+                按全年规模放大可省 <b id="roi-annual">—</b>。
+            </div>
+
+            <h3 style="margin-top:18px;">📣 客户证言（脱敏）</h3>
+            <div class="testimonial" id="testimonial">
+                "选 Ray 不是因为它新，是因为我们 GPU 账单实在压不下去了。"
+                <div class="who">— 待故事载入</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+'use strict';
+
+// ====== 数据：故事元信息（前端硬编码兜底，与后端 /api/stories 对齐）======
+const STORY_META = {
+    llm_dedup: {
+        pain: '某 Top3 大模型公司：每天清洗 <b>1 万亿 token</b>，Spark UDF 单作业 <b>36h / $23k</b>，GPU 节点 <b>80% 时间在等数据</b>。',
+        stages: [
+            { id: 'read',          label: '读取 COS',      x: 60  },
+            { id: 'dedup',         label: 'CPU dedup',     x: 200 },
+            { id: 'quality_score', label: 'GPU score',     x: 340 },
+            { id: 'tokenize',      label: 'CPU tokenize',  x: 480 },
+            { id: 'write',         label: '写出',          x: 620 },
+        ],
+        // 控制条规模：B token（10 亿 token）= 200K~500K docs 演示秒级
+        param_size_label: '规模(B token)',
+        param_default: 1,
+        param_step: 1, param_min: 1, param_max: 1000,
+        param_size_to_kwarg: (n) => ({ token_size: Math.max(1e8, n * 1e9) }),
+        throughput_unit: 'tps',
+        testimonial: {
+            text: '"以前训完一轮要等数据等 1.5 天，现在 6 小时就能再 launch 下一轮 A/B 实验，模型迭代速度直接翻 6 倍。"',
+            who: '— 某大模型公司 · 数据基础设施负责人',
+        },
+    },
+    video_tagging: {
+        pain: '某头部短视频平台：每天 <b>5 亿短视频</b>打标，Spark UDF 每 task 重 load CLIP <b>12 秒</b>，<b>200 张 A100 还跑不完</b>，GPU 利用率仅 18%。',
+        stages: [
+            { id: 'read',  label: '读取 COS',     x: 60  },
+            { id: 'frame', label: '抽帧',         x: 200 },
+            { id: 'clip',  label: 'CLIP Actor',   x: 340 },
+            { id: 'llava', label: 'LLaVA Actor',  x: 480 },
+            { id: 'write', label: '写 Iceberg',   x: 620 },
+        ],
+        param_size_label: '视频数',
+        param_default: 1000,
+        param_step: 100, param_min: 100, param_max: 10000,
+        param_size_to_kwarg: (n) => ({ video_count: n }),
+        throughput_unit: 'fps',
+        testimonial: {
+            text: '"GPU 数从 200 张降到 30 张，全年省下来的钱够把推荐侧的实验集群整个升级一遍。"',
+            who: '— 某头部短视频平台 · 算法平台负责人',
+        },
+    },
+};
+
+// ====== 状态 ======
+const state = {
+    stories: [],
+    current: null,        // 当前故事 id
+    running: false,
+    es: null,             // EventSource
+    metric: null,         // 最后一次 metric 事件
+    summary: null,        // 最后一次 done 事件
+    stageTimes: {},       // {stage_id: seconds}
+    elapsedAtStart: 0,
+};
+
+// ====== 故事切换器 ======
+async function loadStories() {
+    try {
+        const resp = await fetch('/api/stories');
+        const data = await resp.json();
+        if (Array.isArray(data) && data.length > 0) {
+            state.stories = data;
+        } else {
+            // 兜底
+            state.stories = [
+                { id: 'llm_dedup', title: '大模型数据清洗', subtitle: 'Top3 大模型公司', speedup: 5.6, narrative: '' },
+                { id: 'video_tagging', title: '多模态视频打标', subtitle: '头部短视频平台', speedup: 14.0, narrative: '' },
+            ];
+        }
+    } catch (e) {
+        state.stories = [
+            { id: 'llm_dedup', title: '大模型数据清洗', subtitle: '后端不可用 · 兜底', speedup: 5.6, narrative: '' },
+            { id: 'video_tagging', title: '多模态视频打标', subtitle: '后端不可用 · 兜底', speedup: 14.0, narrative: '' },
+        ];
+    }
+    renderStoryTabs();
+    activateStory(state.stories[0].id);
+}
+
+function renderStoryTabs() {
+    const root = document.getElementById('story-tabs');
+    root.innerHTML = '';
+    state.stories.forEach((s, idx) => {
+        const tab = document.createElement('button');
+        tab.className = 'story-tab' + (idx === 0 ? ' active' : '');
+        tab.dataset.id = s.id;
+        tab.innerHTML = `
+            <div class="st-title">${idx === 0 ? '①' : '②'} ${s.title} · <span style="color:#ffd166;">${s.speedup}× 加速</span></div>
+            <div class="st-sub">${s.subtitle}</div>
+        `;
+        tab.addEventListener('click', () => activateStory(s.id));
+        root.appendChild(tab);
+    });
+}
+
+function activateStory(id) {
+    if (state.running) {
+        if (!confirm('当前任务还在跑，切换会中断 SSE，确认？')) return;
+        stopRun();
+    }
+    state.current = id;
+    document.querySelectorAll('.story-tab').forEach(t => {
+        t.classList.toggle('active', t.dataset.id === id);
+    });
+
+    const story = state.stories.find(s => s.id === id) || {};
+    const meta = STORY_META[id] || STORY_META.llm_dedup;
+
+    document.getElementById('story-title').textContent = story.title || id;
+    document.getElementById('pain-text').innerHTML = meta.pain;
+
+    // 客户证言
+    const tEl = document.getElementById('testimonial');
+    tEl.innerHTML = `${meta.testimonial.text}<div class="who">${meta.testimonial.who}</div>`;
+
+    // 控制栏：规模 label + input 范围 + 默认值
+    const sizeInput = document.getElementById('param-size');
+    const sizeLabel = document.getElementById('param-size-label');
+    if (sizeLabel) {
+        sizeLabel.firstChild.textContent = meta.param_size_label + ' ';
+    }
+    sizeInput.min = meta.param_min;
+    sizeInput.max = meta.param_max;
+    sizeInput.step = meta.param_step;
+    sizeInput.value = meta.param_default;
+
+    // throughput unit
+    document.getElementById('m-throughput-unit').textContent = ' ' + meta.throughput_unit;
+
+    // 重建 DAG + stage track
+    buildDag(meta.stages);
+    buildStageTrack(meta.stages);
+
+    // 重置 metric/headline
+    resetMetrics();
+    setHeadline('点击「▶ 开跑」即可加载真实数据集 · 实时打印 Ray Data pipeline 各 stage 耗时', true);
+}
+
+// ====== DAG 渲染 ======
+function buildDag(stages) {
+    const svg = document.getElementById('dag-svg');
+    svg.innerHTML = '';
+    const NS = 'http://www.w3.org/2000/svg';
+
+    // defs：箭头
+    const defs = document.createElementNS(NS, 'defs');
+    defs.innerHTML = `<marker id="ah" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto"><polygon points="0,0 8,4 0,8" fill="#80a4ff"/></marker>`;
+    svg.appendChild(defs);
+
+    // 标题
+    const title = document.createElementNS(NS, 'text');
+    title.setAttribute('x', '20'); title.setAttribute('y', '24');
+    title.setAttribute('fill', '#80a4ff');
+    title.setAttribute('font-size', '13'); title.setAttribute('font-weight', '700');
+    title.textContent = '▎ Ray Data 流式 DAG · block 级流水线';
+    svg.appendChild(title);
+
+    // 节点
+    stages.forEach((s, i) => {
+        const g = document.createElementNS(NS, 'g');
+        g.setAttribute('class', 'dag-node');
+        g.setAttribute('id', `dag-node-${s.id}`);
+        const r = document.createElementNS(NS, 'rect');
+        r.setAttribute('x', s.x - 50); r.setAttribute('y', 56);
+        r.setAttribute('width', 100); r.setAttribute('height', 44);
+        r.setAttribute('rx', 8);
+        g.appendChild(r);
+        const t = document.createElementNS(NS, 'text');
+        t.setAttribute('x', s.x); t.setAttribute('y', 82);
+        t.setAttribute('text-anchor', 'middle');
+        t.textContent = s.label;
+        g.appendChild(t);
+        svg.appendChild(g);
+
+        if (i < stages.length - 1) {
+            const a = document.createElementNS(NS, 'path');
+            const x1 = s.x + 50, x2 = stages[i+1].x - 50;
+            a.setAttribute('class', 'dag-arrow');
+            a.setAttribute('d', `M ${x1} 78 L ${x2} 78`);
+            a.setAttribute('marker-end', 'url(#ah)');
+            svg.appendChild(a);
+        }
+    });
+
+    // block 流动层
+    const blocksG = document.createElementNS(NS, 'g');
+    blocksG.setAttribute('id', 'dag-blocks');
+    svg.appendChild(blocksG);
+
+    // 底部 hint
+    const hint = document.createElementNS(NS, 'text');
+    hint.setAttribute('x', '20'); hint.setAttribute('y', '160');
+    hint.setAttribute('fill', '#9aa3d8'); hint.setAttribute('font-size', '11');
+    hint.setAttribute('id', 'dag-hint');
+    hint.textContent = '↑ 当前 stage 高亮 · 多个 block 同时穿过不同算子（无 Stage Barrier）';
+    svg.appendChild(hint);
+}
+
+let dagAnim = null;
+function startDagAnim(stages) {
+    stopDagAnim();
+    const svg = document.getElementById('dag-svg');
+    const blocksG = document.getElementById('dag-blocks');
+    const NS = 'http://www.w3.org/2000/svg';
+    const blocks = [];
+    const colors = ['#7effaa','#80a4ff','#ffd166','#ff7eb6','#a78bfa'];
+    let blockId = 0;
+    let lastSpawn = 0;
+
+    function makeBlock(id) {
+        const g = document.createElementNS(NS, 'g');
+        g.setAttribute('class', 'dag-block');
+        const r = document.createElementNS(NS, 'rect');
+        r.setAttribute('x','-9'); r.setAttribute('y','-9');
+        r.setAttribute('width','18'); r.setAttribute('height','18');
+        r.setAttribute('rx','3');
+        r.setAttribute('fill', colors[id % colors.length]);
+        r.setAttribute('opacity','0.92');
+        g.appendChild(r);
+        blocksG.appendChild(g);
+        return g;
+    }
+
+    function tick(now) {
+        if (!dagAnim) return;
+        if (now - lastSpawn > 320) {
+            lastSpawn = now;
+            blockId++;
+            blocks.push({ g: makeBlock(blockId), t0: now, dur: 2200 });
+        }
+        for (let i = blocks.length - 1; i >= 0; i--) {
+            const b = blocks[i];
+            const p = (now - b.t0) / b.dur;
+            if (p >= 1) { b.g.remove(); blocks.splice(i, 1); continue; }
+            const segs = stages.length - 1;
+            const segP = p * segs;
+            const segIdx = Math.min(segs - 1, Math.floor(segP));
+            const localP = segP - segIdx;
+            const ee = localP < 0.5 ? 2*localP*localP : 1 - Math.pow(-2*localP+2, 2)/2;
+            const x = stages[segIdx].x + (stages[segIdx+1].x - stages[segIdx].x) * ee;
+            b.g.setAttribute('transform', `translate(${x}, 78)`);
+        }
+        dagAnim = requestAnimationFrame(tick);
+    }
+    dagAnim = requestAnimationFrame(tick);
+}
+function stopDagAnim() {
+    if (dagAnim) { cancelAnimationFrame(dagAnim); dagAnim = null; }
+    const blocksG = document.getElementById('dag-blocks');
+    if (blocksG) blocksG.innerHTML = '';
+}
+
+function highlightStage(stageId) {
+    document.querySelectorAll('.dag-node').forEach(n => n.classList.remove('busy'));
+    const el = document.getElementById(`dag-node-${stageId}`);
+    if (el) el.classList.add('busy');
+}
+
+// ====== Stage 进度条 ======
+function buildStageTrack(stages) {
+    const root = document.getElementById('stage-track');
+    root.innerHTML = '';
+    stages.forEach(s => {
+        const row = document.createElement('div');
+        row.className = 'stage-row';
+        row.id = `sr-${s.id}`;
+        row.innerHTML = `
+            <div class="sr-name">${s.label}</div>
+            <div class="sr-bar"><div class="sr-fill" id="sf-${s.id}"></div></div>
+            <div class="sr-time" id="st-${s.id}">—</div>
+        `;
+        root.appendChild(row);
+    });
+}
+
+// ====== 指标更新 ======
+function resetMetrics() {
+    document.getElementById('m-throughput').textContent = '—';
+    document.getElementById('m-throughput-bar').style.width = '0%';
+    document.getElementById('m-gpu-ray').textContent = '—';
+    document.getElementById('m-gpu-ray-bar').style.width = '0%';
+    document.getElementById('m-gpu-spark').textContent = '—';
+    document.getElementById('m-gpu-spark-bar').style.width = '0%';
+    document.getElementById('m-elapsed').textContent = '0.00';
+    document.getElementById('m-elapsed-bar').style.width = '0%';
+
+    document.querySelectorAll('.sr-fill').forEach(el => { el.style.width = '0%'; el.classList.remove('active'); });
+    document.querySelectorAll('.stage-row').forEach(el => el.classList.remove('done'));
+    document.querySelectorAll('.sr-time').forEach(el => el.textContent = '—');
+    document.querySelectorAll('.dag-node').forEach(n => n.classList.remove('busy'));
+
+    document.getElementById('roi-saved').textContent = '$ —';
+    document.getElementById('roi-saved-pct').textContent = '省 — % · 等待数据';
+    document.getElementById('roi-spark-fill').style.width = '0%';
+    document.getElementById('roi-ray-fill').style.width = '0%';
+    document.getElementById('roi-spark-value').textContent = '$0';
+    document.getElementById('roi-ray-value').textContent = '$0';
+    document.getElementById('roi-months').textContent = '—';
+    document.getElementById('roi-annual').textContent = '—';
+
+    state.metric = null;
+    state.summary = null;
+    state.stageTimes = {};
+}
+
+function applyProgress(d) {
+    const meta = STORY_META[state.current];
+    if (!meta) return;
+    const stages = meta.stages;
+
+    // stage 高亮
+    highlightStage(d.stage);
+
+    // stage 行进度
+    stages.forEach(s => {
+        const row = document.getElementById(`sr-${s.id}`);
+        const fill = document.getElementById(`sf-${s.id}`);
+        if (!row || !fill) return;
+        if (s.id === d.stage) {
+            // 把当前 stage 推到接近 100%
+            fill.style.width = '85%';
+            fill.classList.add('active');
+        } else if (stages.findIndex(x => x.id === d.stage) > stages.findIndex(x => x.id === s.id)) {
+            // 已完成的 stage
+            fill.style.width = '100%';
+            fill.classList.remove('active');
+            row.classList.add('done');
+        }
+    });
+
+    // 指标
+    const tps = d.ray_throughput_tps ?? d.ray_throughput_fps ?? d.ray_throughput;
+    if (typeof tps === 'number') {
+        document.getElementById('m-throughput').textContent = formatNumber(tps);
+        document.getElementById('m-throughput-bar').style.width =
+            Math.min(100, Math.log10(Math.max(1, tps)) * 18) + '%';
+    }
+    if (typeof d.ray_gpu_util === 'number') {
+        const v = Math.round(d.ray_gpu_util * 100);
+        document.getElementById('m-gpu-ray').textContent = v;
+        document.getElementById('m-gpu-ray-bar').style.width = v + '%';
+    }
+    if (typeof d.spark_gpu_util === 'number') {
+        const v = Math.round(d.spark_gpu_util * 100);
+        document.getElementById('m-gpu-spark').textContent = v;
+        document.getElementById('m-gpu-spark-bar').style.width = v + '%';
+    }
+    if (typeof d.elapsed_sec === 'number') {
+        document.getElementById('m-elapsed').textContent = d.elapsed_sec.toFixed(2);
+        // elapsed_bar：以 10s 为满
+        document.getElementById('m-elapsed-bar').style.width = Math.min(100, d.elapsed_sec * 10) + '%';
+    }
+
+    setHeadline(`▶ Stage 「${d.stage_label || d.stage}」 ${d.percent || 0}% · 已耗时 ${(d.elapsed_sec||0).toFixed(2)}s`, false);
+}
+
+function applyMetric(d) {
+    state.metric = d;
+    const meta = STORY_META[state.current];
+    if (!meta) return;
+    const stages = meta.stages;
+
+    // 把每个 stage 的真实耗时回填到 stage 行
+    if (Array.isArray(d.stage_real_times_sec)) {
+        d.stage_real_times_sec.forEach((sec, i) => {
+            const s = stages[i]; if (!s) return;
+            const fill = document.getElementById(`sf-${s.id}`);
+            const tEl = document.getElementById(`st-${s.id}`);
+            const row = document.getElementById(`sr-${s.id}`);
+            if (fill) { fill.style.width = '100%'; fill.classList.remove('active'); }
+            if (row) row.classList.add('done');
+            if (tEl) tEl.textContent = sec.toFixed(3) + 's';
+        });
+    }
+
+    // ROI 双柱
+    const roi = d.roi || {};
+    const sparkUsd = roi.spark_usd_per_run ?? roi.spark_cost_usd ?? 0;
+    const rayUsd = roi.ray_usd_per_run ?? roi.ray_cost_usd ?? 0;
+    const savedUsd = roi.saved_usd ?? Math.max(0, sparkUsd - rayUsd);
+    const savedPct = roi.saved_percent ?? (sparkUsd > 0 ? Math.round((1 - rayUsd / sparkUsd) * 1000) / 10 : 0);
+
+    const maxBar = Math.max(sparkUsd, rayUsd, 1);
+    document.getElementById('roi-spark-fill').style.width = Math.round(sparkUsd / maxBar * 100) + '%';
+    document.getElementById('roi-ray-fill').style.width  = Math.round(rayUsd  / maxBar * 100) + '%';
+    document.getElementById('roi-spark-value').textContent = '$' + formatNumber(sparkUsd, 2);
+    document.getElementById('roi-ray-value').textContent   = '$' + formatNumber(rayUsd, 2);
+    document.getElementById('roi-saved').textContent = '$' + formatNumber(savedUsd, 2);
+    document.getElementById('roi-saved-pct').textContent = `省 ${savedPct}% · 单次作业`;
+
+    // 折算锚点（年度 = 单次 × 业务规模假设：日跑 1 次 × 365）
+    const annualSaved = savedUsd * 365;
+    const haiHourly = 3.20;
+    const monthsHai = haiHourly > 0 ? Math.round(annualSaved / (haiHourly * 24 * 30) * 10) / 10 : 0;
+    document.getElementById('roi-months').textContent = monthsHai + ' 个';
+    document.getElementById('roi-annual').textContent = '$' + formatNumber(annualSaved, 0);
+
+    // mode 标签
+    const modeTag = document.getElementById('mode-tag');
+    if (d.mode === 'ray_real') {
+        modeTag.textContent = 'ray_real'; modeTag.className = 'mode-tag real';
+    } else {
+        modeTag.textContent = d.mode || 'mock'; modeTag.className = 'mode-tag mock';
+    }
+}
+
+function applyDone(d) {
+    state.summary = d.summary || d;
+    const sum = state.summary;
+    if (sum && sum.headline) {
+        setHeadline('✓ ' + sum.headline, false);
+    }
+    document.querySelectorAll('.dag-node').forEach(n => n.classList.remove('busy'));
+}
+
+function setHeadline(text, idle) {
+    const strip = document.getElementById('headline-strip');
+    document.getElementById('headline-text').textContent = text;
+    strip.classList.toggle('idle', !!idle);
+}
+
+function formatNumber(n, digits = 0) {
+    if (typeof n !== 'number' || !isFinite(n)) return '—';
+    if (Math.abs(n) >= 1e9) return (n/1e9).toFixed(2) + 'B';
+    if (Math.abs(n) >= 1e6) return (n/1e6).toFixed(2) + 'M';
+    if (Math.abs(n) >= 1e3) return (n/1e3).toFixed(2) + 'K';
+    return n.toFixed(digits);
+}
+
+// ====== 跑任务 ======
+async function runStory() {
+    if (state.running) return;
+    if (!state.current) return;
+    const meta = STORY_META[state.current];
+    if (!meta) return;
+
+    state.running = true;
+    document.getElementById('btn-run').disabled = true;
+    resetMetrics();
+    setHeadline('▶ 启动中… 正在登记任务并连接 SSE', false);
+    startDagAnim(meta.stages);
+
+    const size = parseInt(document.getElementById('param-size').value, 10) || 1000;
+    const gpu = parseInt(document.getElementById('param-gpu').value, 10) || 8;
+    const region = document.getElementById('param-region').value || 'ap-guangzhou';
+
+    const baseKwarg = meta.param_size_to_kwarg(size);
+    const body = Object.assign({}, baseKwarg, { gpu_count: gpu, region });
+
+    let taskId;
+    try {
+        const startResp = await fetch(`/api/story/${state.current}/start`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+        });
+        const startJson = await startResp.json();
+        if (!startResp.ok || !startJson.task_id) {
+            throw new Error(startJson.error || ('HTTP ' + startResp.status));
+        }
+        taskId = startJson.task_id;
+    } catch (e) {
+        setHeadline('✗ 启动失败：' + e.message, true);
+        finishRun();
+        return;
+    }
+
+    const url = `/api/story/${state.current}/${taskId}/stream`;
+    const es = new EventSource(url);
+    state.es = es;
+
+    es.addEventListener('progress', (ev) => {
+        try { applyProgress(JSON.parse(ev.data)); } catch (e) {}
+    });
+    es.addEventListener('metric', (ev) => {
+        try { applyMetric(JSON.parse(ev.data)); } catch (e) {}
+    });
+    es.addEventListener('done', (ev) => {
+        try { applyDone(JSON.parse(ev.data)); } catch (e) {}
+    });
+    es.addEventListener('close', () => finishRun());
+    es.onerror = () => {
+        // SSE 在 done 后服务端会主动关，这里兜底
+        if (state.running) finishRun();
+    };
+}
+
+function stopRun() {
+    if (state.es) { try { state.es.close(); } catch(e){} state.es = null; }
+    finishRun();
+}
+
+function finishRun() {
+    state.running = false;
+    document.getElementById('btn-run').disabled = false;
+    stopDagAnim();
+}
+
+// ====== 初始化 ======
+document.getElementById('btn-run').addEventListener('click', runStory);
+document.getElementById('btn-reset').addEventListener('click', () => {
+    if (state.running) stopRun();
+    resetMetrics();
+    setHeadline('已重置 · 点击「▶ 开跑」重新启动', true);
+});
+
+loadStories();
+
+// 静默预热（一次）
+fetch('/api/stories/warmup', { method: 'POST' }).catch(() => {});
+</script>
+</body>
+</html>

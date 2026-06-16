@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>💎 Ray vs Spark · 销售金句卡</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+            background: radial-gradient(ellipse at top, #1a1f4d 0%, #0a0f2c 60%);
+            color: #e6e9ff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .topbar {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 16px 28px;
+            background: rgba(10,15,44,0.7);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .topbar h1 {
+            font-size: 20px; font-weight: 800;
+            background: linear-gradient(135deg, #ffd166, #ff7eb6, #80a4ff);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .topbar .controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .topbar .nav-back {
+            color: #80a4ff; text-decoration: none; font-size: 13px;
+            padding: 6px 14px; border: 1px solid rgba(128,164,255,0.4); border-radius: 18px;
+        }
+        .topbar .btn {
+            padding: 8px 16px; border: none; border-radius: 10px;
+            cursor: pointer; font-size: 13px; font-weight: 700;
+            transition: all 0.2s;
+        }
+        .btn-record {
+            background: linear-gradient(135deg, #ff7777, #ff7eb6);
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(255,119,119,0.3);
+        }
+        .btn-record.recording { background: #ff3344; animation: rec 1s infinite; }
+        @keyframes rec { 50% { opacity: 0.6; } }
+        .btn-ghost {
+            background: rgba(255,255,255,0.06);
+            color: #d3d7ff;
+            border: 1px solid rgba(255,255,255,0.14);
+        }
+        .btn-ghost:hover { background: rgba(255,255,255,0.12); }
+        .btn-primary {
+            background: linear-gradient(135deg, #7effaa, #36c787);
+            color: #0a0f2c;
+        }
+
+        /* card stage */
+        .stage {
+            flex: 1; position: relative;
+            display: flex; align-items: center; justify-content: center;
+            padding: 30px;
+        }
+        .card-deck {
+            width: min(1280px, 95vw);
+            height: min(680px, 80vh);
+            position: relative;
+        }
+        .card {
+            position: absolute; inset: 0;
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+            gap: 24px;
+            background: linear-gradient(135deg, rgba(15,21,53,0.92), rgba(26,31,77,0.92));
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 24px;
+            padding: 44px 52px;
+            box-shadow: 0 24px 80px rgba(0,0,0,0.5);
+            opacity: 0;
+            transform: translateX(60px) scale(0.96);
+            transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.22, 0.7, 0.36, 1);
+            pointer-events: none;
+        }
+        .card.active {
+            opacity: 1; transform: translateX(0) scale(1);
+            pointer-events: auto;
+        }
+        .card.exit {
+            transform: translateX(-60px) scale(0.96);
+            opacity: 0;
+        }
+
+        .card-head {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 16px; flex-wrap: wrap;
+        }
+        .card-head .title-line {
+            font-size: 32px; font-weight: 800;
+            line-height: 1.2;
+            background: linear-gradient(135deg, #ffd166, #ff7eb6, #80a4ff);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+            flex: 1; min-width: 60%;
+        }
+        .card-head .badge {
+            font-size: 13px;
+            padding: 6px 14px; border-radius: 16px;
+            background: rgba(255,209,102,0.14);
+            color: #ffd166;
+            border: 1px solid rgba(255,209,102,0.4);
+            font-weight: 700;
+        }
+
+        /* 中部对比 */
+        .vs-row {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 28px;
+            align-items: center;
+        }
+        .vs-side {
+            border-radius: 18px;
+            padding: 32px 24px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .vs-side .vs-label {
+            font-size: 14px; font-weight: 700;
+            margin-bottom: 14px;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            opacity: 0.85;
+        }
+        .vs-side .vs-metric {
+            font-size: 84px; font-weight: 900;
+            font-family: "SF Mono", Monaco, Consolas, monospace;
+            line-height: 1;
+            letter-spacing: -0.02em;
+        }
+        .vs-side .vs-icon {
+            font-size: 40px; margin-bottom: 8px;
+        }
+        .vs-side.spark {
+            background: radial-gradient(ellipse at top, rgba(255,119,119,0.22), rgba(245,166,35,0.08));
+            border: 1px solid rgba(255,119,119,0.4);
+        }
+        .vs-side.spark .vs-label { color: #ff9b9b; }
+        .vs-side.spark .vs-metric {
+            color: #ff9b9b;
+            text-shadow: 0 0 30px rgba(255,119,119,0.3);
+        }
+        .vs-side.ray {
+            background: radial-gradient(ellipse at top, rgba(126,255,170,0.22), rgba(54,199,135,0.08));
+            border: 1px solid rgba(126,255,170,0.4);
+        }
+        .vs-side.ray .vs-label { color: #7effaa; }
+        .vs-side.ray .vs-metric {
+            color: #7effaa;
+            text-shadow: 0 0 30px rgba(126,255,170,0.4);
+        }
+        .vs-arrow {
+            font-size: 64px;
+            color: #80a4ff;
+            font-weight: 900;
+            text-shadow: 0 0 20px rgba(128,164,255,0.5);
+            animation: arrow-pulse 2s infinite;
+        }
+        @keyframes arrow-pulse {
+            50% { transform: translateX(6px) scale(1.05); opacity: 0.85; }
+        }
+
+        /* 卡内 SVG 装饰动画（每张卡可不同） */
+        .vs-side .deco {
+            position: absolute; inset: 0; pointer-events: none; opacity: 0.18;
+        }
+
+        .card-foot {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 20px; flex-wrap: wrap;
+            border-top: 1px dashed rgba(255,255,255,0.12);
+            padding-top: 20px;
+        }
+        .card-foot .testimonial {
+            font-size: 13px; color: #c2caf5; font-style: italic;
+            line-height: 1.6;
+            flex: 1;
+        }
+        .card-foot .source {
+            font-size: 11px; color: #80a4ff;
+            opacity: 0.7;
+        }
+
+        /* 底部 dots & 进度 */
+        .dots {
+            display: flex; gap: 10px; justify-content: center;
+            padding: 16px;
+        }
+        .dot {
+            width: 10px; height: 10px; border-radius: 50%;
+            background: rgba(255,255,255,0.18);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .dot.active {
+            width: 32px; border-radius: 5px;
+            background: linear-gradient(90deg, #ffd166, #ff7eb6);
+        }
+        .progress-line {
+            position: absolute; left: 0; right: 0; bottom: 0;
+            height: 3px; background: rgba(255,255,255,0.08);
+        }
+        .progress-line .fill {
+            height: 100%; width: 0%;
+            background: linear-gradient(90deg, #ffd166, #ff7eb6, #80a4ff);
+            transition: width 0.1s linear;
+        }
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <div style="display:flex;align-items:center;gap:14px;">
+            <h1>💎 Ray vs Spark · 销售金句卡</h1>
+            <a href="/" class="nav-back">← 主页</a>
+            <a href="/stories" class="nav-back">🎬 故事舞台</a>
+        </div>
+        <div class="controls">
+            <button class="btn btn-ghost" id="btn-prev">◀ 上一张</button>
+            <button class="btn btn-primary" id="btn-toggle-auto">⏸ 暂停轮播</button>
+            <button class="btn btn-ghost" id="btn-next">下一张 ▶</button>
+            <button class="btn btn-record" id="btn-record">⏺ 录当前卡 10s</button>
+            <span id="counter" style="font-size:12px;color:#9aa3d8;">—</span>
+        </div>
+    </div>
+
+    <div class="stage">
+        <div class="card-deck" id="deck"></div>
+    </div>
+
+    <div class="dots" id="dots"></div>
+    <div class="progress-line"><div class="fill" id="progress-fill"></div></div>
+
+<script>
+'use strict';
+
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+// 5 张卡的"装饰动画"渲染器：每张卡两个面板（spark / ray）各画一个对应主题的 SVG 动画
+const DECO_RENDERERS = {
+    card1: { // GPU 利用率 18% vs 89%
+        spark: (svg) => drawGpuBars(svg, 0.18, '#ff9b9b'),
+        ray:   (svg) => drawGpuBars(svg, 0.89, '#7effaa'),
+    },
+    card2: { // 模型冷启 12s vs 0ms
+        spark: (svg) => drawColdStart(svg, 'cold'),
+        ray:   (svg) => drawColdStart(svg, 'warm'),
+    },
+    card3: { // barrier vs 流式
+        spark: (svg) => drawBarrier(svg),
+        ray:   (svg) => drawStreaming(svg),
+    },
+    card4: { // DataFrame vs Dataset
+        spark: (svg) => drawTable(svg),
+        ray:   (svg) => drawStreamGraph(svg),
+    },
+    card5: { // $8.4k vs $1.2k
+        spark: (svg) => drawCoinPile(svg, 8, '#ff9b9b'),
+        ray:   (svg) => drawCoinPile(svg, 2, '#7effaa'),
+    },
+};
+
+const TESTIMONIAL_BY_CARD = {
+    card1: { text: '"GPU 数从 200 张降到 30 张，全年省下来的钱够整个推荐侧实验集群升级一遍。"', who: '— 某头部短视频平台 · 算法平台负责人' },
+    card2: { text: '"我们 SRE 之前每周两次性能告警都来自 UDF 冷启动，用 Ray Actor 之后这条线 P0 归零。"', who: '— 某大模型公司 · 平台 SRE 负责人' },
+    card3: { text: '"最慢的 1 个 task 决定下班时间——这是 Spark 用户的家常便饭，Ray 流式 DAG 一次性消除。"', who: '— 某金融科技 · 数据架构师' },
+    card4: { text: '"过去 60% 的 AI 数据是非结构化的（视频、图、文本），DataFrame 抽象天然不适合，Ray Dataset 才是 AI 原生数据 API。"', who: '— Ray 架构组（公开演讲）' },
+    card5: { text: '"100 万视频打标的账单从 \$8.4k 直接砍到 \$1.2k，全年省 \$86k，等于免费用 HAI A100 4.2 个月。"', who: '— 某头部短视频平台 · POC 数据' },
+};
+
+const state = {
+    cards: [],
+    idx: 0,
+    auto: true,
+    autoTimer: null,
+    progressTimer: null,
+    progressStart: 0,
+    autoMs: 10000,
+    recorder: null,
+};
+
+// ====== 加载 manifest ======
+async function loadCards() {
+    try {
+        const resp = await fetch('/api/cards/manifest');
+        const data = await resp.json();
+        if (Array.isArray(data) && data.length > 0) {
+            state.cards = data;
+        } else {
+            state.cards = fallbackCards();
+        }
+    } catch (e) {
+        state.cards = fallbackCards();
+    }
+    render();
+    startAuto();
+}
+
+function fallbackCards() {
+    return [
+        { id:'card1', title:'GPU 不是堆出来的，是用出来的', metric:{spark:'18%', ray:'89%'}, subtitle:'同样 8 张 A100，Spark 利用率 18% / Ray Actor 复用 89%', duration_sec:10 },
+        { id:'card2', title:'模型不该每次冷启动', metric:{spark:'12s', ray:'0ms'}, subtitle:'Spark UDF 每 task 重 load 模型 12s / Ray Actor 常驻 0ms', duration_sec:10 },
+        { id:'card3', title:'长尾决定下班时间', metric:{spark:'barrier', ray:'流式'}, subtitle:'Spark stage barrier 拖慢全局 / Ray 流式 pipeline 无 barrier', duration_sec:10 },
+        { id:'card4', title:'AI 数据是流，不是表', metric:{spark:'DataFrame', ray:'Dataset'}, subtitle:'60% 非结构化数据，视频/图像/文本流过 DAG，表格挡不住', duration_sec:10 },
+        { id:'card5', title:'算账：100 万视频打标', metric:{spark:'$8.4k', ray:'$1.2k'}, subtitle:'Ray Data 14× 加速，账单一年省 $86k，等于免费用 HAI 4.2 个月', duration_sec:10 },
+    ];
+}
+
+// ====== 渲染 ======
+function render() {
+    const deck = document.getElementById('deck');
+    const dots = document.getElementById('dots');
+    deck.innerHTML = '';
+    dots.innerHTML = '';
+
+    state.cards.forEach((c, i) => {
+        const card = document.createElement('div');
+        card.className = 'card' + (i === 0 ? ' active' : '');
+        card.dataset.idx = i;
+        card.innerHTML = `
+            <div class="card-head">
+                <div class="title-line">${c.title}</div>
+                <div class="badge">${i + 1} / ${state.cards.length} · ${c.duration_sec || 10}s</div>
+            </div>
+            <div class="vs-row">
+                <div class="vs-side spark">
+                    <svg class="deco" viewBox="0 0 200 200" preserveAspectRatio="none" id="deco-${c.id}-spark"></svg>
+                    <div class="vs-icon">🟠</div>
+                    <div class="vs-label">Spark</div>
+                    <div class="vs-metric">${c.metric.spark}</div>
+                </div>
+                <div class="vs-arrow">→</div>
+                <div class="vs-side ray">
+                    <svg class="deco" viewBox="0 0 200 200" preserveAspectRatio="none" id="deco-${c.id}-ray"></svg>
+                    <div class="vs-icon">🟢</div>
+                    <div class="vs-label">Ray</div>
+                    <div class="vs-metric">${c.metric.ray}</div>
+                </div>
+            </div>
+            <div class="card-foot">
+                <div class="testimonial">${(TESTIMONIAL_BY_CARD[c.id] || {text: c.subtitle || '', who: ''}).text}</div>
+                <div class="source">${(TESTIMONIAL_BY_CARD[c.id] || {who: ''}).who} · 数据来源：腾讯云 POC + Ray Summit benchmark</div>
+            </div>
+        `;
+        deck.appendChild(card);
+
+        // 装饰动画
+        const renderers = DECO_RENDERERS[c.id];
+        if (renderers) {
+            const sparkSvg = card.querySelector(`#deco-${c.id}-spark`);
+            const raySvg = card.querySelector(`#deco-${c.id}-ray`);
+            renderers.spark && renderers.spark(sparkSvg);
+            renderers.ray && renderers.ray(raySvg);
+        }
+
+        // dot
+        const d = document.createElement('div');
+        d.className = 'dot' + (i === 0 ? ' active' : '');
+        d.addEventListener('click', () => goTo(i));
+        dots.appendChild(d);
+    });
+
+    updateCounter();
+}
+
+function updateCounter() {
+    const c = state.cards[state.idx];
+    if (!c) return;
+    document.getElementById('counter').textContent =
+        `第 ${state.idx + 1}/${state.cards.length} 张 · ${c.id}`;
+}
+
+function goTo(i) {
+    if (i < 0) i = state.cards.length - 1;
+    if (i >= state.cards.length) i = 0;
+    if (i === state.idx) return;
+    document.querySelectorAll('.card').forEach((c, k) => {
+        c.classList.toggle('active', k === i);
+        c.classList.toggle('exit', k !== i && k === state.idx);
+    });
+    document.querySelectorAll('.dot').forEach((d, k) => {
+        d.classList.toggle('active', k === i);
+    });
+    state.idx = i;
+    updateCounter();
+    if (state.auto) restartProgress();
+}
+
+function next() { goTo(state.idx + 1); }
+function prev() { goTo(state.idx - 1); }
+
+// ====== 自动轮播 ======
+function startAuto() {
+    if (state.autoTimer) return;
+    state.auto = true;
+    document.getElementById('btn-toggle-auto').textContent = '⏸ 暂停轮播';
+    state.autoTimer = setInterval(() => next(), state.autoMs);
+    restartProgress();
+}
+function stopAuto() {
+    state.auto = false;
+    if (state.autoTimer) { clearInterval(state.autoTimer); state.autoTimer = null; }
+    if (state.progressTimer) { clearInterval(state.progressTimer); state.progressTimer = null; }
+    document.getElementById('btn-toggle-auto').textContent = '▶ 继续轮播';
+    document.getElementById('progress-fill').style.width = '0%';
+}
+function restartProgress() {
+    if (state.progressTimer) clearInterval(state.progressTimer);
+    state.progressStart = Date.now();
+    const fill = document.getElementById('progress-fill');
+    state.progressTimer = setInterval(() => {
+        const p = Math.min(1, (Date.now() - state.progressStart) / state.autoMs);
+        fill.style.width = (p * 100) + '%';
+        if (p >= 1) {
+            state.progressStart = Date.now();
+        }
+    }, 80);
+}
+
+// ====== 录制：MediaRecorder + canvas captureStream ======
+// 录当前 deck 区域 N 秒，导出 webm（M2 再考虑 GIF）
+async function recordCard() {
+    const btn = document.getElementById('btn-record');
+    if (state.recorder) {
+        // 停止
+        try { state.recorder.stop(); } catch(e){}
+        return;
+    }
+    // 用 html2canvas 路径太复杂，这里用 captureStream 直接抓 deck 元素
+    // 浏览器实现：通过隐藏 canvas 周期性截图（用 SVG -> data URL -> drawImage 较耗，简化为 displayMedia 提示用户）
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
+        alert('当前浏览器不支持屏幕录制 API；请用 OBS 或浏览器自带录屏。');
+        return;
+    }
+    let stream;
+    try {
+        stream = await navigator.mediaDevices.getDisplayMedia({
+            video: { frameRate: 30 }, audio: false,
+        });
+    } catch (e) {
+        alert('已取消屏幕录制');
+        return;
+    }
+    const mime = 'video/webm;codecs=vp9';
+    const recorder = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 4_000_000 });
+    const chunks = [];
+    recorder.ondataavailable = (ev) => { if (ev.data.size > 0) chunks.push(ev.data); };
+    recorder.onstop = () => {
+        const blob = new Blob(chunks, { type: 'video/webm' });
+        const a = document.createElement('a');
+        const ts = new Date().toISOString().replace(/[:.]/g, '-');
+        const c = state.cards[state.idx];
+        a.href = URL.createObjectURL(blob);
+        a.download = `card_${(c && c.id) || 'unknown'}_${ts}.webm`;
+        document.body.appendChild(a); a.click(); a.remove();
+        stream.getTracks().forEach(t => t.stop());
+        state.recorder = null;
+        btn.classList.remove('recording');
+        btn.textContent = '⏺ 录当前卡 10s';
+    };
+    state.recorder = recorder;
+    recorder.start();
+    btn.classList.add('recording');
+    btn.textContent = '⏹ 停止录制';
+
+    setTimeout(() => {
+        if (state.recorder) {
+            try { state.recorder.stop(); } catch(e){}
+        }
+    }, (state.cards[state.idx]?.duration_sec || 10) * 1000);
+}
+
+// ====== 装饰 SVG 渲染器 ======
+function drawGpuBars(svg, util, color) {
+    if (!svg) return;
+    svg.innerHTML = '';
+    // 8 根 GPU 利用率柱
+    for (let i = 0; i < 8; i++) {
+        const x = 18 + i * 22;
+        const h = 30 + util * 130 + (Math.random() - 0.5) * 30;
+        const y = 200 - h;
+        const r = document.createElementNS(SVG_NS, 'rect');
+        r.setAttribute('x', x); r.setAttribute('y', y);
+        r.setAttribute('width', 14); r.setAttribute('height', h);
+        r.setAttribute('rx', 2);
+        r.setAttribute('fill', color); r.setAttribute('opacity', '0.5');
+        svg.appendChild(r);
+    }
+}
+
+function drawColdStart(svg, mode) {
+    if (!svg) return;
+    svg.innerHTML = '';
+    if (mode === 'cold') {
+        // 冷启：模型重复加载（雪花图标）
+        for (let i = 0; i < 5; i++) {
+            const t = document.createElementNS(SVG_NS, 'text');
+            t.setAttribute('x', 30 + (i % 3) * 60);
+            t.setAttribute('y', 50 + Math.floor(i / 3) * 80);
+            t.setAttribute('font-size', '40');
+            t.setAttribute('fill', '#ff9b9b');
+            t.textContent = '❄';
+            svg.appendChild(t);
+        }
+    } else {
+        // 常驻：火焰图标（一团）
+        const t = document.createElementNS(SVG_NS, 'text');
+        t.setAttribute('x', 75); t.setAttribute('y', 130);
+        t.setAttribute('font-size', '110');
+        t.setAttribute('fill', '#7effaa');
+        t.textContent = '🔥';
+        svg.appendChild(t);
+    }
+}
+
+function drawBarrier(svg) {
+    if (!svg) return;
+    svg.innerHTML = '';
+    // 红色虚线 barrier + 4 个圆点排队
+    const line = document.createElementNS(SVG_NS, 'line');
+    line.setAttribute('x1', 100); line.setAttribute('y1', 30);
+    line.setAttribute('x2', 100); line.setAttribute('y2', 170);
+    line.setAttribute('stroke', '#ff7777');
+    line.setAttribute('stroke-width', 4);
+    line.setAttribute('stroke-dasharray', '8 6');
+    svg.appendChild(line);
+    for (let i = 0; i < 4; i++) {
+        const c = document.createElementNS(SVG_NS, 'circle');
+        c.setAttribute('cx', 70 + i * 6);
+        c.setAttribute('cy', 60 + i * 25);
+        c.setAttribute('r', 8);
+        c.setAttribute('fill', '#ff9b9b');
+        svg.appendChild(c);
+    }
+}
+
+function drawStreaming(svg) {
+    if (!svg) return;
+    svg.innerHTML = '';
+    // 5 条流线
+    for (let i = 0; i < 5; i++) {
+        const path = document.createElementNS(SVG_NS, 'path');
+        const y = 30 + i * 35;
+        path.setAttribute('d', `M 10 ${y} Q 100 ${y-15} 190 ${y}`);
+        path.setAttribute('stroke', '#7effaa');
+        path.setAttribute('stroke-width', 3);
+        path.setAttribute('fill', 'none');
+        path.setAttribute('opacity', 0.7);
+        svg.appendChild(path);
+    }
+}
+
+function drawTable(svg) {
+    if (!svg) return;
+    svg.innerHTML = '';
+    // 表格栅格
+    for (let r = 0; r < 5; r++) {
+        for (let c = 0; c < 4; c++) {
+            const rect = document.createElementNS(SVG_NS, 'rect');
+            rect.setAttribute('x', 20 + c * 42);
+            rect.setAttribute('y', 30 + r * 30);
+            rect.setAttribute('width', 38);
+            rect.setAttribute('height', 26);
+            rect.setAttribute('fill', 'none');
+            rect.setAttribute('stroke', '#ff9b9b');
+            rect.setAttribute('stroke-width', 1.5);
+            svg.appendChild(rect);
+        }
+    }
+}
+
+function drawStreamGraph(svg) {
+    if (!svg) return;
+    svg.innerHTML = '';
+    // DAG 节点 + 流动 block
+    const nodes = [{x:30,y:100},{x:100,y:60},{x:100,y:140},{x:170,y:100}];
+    nodes.forEach(n => {
+        const c = document.createElementNS(SVG_NS, 'circle');
+        c.setAttribute('cx', n.x); c.setAttribute('cy', n.y);
+        c.setAttribute('r', 14);
+        c.setAttribute('fill', '#7effaa'); c.setAttribute('opacity', 0.7);
+        svg.appendChild(c);
+    });
+    [[0,1],[0,2],[1,3],[2,3]].forEach(([a,b]) => {
+        const l = document.createElementNS(SVG_NS, 'line');
+        l.setAttribute('x1', nodes[a].x); l.setAttribute('y1', nodes[a].y);
+        l.setAttribute('x2', nodes[b].x); l.setAttribute('y2', nodes[b].y);
+        l.setAttribute('stroke', '#7effaa'); l.setAttribute('stroke-width', 2);
+        l.setAttribute('opacity', 0.5);
+        svg.appendChild(l);
+    });
+}
+
+function drawCoinPile(svg, count, color) {
+    if (!svg) return;
+    svg.innerHTML = '';
+    for (let i = 0; i < count; i++) {
+        const c = document.createElementNS(SVG_NS, 'ellipse');
+        c.setAttribute('cx', 100); c.setAttribute('cy', 180 - i * 14);
+        c.setAttribute('rx', 50); c.setAttribute('ry', 8);
+        c.setAttribute('fill', color); c.setAttribute('opacity', 0.55);
+        c.setAttribute('stroke', color); c.setAttribute('stroke-width', 1);
+        svg.appendChild(c);
+    }
+    const t = document.createElementNS(SVG_NS, 'text');
+    t.setAttribute('x', 100); t.setAttribute('y', 40);
+    t.setAttribute('text-anchor', 'middle');
+    t.setAttribute('font-size', '28');
+    t.setAttribute('fill', color); t.setAttribute('opacity', 0.55);
+    t.textContent = '$';
+    svg.appendChild(t);
+}
+
+// ====== 事件 ======
+document.getElementById('btn-prev').addEventListener('click', () => { stopAuto(); prev(); });
+document.getElementById('btn-next').addEventListener('click', () => { stopAuto(); next(); });
+document.getElementById('btn-toggle-auto').addEventListener('click', () => {
+    if (state.auto) stopAuto(); else startAuto();
+});
+document.getElementById('btn-record').addEventListener('click', recordCard);
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft') { stopAuto(); prev(); }
+    else if (e.key === 'ArrowRight') { stopAuto(); next(); }
+    else if (e.key === ' ') { e.preventDefault(); state.auto ? stopAuto() : startAuto(); }
+});
+
+loadCards();
+</script>
+</body>
+</html>
