@@ -2232,11 +2232,16 @@ ray.data.read_parquet("s3://...") \
             archState.running.scene3 = true;
 
             // ===== Ray：连续不断生成 block，每个独立平滑流动 =====
+            // 节奏设计（关键！要让 Ray 视觉上明显比 Spark 快）：
+            //   - 单个 block 走完 5 个阶段 = 2400ms（每段 ~600ms）
+            //   - block 间隔 280ms → 任意时刻流水线里有 8-9 个 block 在不同阶段并行
+            //   - 一个 Spark 完整轮 (10200ms) 内 Ray 完成 ~30 个 block，对比鲜明
             const blocks = []; // {g, t0, dur, idx}
             let lastBlock = 0;
             let blockId = 1;
-            const BLOCK_INTERVAL = 480;
-            const BLOCK_TOTAL_DUR = 4200; // 走完 5 个阶段的总时长
+            let rayDoneCount = 0; // 完成的 block 数（用于 vs Spark 计数对比）
+            const BLOCK_INTERVAL = 280;
+            const BLOCK_TOTAL_DUR = 2400; // 走完 5 个阶段的总时长（远快于 Spark 单轮 10.2s）
 
             function makeBlock(id) {
                 const colors = ['#7effaa', '#80a4ff', '#ffd166', '#ff7eb6', '#a78bfa'];
@@ -2297,11 +2302,12 @@ ray.data.read_parquet("s3://...") \
                 sparkBatchEls.push(g);
             }
 
-            // Spark 节奏：4 个 stage 各占 SUB_DUR，Sink 跑完后暂停 SINK_HOLD（等 Ray 跑完当前 batch）再开始下一轮
+            // Spark 节奏：4 个 stage 各占 SUB_DUR，Sink 跑完后暂停 SINK_HOLD（等下一批） — 整体明显比 Ray 慢
             const SUB_DUR = SPARK_CYCLE_3 / 4;        // 1800ms / sub-stage
-            const SINK_HOLD = 3000;                   // Sink 后留白 3s，让 Ray 把流水线里的 block 排空
+            const SINK_HOLD = 3000;                   // Sink 后留白 3s（"我已经写完了 Stage 还在卡"）
             const FULL_CYCLE = SPARK_CYCLE_3 + SINK_HOLD; // 10200ms 一整轮
             let cycleStart = 0;                       // 当前 cycle 的起点（虚拟时钟）
+            let sparkDoneCount = 0;                   // Spark 完成的轮数
 
             // 用于高亮判断：stage 在哪些 x 区间被算作 active
             function rayStageBusy(blockX, stageIdx) {
@@ -2337,6 +2343,7 @@ ray.data.read_parquet("s3://...") \
                     if (p >= 1) {
                         b.g.remove();
                         blocks.splice(i, 1);
+                        rayDoneCount++;
                         continue;
                     }
                     if (p < 0) p = 0;
@@ -2362,7 +2369,7 @@ ray.data.read_parquet("s3://...") \
                     if (busyRayStages.has(i)) n.classList.add('busy'); else n.classList.remove('busy');
                 });
                 if (rayStatusEl) {
-                    rayStatusEl.textContent = `↑ 当前同时有 ${busyRayStages.size} 个阶段在工作（流式 DAG，无需 barrier）`;
+                    rayStatusEl.textContent = `↑ ${busyRayStages.size}/5 阶段并行工作 · 已完成 ${rayDoneCount} block（同期 Spark 才完成 ${sparkDoneCount} 轮）— 流水线密度碾压`;
                 }
 
                 // ===== Spark batch 推进（4 个 task 速度不一致，barrier 处先到的等慢的）=====
@@ -2371,6 +2378,7 @@ ray.data.read_parquet("s3://...") \
                 if (cycleT >= FULL_CYCLE) {
                     cycleStart += FULL_CYCLE;
                     cycleT = now - cycleStart;
+                    sparkDoneCount++;
                 }
                 const inSinkHold = cycleT >= SPARK_CYCLE_3;       // 已跑完 4 个 stage，进入"等 Ray 排空"留白
                 const sinkHoldP = inSinkHold ? Math.min(1, (cycleT - SPARK_CYCLE_3) / SINK_HOLD) : 0;
@@ -2505,7 +2513,7 @@ ray.data.read_parquet("s3://...") \
                 if (sparkStatusEl) {
                     if (inSinkHold) {
                         const remain = Math.max(0, SINK_HOLD - (cycleT - SPARK_CYCLE_3));
-                        sparkStatusEl.textContent = `⏸ Sink 已写出，但整轮 stage 卡住 ${(remain/1000).toFixed(1)}s — 等上面 Ray 把流水线里的 block 跑完，下一轮才能起步`;
+                        sparkStatusEl.textContent = `⏸ Sink 已写出，但下一轮 batch 还要等 driver 调度 ${(remain/1000).toFixed(1)}s（同期 Ray 已跑完 ${rayDoneCount} 个 block）`;
                     } else if (subIdx === 3) {
                         sparkStatusEl.textContent = `▶ Sink 写出中（前面 3 个 stage 全部串行等齐）`;
                     } else if (arrivedCount === 4) {
