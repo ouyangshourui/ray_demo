@@ -633,6 +633,39 @@
             color: #9aa3c7;
             font-size: 0.85rem;
         }
+        .arch-speed {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px 4px 14px;
+            margin-left: 8px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .arch-speed-label {
+            color: #9aa3c7;
+            font-size: 0.78rem;
+            margin-right: 4px;
+        }
+        .arch-speed-btn {
+            padding: 4px 10px;
+            border: none;
+            border-radius: 999px;
+            background: transparent;
+            color: #c8cee0;
+            font-size: 0.78rem;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .arch-speed-btn:hover {
+            background: rgba(102,126,234,0.18);
+        }
+        .arch-speed-btn.active {
+            background: linear-gradient(135deg, #7effaa 0%, #4fd1a0 100%);
+            color: #0a1530;
+            font-weight: 700;
+        }
         .arch-scene {
             display: none;
         }
@@ -1216,7 +1249,15 @@ for name in ["ray", "spark"]:
                     <button class="arch-pill active" data-scene="scene1">① 细粒度并行</button>
                     <button class="arch-pill" data-scene="scene2">② Actor 模型</button>
                     <button class="arch-pill" data-scene="scene3">③ 数据流 DAG</button>
-                    <span class="arch-caption" id="arch-caption">动画自动循环 · 点击切换场景</span>
+                    <div class="arch-speed">
+                        <span class="arch-speed-label">动画速度</span>
+                        <button class="arch-speed-btn" data-speed="0.25">0.25×</button>
+                        <button class="arch-speed-btn active" data-speed="0.5">0.5×</button>
+                        <button class="arch-speed-btn" data-speed="1">1×</button>
+                        <button class="arch-speed-btn" data-speed="1.5">1.5×</button>
+                        <button class="arch-speed-btn" data-speed="2">2×</button>
+                    </div>
+                    <span class="arch-caption" id="arch-caption">动画自动循环 · 拖动速度按钮可放慢观察</span>
                 </div>
 
                 <div class="arch-stage">
@@ -1793,6 +1834,10 @@ ray.data.read_parquet("s3://...") \
         const archState = {
             running: { scene1: false, scene2: false, scene3: false },
             raf: { scene1: null, scene2: null, scene3: null },
+            // 虚拟时钟：每个场景独立累加（按 speed 缩放真实帧间隔）
+            virtualNow: { scene1: 0, scene2: 0, scene3: 0 },
+            lastReal: { scene1: 0, scene2: 0, scene3: 0 },
+            speed: 0.5, // 默认 0.5×（慢速观察）
         };
 
         function stopAllArch() {
@@ -1801,6 +1846,23 @@ ray.data.read_parquet("s3://...") \
                 if (archState.raf[k]) cancelAnimationFrame(archState.raf[k]);
                 archState.raf[k] = null;
             });
+        }
+
+        // 用虚拟时钟驱动 tick：每帧把"真实经过时间 × speed"累加到 virtualNow，再传给 tick
+        // 这样所有依赖 now 的动画（spawn 间隔、相位、闪烁频率）都会同步变慢/变快
+        function runScene(sceneKey, tickFn) {
+            archState.virtualNow[sceneKey] = 0;
+            archState.lastReal[sceneKey] = performance.now();
+            const loop = (real) => {
+                if (!archState.running[sceneKey]) return;
+                const last = archState.lastReal[sceneKey];
+                const dt = real - last;
+                archState.lastReal[sceneKey] = real;
+                archState.virtualNow[sceneKey] += dt * archState.speed;
+                tickFn(archState.virtualNow[sceneKey]);
+                archState.raf[sceneKey] = requestAnimationFrame(loop);
+            };
+            archState.raf[sceneKey] = requestAnimationFrame(loop);
         }
 
         // ============== 场景 1：细粒度并行 ==============
@@ -1895,7 +1957,7 @@ ray.data.read_parquet("s3://...") \
 
             // Spark 阶段状态机：computing → barrier(等长尾) → shuffle → reset 下一轮
             let sparkStage = 'computing';
-            let stageT0 = performance.now();
+            let stageT0 = 0; // 虚拟时钟起点（runScene 会从 0 开始累加）
             let shuffleStart = 0;
 
             function tick(now) {
@@ -1993,10 +2055,8 @@ ray.data.read_parquet("s3://...") \
                         stageT0 = now;
                     }
                 }
-
-                archState.raf.scene1 = requestAnimationFrame(tick);
             }
-            archState.raf.scene1 = requestAnimationFrame(tick);
+            runScene('scene1', tick);
         }
 
         // ============== 场景 2：Actor 模型 ==============
@@ -2111,10 +2171,8 @@ ray.data.read_parquet("s3://...") \
                     m.el.setAttribute('transform', `translate(${x},${y})`);
                     m.el.setAttribute('opacity', p < 0.1 ? p / 0.1 : (p > 0.85 ? (1 - p) / 0.15 : 1));
                 }
-
-                archState.raf.scene2 = requestAnimationFrame(tick);
             }
-            archState.raf.scene2 = requestAnimationFrame(tick);
+            runScene('scene2', tick);
         }
 
         // ============== 场景 3：数据流 DAG ==============
@@ -2201,7 +2259,7 @@ ray.data.read_parquet("s3://...") \
                 sparkBatchEls.push(g);
             }
 
-            const cycleStart = performance.now();
+            const cycleStart = 0; // 虚拟时钟起点
 
             // 用于高亮判断：stage 在哪些 x 区间被算作 active
             function rayStageBusy(blockX, stageIdx) {
@@ -2390,10 +2448,8 @@ ray.data.read_parquet("s3://...") \
                         sparkStatusEl.textContent = `▶ Stage ${subIdx + 1} 内 4 个 task 一起跑（速度不一致，慢的将拖累 barrier）`;
                     }
                 }
-
-                archState.raf.scene3 = requestAnimationFrame(tick);
             }
-            archState.raf.scene3 = requestAnimationFrame(tick);
+            runScene('scene3', tick);
         }
 
         function activateScene(sceneId) {
@@ -2414,6 +2470,15 @@ ray.data.read_parquet("s3://...") \
 
         document.querySelectorAll('.arch-pill').forEach(p => {
             p.addEventListener('click', () => activateScene(p.dataset.scene));
+        });
+
+        // 速度切换：直接改 archState.speed，无需重启动画（runScene 的 loop 每帧读最新值）
+        document.querySelectorAll('.arch-speed-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.arch-speed-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                archState.speed = parseFloat(btn.dataset.speed);
+            });
         });
 
         // 当切换到 demo5 tab 时启动场景 1
