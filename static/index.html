@@ -1254,25 +1254,33 @@ for name in ["ray", "spark"]:
                             <!-- 分割线 -->
                             <line x1="20" y1="200" x2="880" y2="200" stroke="rgba(255,255,255,0.12)" stroke-dasharray="4 4"/>
 
-                            <!-- 下半：Spark 粗粒度 partition -->
-                            <text x="20" y="226" fill="#f5b04a" font-size="14" font-weight="700">▎ Spark SQL · 大块 partition 整体迁移（Stage 同步）</text>
+                            <!-- 下半：Spark partition 就地计算 + Stage Barrier 等长尾 -->
+                            <text x="20" y="226" fill="#f5b04a" font-size="14" font-weight="700">▎ Spark SQL · partition 就地计算，Stage Barrier 等齐才能进入下一阶段</text>
                             <g class="spark-driver-pulse">
                                 <rect x="40" y="248" width="110" height="58" rx="10" fill="url(#sparkBg)" opacity="0.95"/>
                                 <text x="95" y="276" fill="#fff" font-size="13" font-weight="700" text-anchor="middle">Driver</text>
                                 <text x="95" y="292" fill="#fff5e0" font-size="10" text-anchor="middle">submit stage</text>
                             </g>
-                            <!-- 4 个大 partition（脚本驱动整块平移） -->
+                            <!-- Stage 容器 + 4 个 partition 进度条（脚本注入）-->
+                            <rect x="180" y="240" width="450" height="135" rx="10" fill="rgba(245,166,35,0.06)" stroke="rgba(245,166,35,0.35)" stroke-width="1.2" stroke-dasharray="4 4"/>
+                            <text x="190" y="256" fill="#ffd9a3" font-size="11" font-weight="700">Stage N · 4 个 task 就地处理 partition</text>
                             <g id="spark-partitions"></g>
-                            <!-- Worker（粗粒度） -->
+                            <!-- Stage Barrier（红色虚线，紧贴 Stage 容器右边）-->
+                            <line id="spark-barrier-line" x1="638" y1="250" x2="638" y2="370" stroke="#ff7777" stroke-width="2.5" stroke-dasharray="6 4" opacity="0.4"/>
+                            <text id="spark-barrier-label" x="644" y="265" fill="#ff9b9b" font-size="10" font-weight="700">⏸ barrier</text>
+                            <!-- 下一 Stage（shuffle 完成后才能开始）-->
                             <g>
-                                <rect x="640" y="248" width="120" height="44" rx="10" fill="rgba(245,166,35,0.18)" stroke="#f5a623" stroke-width="1.5"/>
-                                <text x="700" y="274" fill="#fff" font-size="13" font-weight="700" text-anchor="middle">Worker A</text>
+                                <rect x="670" y="270" width="100" height="50" rx="10" fill="rgba(245,166,35,0.18)" stroke="#f5a623" stroke-width="1.5" stroke-dasharray="3 3"/>
+                                <text x="720" y="296" fill="#fff" font-size="12" font-weight="700" text-anchor="middle">Stage N+1</text>
+                                <text x="720" y="312" fill="#ffd9a3" font-size="10" text-anchor="middle">waiting…</text>
                             </g>
-                            <g>
-                                <rect x="640" y="302" width="120" height="44" rx="10" fill="rgba(245,166,35,0.18)" stroke="#f5a623" stroke-width="1.5"/>
-                                <text x="700" y="328" fill="#fff" font-size="13" font-weight="700" text-anchor="middle">Worker B</text>
+                            <!-- shuffle 箭头（脚本控制显隐）-->
+                            <g id="spark-shuffle" opacity="0">
+                                <line x1="630" y1="295" x2="668" y2="295" stroke="#ff9b3d" stroke-width="2.5"/>
+                                <polygon points="668,290 678,295 668,300" fill="#ff9b3d"/>
+                                <text x="649" y="285" fill="#ffb95a" font-size="10" font-weight="700" text-anchor="middle">shuffle</text>
                             </g>
-                            <text x="780" y="368" fill="#ffb95a" font-size="10">⏸ 整块迁移 → 慢节点拖累 stage</text>
+                            <text id="spark-stage-status" x="190" y="370" fill="#ffb95a" font-size="10">● 计算中（partition 倾斜，长尾未结束）</text>
                         </svg>
                         <div class="arch-side">
                             <div class="arch-col ray">
@@ -1280,8 +1288,8 @@ for name in ["ray", "spark"]:
                                 <p>同时跑成百上千个轻量 task，调度器按需分发，慢 worker 不会拖累全局；任意 Python 代码 + Actor 都能并行（不只是 SQL/DataFrame）。</p>
                             </div>
                             <div class="arch-col spark">
-                                <h5>🟠 Spark：以 partition 为单位整块迁移</h5>
-                                <p>partition 颗粒大且 Stage 间有 barrier；想跑非 SQL 代码必须套 UDF，跨 stage 必须等所有 partition 完成才能进入下一阶段。</p>
+                                <h5>🟠 Spark：partition 就地算 + Stage Barrier 等齐</h5>
+                                <p>每个 task 处理一个 partition，<b>计算就地完成（不会整块搬运数据）</b>。但 partition 容易倾斜，最快的 task 必须停下来等最慢的；只有 Stage 边界 <b>shuffle</b> 时才发生跨节点数据搬运，barrier 长尾会让整个 stage 卡住。</p>
                             </div>
                         </div>
                     </div>
@@ -1343,30 +1351,55 @@ for name in ["ray", "spark"]:
                             <!-- 分割线 -->
                             <line x1="20" y1="200" x2="880" y2="200" stroke="rgba(255,255,255,0.12)" stroke-dasharray="4 4"/>
 
-                            <!-- 下半：无状态函数（Spark/MapReduce） -->
-                            <text x="20" y="226" fill="#f5b04a" font-size="14" font-weight="700">▎ 传统无状态函数 · 每次调用从零开始</text>
+                            <!-- 下半：Spark 模型 · Driver + Executor + 无状态 task closure -->
+                            <text x="20" y="226" fill="#f5b04a" font-size="14" font-weight="700">▎ Spark 模型 · Driver + Executor，task 是无状态 closure（每次反序列化）</text>
+                            <!-- Spark Driver -->
+                            <g class="spark-driver-pulse">
+                                <rect x="40" y="248" width="120" height="60" rx="10" fill="url(#sparkBg)" opacity="0.95"/>
+                                <text x="100" y="276" fill="#fff" font-size="13" font-weight="700" text-anchor="middle">Driver</text>
+                                <text x="100" y="294" fill="#fff5e0" font-size="10" text-anchor="middle">broadcast(model)</text>
+                            </g>
+                            <!-- broadcast 箭头：每个 stage 重发一次 -->
+                            <g id="spark-broadcasts"></g>
+
+                            <!-- 3 个 Executor，每个内部不断重启 task closure -->
                             <g>
-                                <rect x="40" y="248" width="120" height="60" rx="10" fill="rgba(245,166,35,0.18)" stroke="#f5a623" stroke-width="1.5"/>
-                                <text x="100" y="282" fill="#fff" font-size="13" font-weight="700" text-anchor="middle">Caller</text>
-                                <text x="100" y="298" fill="#fff5e0" font-size="10" text-anchor="middle">stateless call</text>
+                                <rect x="260" y="232" width="170" height="120" rx="10" fill="rgba(245,166,35,0.10)" stroke="#f5a623" stroke-width="1.2"/>
+                                <text x="345" y="250" fill="#ffd9a3" font-size="12" font-weight="700" text-anchor="middle">Executor 1 (JVM)</text>
+                                <g id="spark-task-1" class="stateless-fn-anim">
+                                    <rect x="270" y="258" width="150" height="32" rx="6" fill="rgba(245,166,35,0.28)" stroke="#f5a623" stroke-dasharray="3 3"/>
+                                    <text x="345" y="278" fill="#fff" font-size="10" text-anchor="middle">task closure · deserialize</text>
+                                </g>
+                                <g id="spark-task-1b" class="stateless-fn-anim" style="animation-delay:.7s;">
+                                    <rect x="270" y="296" width="150" height="32" rx="6" fill="rgba(245,166,35,0.28)" stroke="#f5a623" stroke-dasharray="3 3"/>
+                                    <text x="345" y="316" fill="#fff" font-size="10" text-anchor="middle">load model again ⏳</text>
+                                </g>
                             </g>
-                            <!-- 不断重启的函数 -->
-                            <g class="stateless-fn-anim">
-                                <rect x="240" y="245" width="120" height="58" rx="8" fill="rgba(245,166,35,0.25)" stroke="#f5a623" stroke-dasharray="3 3"/>
-                                <text x="300" y="270" fill="#fff" font-size="11" text-anchor="middle">load model…</text>
-                                <text x="300" y="288" fill="#ffd9a3" font-size="10" text-anchor="middle">⏳ cold start</text>
+                            <g>
+                                <rect x="450" y="232" width="170" height="120" rx="10" fill="rgba(245,166,35,0.10)" stroke="#f5a623" stroke-width="1.2"/>
+                                <text x="535" y="250" fill="#ffd9a3" font-size="12" font-weight="700" text-anchor="middle">Executor 2 (JVM)</text>
+                                <g id="spark-task-2" class="stateless-fn-anim" style="animation-delay:.3s;">
+                                    <rect x="460" y="258" width="150" height="32" rx="6" fill="rgba(245,166,35,0.28)" stroke="#f5a623" stroke-dasharray="3 3"/>
+                                    <text x="535" y="278" fill="#fff" font-size="10" text-anchor="middle">task closure · deserialize</text>
+                                </g>
+                                <g id="spark-task-2b" class="stateless-fn-anim" style="animation-delay:1.0s;">
+                                    <rect x="460" y="296" width="150" height="32" rx="6" fill="rgba(245,166,35,0.28)" stroke="#f5a623" stroke-dasharray="3 3"/>
+                                    <text x="535" y="316" fill="#fff" font-size="10" text-anchor="middle">re-open DB conn 🔌</text>
+                                </g>
                             </g>
-                            <g class="stateless-fn-anim" style="animation-delay:.4s;">
-                                <rect x="380" y="245" width="120" height="58" rx="8" fill="rgba(245,166,35,0.25)" stroke="#f5a623" stroke-dasharray="3 3"/>
-                                <text x="440" y="270" fill="#fff" font-size="11" text-anchor="middle">load model…</text>
-                                <text x="440" y="288" fill="#ffd9a3" font-size="10" text-anchor="middle">⏳ cold start</text>
+                            <g>
+                                <rect x="640" y="232" width="170" height="120" rx="10" fill="rgba(245,166,35,0.10)" stroke="#f5a623" stroke-width="1.2"/>
+                                <text x="725" y="250" fill="#ffd9a3" font-size="12" font-weight="700" text-anchor="middle">Executor 3 (JVM)</text>
+                                <g id="spark-task-3" class="stateless-fn-anim" style="animation-delay:.5s;">
+                                    <rect x="650" y="258" width="150" height="32" rx="6" fill="rgba(245,166,35,0.28)" stroke="#f5a623" stroke-dasharray="3 3"/>
+                                    <text x="725" y="278" fill="#fff" font-size="10" text-anchor="middle">task closure · deserialize</text>
+                                </g>
+                                <g id="spark-task-3b" class="stateless-fn-anim" style="animation-delay:1.2s;">
+                                    <rect x="650" y="296" width="150" height="32" rx="6" fill="rgba(245,166,35,0.28)" stroke="#f5a623" stroke-dasharray="3 3"/>
+                                    <text x="725" y="316" fill="#fff" font-size="10" text-anchor="middle">no GPU cache ❄</text>
+                                </g>
                             </g>
-                            <g class="stateless-fn-anim" style="animation-delay:.8s;">
-                                <rect x="520" y="245" width="120" height="58" rx="8" fill="rgba(245,166,35,0.25)" stroke="#f5a623" stroke-dasharray="3 3"/>
-                                <text x="580" y="270" fill="#fff" font-size="11" text-anchor="middle">load model…</text>
-                                <text x="580" y="288" fill="#ffd9a3" font-size="10" text-anchor="middle">⏳ cold start</text>
-                            </g>
-                            <text x="700" y="282" fill="#fff" font-size="12">→ 每次都重新初始化</text>
+                            <text x="260" y="372" fill="#ffb95a" font-size="10">⚠ task 不持有状态 → 每次 stage 都要重新反序列化、重新加载模型/连接</text>
                         </svg>
                         <div class="arch-side">
                             <div class="arch-col ray">
@@ -1374,8 +1407,8 @@ for name in ["ray", "spark"]:
                                 <p>大模型权重、GPU 缓存、数据库连接池、向量索引……全部只在首次调用时加载，后续调用毫秒级返回。AI 推理服务最爱的模式。</p>
                             </div>
                             <div class="arch-col spark">
-                                <h5>🟠 函数式无状态 = 每次冷启动</h5>
-                                <p>Spark 的 UDF / Map 函数无法持有状态，模型加载、GPU 上下文、连接建立每次都要重来一遍，难以做高性能 LLM 推理。</p>
+                                <h5>🟠 Spark 模型：Driver + Executor，task closure 无状态</h5>
+                                <p>Spark 没有 Actor 这种"长驻状态对象"。Driver 把代码序列化后下发给 Executor，<b>每个 task 都是一次性的 closure</b>，跑完即扔；模型权重只能靠 <code>broadcast</code> 派发，状态只能写到外部存储 + checkpoint。LLM 推理这种依赖"权重常驻 GPU"的场景天然不友好。</p>
                             </div>
                         </div>
                     </div>
@@ -1789,42 +1822,46 @@ ray.data.read_parquet("s3://...") \
                 workersG.appendChild(t);
             }
 
-            // ---- Spark 侧：4 个 partition，初始位置在 Driver 右侧 ----
+            // ---- Spark 侧：4 个 partition 就地放在 Stage 容器内，做"就地计算 + barrier 等长尾 + shuffle"动画 ----
+            // 真实语义：partition 不会整块搬运，每个 task 在自己的 partition 上原地处理，
+            // 因数据倾斜进度不一致，最快的 task 完成后必须停在 barrier 等最慢的，barrier 通过后才发生 shuffle 进入下一 stage。
+            const stageX = 200, stageY = 264, barW = 380;
             const partitions = [];
-            const partColors = [
-                { fill: 'rgba(245,166,35,0.55)', label: 'partition 0', y: 250, h: 38 },
-                { fill: 'rgba(245,166,35,0.55)', label: 'partition 1', y: 296, h: 32 },
-                { fill: 'rgba(245,166,35,0.55)', label: 'partition 2', y: 332, h: 22 },
-                { fill: 'rgba(245,166,35,0.55)', label: 'partition 3', y: 358, h: 12 },
+            // 每个 partition 给一个不同的 speed，模拟数据倾斜（最后一个故意很慢）
+            const partSpec = [
+                { y: stageY +   0, label: 'partition 0', speed: 1.6 },
+                { y: stageY +  26, label: 'partition 1', speed: 1.2 },
+                { y: stageY +  52, label: 'partition 2', speed: 0.9 },
+                { y: stageY +  78, label: 'partition 3 (skewed)', speed: 0.45 },
             ];
-            const partStartX = 170;
-            const partEndX = 530;  // 抵达 Worker 前
-            partColors.forEach((p, i) => {
-                const g = document.createElementNS(SVG_NS, 'g');
-                const r = document.createElementNS(SVG_NS, 'rect');
-                r.setAttribute('x', partStartX);
-                r.setAttribute('y', p.y);
-                r.setAttribute('width', '100');
-                r.setAttribute('height', p.h);
-                r.setAttribute('rx', '6');
-                r.setAttribute('fill', p.fill);
-                r.setAttribute('stroke', '#f5a623');
-                r.setAttribute('stroke-width', '1.5');
-                g.appendChild(r);
-                if (p.h >= 22) {
-                    const t = document.createElementNS(SVG_NS, 'text');
-                    t.setAttribute('x', partStartX + 50);
-                    t.setAttribute('y', p.y + p.h / 2 + 4);
-                    t.setAttribute('fill', '#fff');
-                    t.setAttribute('font-size', '11');
-                    t.setAttribute('font-weight', '600');
-                    t.setAttribute('text-anchor', 'middle');
-                    t.textContent = p.label;
-                    g.appendChild(t);
-                }
-                partG.appendChild(g);
-                partitions.push({ g, rect: r, baseX: partStartX, y: p.y, h: p.h });
+            partSpec.forEach((p) => {
+                // 进度条底
+                const bg = document.createElementNS(SVG_NS, 'rect');
+                bg.setAttribute('x', stageX); bg.setAttribute('y', p.y);
+                bg.setAttribute('width', barW); bg.setAttribute('height', 18); bg.setAttribute('rx', 4);
+                bg.setAttribute('fill', 'rgba(245,166,35,0.12)');
+                bg.setAttribute('stroke', '#f5a623'); bg.setAttribute('stroke-width', 1);
+                partG.appendChild(bg);
+                // 进度条前景
+                const fg = document.createElementNS(SVG_NS, 'rect');
+                fg.setAttribute('x', stageX); fg.setAttribute('y', p.y);
+                fg.setAttribute('width', 0); fg.setAttribute('height', 18); fg.setAttribute('rx', 4);
+                fg.setAttribute('fill', 'rgba(245,166,35,0.75)');
+                partG.appendChild(fg);
+                // 标签
+                const t = document.createElementNS(SVG_NS, 'text');
+                t.setAttribute('x', stageX + 6); t.setAttribute('y', p.y + 13);
+                t.setAttribute('fill', '#fff'); t.setAttribute('font-size', 10);
+                t.setAttribute('font-weight', 600);
+                t.textContent = p.label;
+                partG.appendChild(t);
+                partitions.push({ fg, speed: p.speed, prog: 0, done: false });
             });
+
+            const barrierLine = document.getElementById('spark-barrier-line');
+            const barrierLabel = document.getElementById('spark-barrier-label');
+            const shuffleG = document.getElementById('spark-shuffle');
+            const statusText = document.getElementById('spark-stage-status');
 
             // ---- Ray 侧：连续不断地飞 dot ----
             const dots = []; // {el, sx, sy, tx, ty, t0, dur}
@@ -1832,10 +1869,10 @@ ray.data.read_parquet("s3://...") \
             let lastSpawn = 0;
             const SPAWN_INTERVAL = 60; // 每 60ms 飞一个 → 每秒 ~16 个
 
-            // ---- Spark 侧：周期性整块迁移（前进-stage barrier 停-到达）----
-            // 一个完整 cycle = 3.6s：0~1.6s 全部从 Driver 移到中段；1.6~2.6s barrier 停顿；2.6~3.4s 移到 Worker；3.4~3.6s 闪一下复位
-            const SPARK_CYCLE = 3600;
-            const cycleStart = performance.now();
+            // Spark 阶段状态机：computing → barrier(等长尾) → shuffle → reset 下一轮
+            let sparkStage = 'computing';
+            let stageT0 = performance.now();
+            let shuffleStart = 0;
 
             function tick(now) {
                 if (!archState.running.scene1) return;
@@ -1871,7 +1908,6 @@ ray.data.read_parquet("s3://...") \
                         dots.splice(i, 1);
                         continue;
                     }
-                    // ease-out
                     const e = 1 - Math.pow(1 - p, 2);
                     const x = d.sx + (d.tx - d.sx) * e;
                     const y = d.sy + (d.ty - d.sy) * e;
@@ -1880,36 +1916,59 @@ ray.data.read_parquet("s3://...") \
                     d.el.setAttribute('opacity', p < 0.1 ? p / 0.1 : (p > 0.9 ? (1 - p) / 0.1 : 1));
                 }
 
-                // ===== Spark partition 整块迁移 =====
-                const sparkPhase = ((now - cycleStart) % SPARK_CYCLE) / SPARK_CYCLE;
-                let sparkX;
-                if (sparkPhase < 0.4) {
-                    // 0~0.4: Driver → 中段
-                    const e = sparkPhase / 0.4;
-                    const ee = 1 - Math.pow(1 - e, 2);
-                    sparkX = partStartX + (380 - partStartX) * ee;  // 380 是中段
-                } else if (sparkPhase < 0.65) {
-                    // 0.4~0.65: barrier 停顿
-                    sparkX = 380;
-                } else if (sparkPhase < 0.95) {
-                    // 0.65~0.95: 中段 → Worker
-                    const e = (sparkPhase - 0.65) / 0.30;
-                    const ee = 1 - Math.pow(1 - e, 2);
-                    sparkX = 380 + (partEndX - 380) * ee;
-                } else {
-                    // 0.95~1: 在 Worker 处停顿（吸收）
-                    sparkX = partEndX;
-                }
-                partitions.forEach((p, idx) => {
-                    p.g.setAttribute('transform', `translate(${sparkX - p.baseX}, 0)`);
-                    // barrier 停顿期闪烁
-                    if (sparkPhase >= 0.4 && sparkPhase < 0.65) {
-                        const flicker = 0.6 + 0.4 * Math.sin((now / 120) + idx);
-                        p.rect.setAttribute('opacity', flicker);
+                // ===== Spark：就地计算 + barrier + shuffle 状态机 =====
+                if (sparkStage === 'computing') {
+                    // 各 partition 按自己的 speed 推进进度（dt 用上一帧近似 16ms）
+                    let allDone = true;
+                    let anyDone = false;
+                    partitions.forEach(p => {
+                        if (!p.done) {
+                            p.prog += p.speed * 0.006; // ~每秒推进 speed*0.36
+                            if (p.prog >= 1) { p.prog = 1; p.done = true; }
+                            else allDone = false;
+                        }
+                        if (p.done) anyDone = true;
+                        p.fg.setAttribute('width', barW * p.prog);
+                        // 完成的 partition 在 barrier 处闪烁（等待长尾）
+                        if (p.done) {
+                            const flicker = 0.55 + 0.45 * Math.sin(now / 130);
+                            p.fg.setAttribute('opacity', flicker);
+                        } else {
+                            p.fg.setAttribute('opacity', 1);
+                        }
+                    });
+                    // barrier 颜色：只要有 task 完成 → 加亮（提示在等其他 task）
+                    if (anyDone) {
+                        barrierLine.setAttribute('opacity', 0.9);
+                        barrierLine.setAttribute('stroke', '#ff7777');
+                        barrierLabel.setAttribute('opacity', 1);
+                        if (statusText) statusText.textContent = '● 长尾 partition 仍在算 → 已完成的 task 卡在 barrier 等待';
+                        if (statusText) statusText.setAttribute('fill', '#ff9b9b');
                     } else {
-                        p.rect.setAttribute('opacity', 1);
+                        barrierLine.setAttribute('opacity', 0.4);
+                        barrierLabel.setAttribute('opacity', 0.4);
+                        if (statusText) { statusText.textContent = '● 计算中（4 个 task 就地处理各自 partition）'; statusText.setAttribute('fill', '#ffb95a'); }
                     }
-                });
+                    if (allDone) {
+                        sparkStage = 'shuffle';
+                        shuffleStart = now;
+                        shuffleG.setAttribute('opacity', 1);
+                        if (statusText) { statusText.textContent = '● Stage 边界 → shuffle：跨节点数据搬运'; statusText.setAttribute('fill', '#ffb95a'); }
+                    }
+                } else if (sparkStage === 'shuffle') {
+                    // shuffle 持续 800ms，箭头闪烁
+                    const sp = (now - shuffleStart) / 800;
+                    shuffleG.setAttribute('opacity', 0.4 + 0.6 * Math.abs(Math.sin(now / 90)));
+                    if (sp >= 1) {
+                        // 进入下一 stage：复位
+                        shuffleG.setAttribute('opacity', 0);
+                        partitions.forEach(p => { p.prog = 0; p.done = false; p.fg.setAttribute('width', 0); p.fg.setAttribute('opacity', 1); });
+                        barrierLine.setAttribute('opacity', 0.4);
+                        barrierLabel.setAttribute('opacity', 0.4);
+                        sparkStage = 'computing';
+                        stageT0 = now;
+                    }
+                }
 
                 archState.raf.scene1 = requestAnimationFrame(tick);
             }
@@ -1919,35 +1978,39 @@ ray.data.read_parquet("s3://...") \
         // ============== 场景 2：Actor 模型 ==============
         function buildScene2() {
             const msgsG = document.getElementById('actor-msgs');
+            const bcastG = document.getElementById('spark-broadcasts');
             if (!msgsG) return;
             msgsG.innerHTML = '';
+            if (bcastG) bcastG.innerHTML = '';
 
             const actors = [
                 { x: 430, y: 80, label: 'A1' },
                 { x: 600, y: 80, label: 'A2' },
                 { x: 770, y: 80, label: 'A3' },
             ];
-            const stateless = [
-                { x: 300, y: 274 },
-                { x: 440, y: 274 },
-                { x: 580, y: 274 },
+            // Spark：3 个 Executor 中心点（与上面 SVG 矩形对齐）
+            const executors = [
+                { x: 345, y: 290, idx: 0 }, // Executor 1
+                { x: 535, y: 290, idx: 1 }, // Executor 2
+                { x: 725, y: 290, idx: 2 }, // Executor 3
             ];
 
             const fromUp = { x: 160, y: 90 };
-            const fromDown = { x: 160, y: 278 };
+            const sparkDriverOut = { x: 160, y: 278 }; // Spark Driver 右出口
 
             const msgs = []; // {el, sx, sy, tx, ty, t0, dur, color, onArrive}
             archState.running.scene2 = true;
             let lastUp = 0;
-            let lastDown = 0;
+            let lastBcast = 0;
             let upCounter = 0;
+            let bcastCounter = 0;
 
-            function makeMsg(parent, color, txt) {
+            function makeMsg(parent, color, txt, fillTextColor) {
                 const g = document.createElementNS(SVG_NS, 'g');
                 const r = document.createElementNS(SVG_NS, 'rect');
-                r.setAttribute('x', '-12');
+                r.setAttribute('x', '-14');
                 r.setAttribute('y', '-9');
-                r.setAttribute('width', '24');
+                r.setAttribute('width', '28');
                 r.setAttribute('height', '18');
                 r.setAttribute('rx', '4');
                 r.setAttribute('fill', color);
@@ -1955,7 +2018,7 @@ ray.data.read_parquet("s3://...") \
                 const t = document.createElementNS(SVG_NS, 'text');
                 t.setAttribute('x', '0');
                 t.setAttribute('y', '4');
-                t.setAttribute('fill', '#0a3a1a');
+                t.setAttribute('fill', fillTextColor || '#0a3a1a');
                 t.setAttribute('font-size', '10');
                 t.setAttribute('font-weight', '700');
                 t.setAttribute('text-anchor', 'middle');
@@ -1965,14 +2028,17 @@ ray.data.read_parquet("s3://...") \
                 return g;
             }
 
-            function flashStateless(idx) {
-                // 让对应 stateless 函数闪一下"重新加载"
-                const all = document.querySelectorAll('.stateless-fn-anim');
-                if (all[idx]) {
-                    all[idx].style.animation = 'none';
-                    void all[idx].offsetWidth;
-                    all[idx].style.animation = 'statelessReload 1.4s ease-in-out infinite';
-                }
+            function flashSparkTask(idx) {
+                // Executor idx 的两条 task closure 同步重启动画
+                ['spark-task-' + (idx + 1), 'spark-task-' + (idx + 1) + 'b'].forEach((id, k) => {
+                    const el = document.getElementById(id);
+                    if (!el) return;
+                    el.style.animation = 'none';
+                    void el.offsetWidth;
+                    const delay = k === 0 ? '0s' : '0.3s';
+                    el.style.animation = 'statelessReload 1.4s ease-in-out infinite';
+                    el.style.animationDelay = delay;
+                });
             }
 
             function tick(now) {
@@ -1982,7 +2048,6 @@ ray.data.read_parquet("s3://...") \
                 if (now - lastUp > 280) {
                     lastUp = now;
                     upCounter++;
-                    // 每 5 次中有 3 次轮询，2 次集中打 A1（突出"复用同一 Actor"）
                     const target = (upCounter % 5 < 2) ? actors[0] : actors[upCounter % actors.length];
                     const el = makeMsg(msgsG, 'rgba(126,255,170,0.95)', 'req');
                     msgs.push({
@@ -1991,16 +2056,17 @@ ray.data.read_parquet("s3://...") \
                     });
                 }
 
-                // ===== Caller → Stateless 函数（持续，~360ms 一发）=====
-                if (now - lastDown > 360) {
-                    lastDown = now;
-                    const idx = Math.floor(Math.random() * stateless.length);
-                    const target = stateless[idx];
-                    const el = makeMsg(msgsG, 'rgba(255,193,124,0.95)', 'req');
+                // ===== Spark Driver → Executor（每 ~520ms 向 3 个 Executor 之一 broadcast）=====
+                if (now - lastBcast > 520) {
+                    lastBcast = now;
+                    bcastCounter++;
+                    const target = executors[bcastCounter % executors.length];
+                    const el = makeMsg(bcastG || msgsG, 'rgba(255,193,124,0.95)', 'task', '#3a1f00');
                     msgs.push({
-                        el, sx: fromDown.x, sy: fromDown.y, tx: target.x, ty: target.y,
-                        t0: now, dur: 700, color: 'down',
-                        onArrive: () => flashStateless(idx),
+                        el, sx: sparkDriverOut.x, sy: sparkDriverOut.y,
+                        tx: target.x, ty: target.y,
+                        t0: now, dur: 750, color: 'down',
+                        onArrive: () => flashSparkTask(target.idx),
                     });
                 }
 
@@ -2255,8 +2321,8 @@ ray.data.read_parquet("s3://...") \
             document.querySelectorAll('.arch-pill').forEach(p => p.classList.toggle('active', p.dataset.scene === sceneId));
             document.querySelectorAll('.arch-scene').forEach(s => s.classList.toggle('active', s.id === sceneId));
             const captionMap = {
-                scene1: '细粒度并行：成百上千个轻量任务流向 8 个 Worker（vs Spark 整块 partition + barrier）',
-                scene2: 'Actor 模型：Caller 反复调用，Actor 内部状态长驻（vs 无状态函数每次冷启动）',
+                scene1: '细粒度并行：成千上万轻量 task 流向 8 个 Worker（vs Spark partition 就地算 + Stage Barrier 等长尾）',
+                scene2: 'Actor 模型：Caller 反复调用 Actor，状态长驻在内存（vs Spark 无 Actor，task closure 每次反序列化重新 load 模型）',
                 scene3: '数据流 DAG：block 级流水线，多阶段同时工作（vs Spark Stage Barrier 一次只跑一个阶段）',
             };
             const cap = document.getElementById('arch-caption');
