@@ -18,7 +18,7 @@ ray_demo/
 │       ├── spark_engine.py    # 本地 Spark 3.5.8 引擎实现
 │       └── __init__.py        # 引擎注册中心 get_engine / list_engines
 ├── static/
-│   └── index.html         # 前端演示页面（4 个 Demo）
+│   └── index.html         # 前端演示页面（4 个实测 Demo + 1 个架构动画）
 └── README.md
 ```
 
@@ -70,6 +70,21 @@ python app.py
 - 同一条流水线（创建 → Map → Filter → 聚合）分别在 Ray Data 和本地 Spark 3.5.8 上各跑一遍
 - 价值点：结果一致性校验、真实耗时对比、引擎抽象（统一 `pipeline()` 接口）
 - 依赖本地 Spark 环境，路径在 `backend/config.py` 的 `SPARK_HOME` 配置
+
+### Demo 5: Ray 架构动画 — 细粒度并行 / Actor 模型 / 数据流
+用 3 段纯前端 SVG 动画把 Ray 区别于 Spark 的核心机制讲清楚（架构师视角）：
+
+- **场景 1 · 细粒度并行**
+  - Ray：Driver 不停往 8 个 Worker 喷射成千上万个轻量 task（毫秒级、可异构调度）
+  - Spark：partition **就地计算**（数据本地性优先，并不"整块迁移"），4 条 task 进度条跑完才在 **Stage Barrier** 处闪烁 shuffle，速度由最慢的 task 决定 → 长尾问题
+- **场景 2 · Actor 模型 vs Spark 无 Actor**
+  - Ray：Caller 反复调用 LLMWorker Actor，模型/GPU/连接 **常驻** 内存
+  - Spark：Driver `broadcast(model)` → 每个 Executor 收到 task closure 都要 **反序列化、重新 load model、重开 DB 连接、无 GPU 缓存**（每次冷启动）
+- **场景 3 · 数据流 DAG vs Stage Barrier**
+  - Ray：block 级流水线，多个 block 并行穿过 Source → Map → Filter → GPU → Sink，下游 GPU 不必等上游完成
+  - Spark：4 个 task 速度不一致（数据倾斜），快 task 提前到 barrier 处"**插旗等待**"，barrier 标签实时显示 `⏸ 我在等… 2/4`，4 个状态圆点指示哪些 task 已到达，**全员到齐才放行进入下一 Stage**。慢 task 决定整体节奏，GPU/下游全部空转 → 直观展示"等长尾"痛点。
+
+> 入口：主界面顶部 Tab 切到 "架构动画"；动画自动循环，可点击 ① / ② / ③ 切换场景。
 
 ## Ray Data vs Spark SQL 详细对比
 
