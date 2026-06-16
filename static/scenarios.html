@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Ray Data 15 场景实验室</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh; padding: 20px;
+        }
+        .container { max-width: 1500px; margin: 0 auto; }
+        .header { text-align: center; color: #fff; margin-bottom: 24px; }
+        .header h1 { font-size: 2.2rem; margin-bottom: 8px; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }
+        .header p { opacity: 0.9; }
+        .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+        .back-btn {
+            display: inline-block; background: rgba(255,255,255,0.9); color: #5a3fc0;
+            padding: 8px 16px; border-radius: 8px; text-decoration: none; font-weight: 600;
+        }
+        .ray-badge { background: rgba(255,255,255,0.2); color: #fff; padding: 6px 14px; border-radius: 20px; font-size: .85rem; }
+        .category { margin: 28px 0 12px; color: #fff; font-size: 1.3rem; font-weight: 700; border-left: 5px solid #fff; padding-left: 12px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); gap: 18px; }
+        .card {
+            background: #fff; border-radius: 14px; padding: 20px;
+            box-shadow: 0 12px 36px rgba(0,0,0,0.22); display: flex; flex-direction: column;
+        }
+        .card h3 { color: #333; font-size: 1.1rem; margin-bottom: 8px; }
+        .card .summary { color: #666; font-size: .9rem; line-height: 1.5; margin-bottom: 12px; }
+        .apis { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+        .api-tag { background: #f0ecff; color: #5a3fc0; font-size: .72rem; padding: 3px 8px; border-radius: 6px; font-family: monospace; }
+        .params { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
+        .params label { color: #555; font-size: .85rem; display: flex; flex-direction: column; gap: 4px; }
+        .params input { width: 130px; padding: 7px; border: 1px solid #ddd; border-radius: 6px; }
+        .run-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; border: none;
+            padding: 10px; border-radius: 8px; font-size: .95rem; font-weight: 600; cursor: pointer; transition: opacity .2s;
+        }
+        .run-btn:hover { opacity: .9; }
+        .run-btn:disabled { opacity: .5; cursor: not-allowed; }
+        .progress-wrap { background: #eee; border-radius: 20px; height: 22px; margin: 12px 0; overflow: hidden; display: none; }
+        .progress-bar {
+            height: 100%; width: 0%; background: linear-gradient(90deg, #43cea2, #185a9d);
+            color: #fff; font-size: .75rem; line-height: 22px; text-align: center; transition: width .3s;
+        }
+        .logs {
+            display: none; background: #1e1e2e; color: #a6e3a1; font-family: monospace; font-size: .78rem;
+            padding: 10px; border-radius: 8px; max-height: 140px; overflow-y: auto; margin-bottom: 10px; white-space: pre-wrap;
+        }
+        .result {
+            display: none; background: #f7f9fc; border: 1px solid #e3e8f0; border-radius: 8px;
+            padding: 12px; font-family: monospace; font-size: .8rem; color: #333;
+            max-height: 260px; overflow: auto; white-space: pre-wrap;
+        }
+        .status-tag { font-size: .78rem; padding: 2px 8px; border-radius: 6px; margin-left: 8px; }
+        .s-running { background: #fff3cd; color: #856404; }
+        .s-completed { background: #d4edda; color: #155724; }
+        .s-failed { background: #f8d7da; color: #721c24; }
+        .tabs { display: flex; gap: 4px; margin: 12px 0 0; border-bottom: 2px solid #eef0f5; }
+        .tab {
+            padding: 7px 14px; cursor: pointer; font-size: .82rem; font-weight: 600; color: #888;
+            border: none; background: none; border-bottom: 2px solid transparent; margin-bottom: -2px;
+        }
+        .tab.active { color: #5a3fc0; border-bottom-color: #5a3fc0; }
+        .tab-panel { display: none; margin-top: 10px; }
+        .tab-panel.active { display: block; }
+        .code {
+            background: #1e1e2e; color: #cdd6f4; font-family: 'SF Mono', Menlo, Consolas, monospace;
+            font-size: .76rem; line-height: 1.55; padding: 14px; border-radius: 8px;
+            max-height: 360px; overflow: auto; white-space: pre; tab-size: 4;
+        }
+        .copy-btn {
+            float: right; background: #5a3fc0; color: #fff; border: none; font-size: .72rem;
+            padding: 4px 10px; border-radius: 6px; cursor: pointer; margin-bottom: 8px;
+        }
+        .copy-btn:hover { opacity: .85; }
+        .info-section {
+            background: #f6f8fb; border-left: 3px solid #6a52e0; border-radius: 6px;
+            padding: 10px 14px; margin-bottom: 10px;
+        }
+        .info-title {
+            font-size: .82rem; font-weight: 600; color: #4a3aa0; margin-bottom: 6px;
+        }
+        .info-body {
+            font-size: .82rem; color: #333; line-height: 1.7; white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .info-vs {
+            background: #fff7ec; border-left-color: #f08b1f;
+        }
+        .info-vs .info-title { color: #b85f05; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="topbar">
+            <a class="back-btn" href="/">← 返回主页</a>
+            <span class="ray-badge" id="ray-badge">Ray Data 场景实验室</span>
+        </div>
+        <div class="header">
+            <h1>Ray Data 15 个典型场景实验室</h1>
+            <p>每个场景均可一键执行（本地 CPU 即可跑通），观察进度、日志与关键指标</p>
+        </div>
+        <div id="content">加载场景中...</div>
+    </div>
+
+    <script>
+        const POLL_INTERVAL = 1000;
+
+        async function loadScenarios() {
+            const content = document.getElementById('content');
+            try {
+                const res = await fetch('/api/scenarios');
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const scenarios = await res.json();
+                content.innerHTML = '';
+
+                // 按 category 分组
+                const groups = {};
+                scenarios.forEach(s => {
+                    (groups[s.category] = groups[s.category] || []).push(s);
+                });
+
+                Object.keys(groups).forEach(cat => {
+                    const title = document.createElement('div');
+                    title.className = 'category';
+                    title.textContent = cat;
+                    content.appendChild(title);
+
+                    const grid = document.createElement('div');
+                    grid.className = 'grid';
+                    groups[cat].forEach(s => grid.appendChild(buildCard(s)));
+                    content.appendChild(grid);
+                });
+            } catch (e) {
+                content.innerHTML = '<div style="color:#fff;padding:20px;">' +
+                    '❌ 加载失败: ' + escapeHtml(e.message) + '<br><br>' +
+                    '<button onclick="location.reload()" style="padding:8px 16px;cursor:pointer;">刷新重试</button>' +
+                    '</div>';
+                console.error('loadScenarios error:', e);
+            }
+        }
+
+        function buildCard(s) {
+            const card = document.createElement('div');
+            card.className = 'card';
+
+            const apis = s.ray_apis.map(a => `<span class="api-tag">${escapeHtml(a)}</span>`).join('');
+            const params = s.params.map(p => `
+                <label>${escapeHtml(p.label)}
+                    <input type="${p.type === 'number' ? 'number' : 'text'}"
+                           data-pname="${p.name}" value="${p.default}">
+                </label>`).join('');
+
+            card.innerHTML = `
+                <h3>${escapeHtml(s.title)}<span class="status-tag" id="st-${s.id}"></span></h3>
+                <div class="summary">${escapeHtml(s.summary)}</div>
+                <div class="apis">${apis}</div>
+                <div class="params">${params}</div>
+                <button class="run-btn" id="btn-${s.id}">▶ 执行</button>
+                <div class="tabs">
+                    <button class="tab active" data-tab="run" data-sid="${s.id}">运行结果</button>
+                    <button class="tab" data-tab="info" data-sid="${s.id}">说明</button>
+                    <button class="tab" data-tab="code" data-sid="${s.id}">代码展示</button>
+                </div>
+                <div class="tab-panel active" id="panel-run-${s.id}">
+                    <div class="progress-wrap" id="pw-${s.id}"><div class="progress-bar" id="pb-${s.id}">0%</div></div>
+                    <div class="logs" id="logs-${s.id}"></div>
+                    <div class="result" id="res-${s.id}"></div>
+                </div>
+                <div class="tab-panel" id="panel-info-${s.id}">
+                    <div class="info-section">
+                        <div class="info-title">🎯 测试目的</div>
+                        <div class="info-body" id="purpose-${s.id}"></div>
+                    </div>
+                    <div class="info-section">
+                        <div class="info-title">⚙️ 实现逻辑</div>
+                        <div class="info-body" id="logic-${s.id}"></div>
+                    </div>
+                    <div class="info-section info-vs">
+                        <div class="info-title">⚡ vs Spark 优势</div>
+                        <div class="info-body" id="vs-${s.id}"></div>
+                    </div>
+                </div>
+                <div class="tab-panel" id="panel-code-${s.id}">
+                    <button class="copy-btn" data-sid="${s.id}">复制</button>
+                    <pre class="code" id="code-${s.id}"></pre>
+                </div>
+            `;
+            // 用 textContent 安全赋值源码 + 说明文本，避免特殊字符串触发浏览器解析异常
+            card.querySelector(`#code-${s.id}`).textContent = s.source || '# 源码不可用';
+            card.querySelector(`#purpose-${s.id}`).textContent = s.purpose || '（未填写）';
+            card.querySelector(`#logic-${s.id}`).textContent = s.logic || '（未填写）';
+            card.querySelector(`#vs-${s.id}`).textContent = s.vs_spark || '（未填写）';
+            card.querySelector(`#btn-${s.id}`).addEventListener('click', () => runScenario(s, card));
+            card.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', () => switchTab(card, s.id, tab.dataset.tab));
+            });
+            card.querySelector('.copy-btn').addEventListener('click', (e) => {
+                navigator.clipboard.writeText(s.source || '').then(() => {
+                    const b = e.target; const old = b.textContent;
+                    b.textContent = '已复制'; setTimeout(() => b.textContent = old, 1200);
+                });
+            });
+            return card;
+        }
+
+        function switchTab(card, sid, tab) {
+            card.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+            card.querySelector(`#panel-run-${sid}`).classList.toggle('active', tab === 'run');
+            card.querySelector(`#panel-info-${sid}`).classList.toggle('active', tab === 'info');
+            card.querySelector(`#panel-code-${sid}`).classList.toggle('active', tab === 'code');
+        }
+
+        async function runScenario(s, card) {
+            const btn = card.querySelector(`#btn-${s.id}`);
+            const pw = card.querySelector(`#pw-${s.id}`);
+            const pb = card.querySelector(`#pb-${s.id}`);
+            const logsEl = card.querySelector(`#logs-${s.id}`);
+            const resEl = card.querySelector(`#res-${s.id}`);
+            const stEl = card.querySelector(`#st-${s.id}`);
+
+            // 收集参数
+            const params = {};
+            card.querySelectorAll('input[data-pname]').forEach(inp => {
+                params[inp.dataset.pname] = inp.type === 'number' ? Number(inp.value) : inp.value;
+            });
+
+            btn.disabled = true;
+            switchTab(card, s.id, 'run');
+            pw.style.display = 'block';
+            logsEl.style.display = 'block';
+            resEl.style.display = 'none';
+            logsEl.textContent = '';
+            pb.style.width = '0%'; pb.textContent = '0%';
+            setStatus(stEl, 'running');
+
+            let startRes;
+            try {
+                const r = await fetch(`/api/scenarios/${s.id}/start`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(params)
+                });
+                startRes = await r.json();
+                if (!r.ok) throw new Error(startRes.error || '启动失败');
+            } catch (e) {
+                setStatus(stEl, 'failed');
+                resEl.style.display = 'block';
+                resEl.textContent = '启动失败: ' + e.message;
+                btn.disabled = false;
+                return;
+            }
+
+            poll(startRes.task_id, { btn, pb, logsEl, resEl, stEl });
+        }
+
+        function poll(taskId, els) {
+            const timer = setInterval(async () => {
+                try {
+                    const r = await fetch(`/api/tasks/${taskId}`);
+                    const t = await r.json();
+                    els.pb.style.width = (t.progress || 0) + '%';
+                    els.pb.textContent = (t.progress || 0) + '%';
+                    if (t.logs) els.logsEl.textContent = t.logs.join('\n');
+                    els.logsEl.scrollTop = els.logsEl.scrollHeight;
+
+                    if (t.status === 'completed' || t.status === 'failed') {
+                        clearInterval(timer);
+                        els.btn.disabled = false;
+                        setStatus(els.stEl, t.status);
+                        els.resEl.style.display = 'block';
+                        els.resEl.textContent = t.status === 'completed'
+                            ? JSON.stringify(t.result, null, 2)
+                            : ('执行失败: ' + (t.error || '未知错误'));
+                    }
+                } catch (e) {
+                    clearInterval(timer);
+                    els.btn.disabled = false;
+                    setStatus(els.stEl, 'failed');
+                    els.resEl.style.display = 'block';
+                    els.resEl.textContent = '轮询错误: ' + e.message;
+                }
+            }, POLL_INTERVAL);
+        }
+
+        function setStatus(el, status) {
+            const map = { running: '运行中', completed: '已完成', failed: '失败' };
+            el.className = 'status-tag s-' + status;
+            el.textContent = map[status] || '';
+        }
+
+        function escapeHtml(str) {
+            return String(str).replace(/[&<>"']/g, c => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            }[c]));
+        }
+
+        loadScenarios();
+    </script>
+</body>
+</html>

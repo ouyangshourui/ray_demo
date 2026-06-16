@@ -1,0 +1,6 @@
+ray[default]==2.55.1
+ray[data]==2.55.1
+pandas==2.2.0
+numpy==2.2.0
+flask==3.1.0
+flask-cors==5.0.0
