@@ -179,6 +179,287 @@ table.eco tr { transition: background 0.25s; }
 table.eco tr:hover td { background: rgba(126,255,170,0.06); }
 
 @media (max-width: 720px) { .chapter { padding: 40px 18px; } .chapter-title { font-size: 1.5em; } .chapter-map { display: none; } .top-nav { padding: 10px 14px; } .two-col { grid-template-columns: 1fr; } }
+
+/* ============================================================
+   📖 BOOK MODE · 一本书的样子（覆盖层）
+   ============================================================ */
+html, body { background: radial-gradient(ellipse at top, #1a1538 0%, #0a0a1f 60%, #050511 100%) !important; }
+body::before {
+    /* 桌面木纹底纹 */
+    content: ''; position: fixed; inset: 0; z-index: -2;
+    background-image:
+        repeating-linear-gradient(90deg, rgba(80, 50, 30, 0.05) 0 2px, transparent 2px 80px),
+        radial-gradient(ellipse at 30% 20%, rgba(255,180,100,0.04), transparent 50%),
+        radial-gradient(ellipse at 70% 80%, rgba(126,255,170,0.03), transparent 50%);
+    pointer-events: none;
+}
+body::after {
+    /* 微粒尘埃 */
+    content: ''; position: fixed; inset: 0; z-index: -1;
+    background-image: radial-gradient(circle at 20% 30%, rgba(255,255,255,0.03) 1px, transparent 1px),
+                      radial-gradient(circle at 70% 60%, rgba(255,255,255,0.02) 1px, transparent 1px),
+                      radial-gradient(circle at 40% 80%, rgba(255,255,255,0.02) 1px, transparent 1px);
+    background-size: 240px 240px, 320px 320px, 200px 200px;
+    pointer-events: none; opacity: 0.6;
+}
+
+/* 顶部 nav 改成"书的护封" */
+.top-nav { background: linear-gradient(180deg, rgba(20,12,40,0.95), rgba(10,8,30,0.92)) !important; border-bottom: 1px solid rgba(255,209,102,0.25) !important; box-shadow: 0 4px 30px rgba(0,0,0,0.5); }
+.top-nav h1::before { content: '📖 '; }
+
+/* 进度条改成"金色丝带书签" */
+.progress-bar { height: 5px !important; background: rgba(0,0,0,0.4) !important; }
+.progress-fill { background: linear-gradient(90deg, #ffd166, #ff7eb6, #5ae0ff, #7effaa) !important; box-shadow: 0 0 18px rgba(255,209,102,0.6) !important; }
+
+/* 章节列表（左侧书签栏） */
+.chapter-map { right: 14px !important; gap: 10px !important; padding: 14px 8px; background: linear-gradient(180deg, rgba(255,209,102,0.08), rgba(255,126,182,0.04)); border: 1px solid rgba(255,209,102,0.2); border-radius: 14px; backdrop-filter: blur(8px); }
+.chapter-dot { width: 14px !important; height: 14px !important; border-radius: 3px !important; background: rgba(255,255,255,0.2) !important; position: relative; }
+.chapter-dot.active { background: #ffd166 !important; box-shadow: 0 0 14px #ffd166, 0 0 28px rgba(255,209,102,0.4) !important; }
+.chapter-dot.active::before { content: ''; position: absolute; right: -7px; top: 50%; width: 0; height: 0; border-top: 6px solid transparent; border-bottom: 6px solid transparent; border-left: 7px solid #ffd166; transform: translateY(-50%); }
+
+/* —— 核心：把每个 .chapter 改成书页 —— */
+.chapter {
+    position: relative;
+    background: linear-gradient(135deg, rgba(28,22,55,0.96), rgba(20,16,42,0.98)) !important;
+    border-radius: 6px !important;
+    padding: 70px 60px 80px !important;
+    margin: 50px auto !important;
+    max-width: 1100px !important;
+    box-shadow:
+        /* 书页主阴影 */
+        0 30px 80px rgba(0,0,0,0.6),
+        0 10px 30px rgba(0,0,0,0.4),
+        /* 装订线（左侧深阴影） */
+        inset 24px 0 30px -22px rgba(0,0,0,0.7),
+        /* 边缘金边 */
+        0 0 0 1px rgba(255,209,102,0.18),
+        /* 书页折痕高光 */
+        inset 0 1px 0 rgba(255,255,255,0.04);
+    border-top: 2px solid rgba(255,209,102,0.18);
+    border-bottom: 2px solid rgba(0,0,0,0.4);
+    transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.5s;
+}
+.chapter:hover {
+    transform: translateY(-3px);
+    box-shadow:
+        0 40px 100px rgba(0,0,0,0.7),
+        0 14px 40px rgba(0,0,0,0.5),
+        inset 24px 0 30px -22px rgba(0,0,0,0.7),
+        0 0 0 1px rgba(255,209,102,0.35),
+        inset 0 1px 0 rgba(255,255,255,0.06);
+}
+/* 装订线（左侧细线） */
+.chapter::before {
+    content: ''; position: absolute; left: 30px; top: 30px; bottom: 30px; width: 1px;
+    background: linear-gradient(180deg, transparent, rgba(255,209,102,0.35), rgba(255,209,102,0.15), transparent);
+    pointer-events: none;
+}
+/* 右下翻页角折痕 */
+.chapter::after {
+    content: ''; position: absolute; right: 0; bottom: 0; width: 42px; height: 42px;
+    background: linear-gradient(135deg, transparent 50%, rgba(255,209,102,0.18) 50%, rgba(255,209,102,0.35) 75%, transparent 75%);
+    border-bottom-right-radius: 6px;
+    pointer-events: none;
+    transition: width 0.3s, height 0.3s;
+}
+.chapter:hover::after { width: 56px; height: 56px; }
+
+/* 页眉：章节标签 + 页码 */
+.page-header {
+    position: absolute; top: 18px; left: 60px; right: 60px;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 0.78em; letter-spacing: 0.18em; color: rgba(255,209,102,0.55);
+    text-transform: uppercase; font-weight: 600;
+    border-bottom: 1px solid rgba(255,209,102,0.12);
+    padding-bottom: 8px;
+    pointer-events: none;
+}
+.page-header .ph-left { display: flex; align-items: center; gap: 8px; }
+.page-header .ph-left::before { content: ''; width: 16px; height: 1px; background: rgba(255,209,102,0.5); }
+.page-header .ph-right { display: flex; align-items: center; gap: 8px; }
+.page-header .ph-right::after { content: ''; width: 16px; height: 1px; background: rgba(255,209,102,0.5); }
+
+/* 页脚：页码 */
+.page-footer {
+    position: absolute; bottom: 22px; left: 60px; right: 60px;
+    display: flex; justify-content: center; align-items: center; gap: 18px;
+    font-size: 0.85em; color: rgba(255,209,102,0.5); font-family: 'Georgia', serif;
+    pointer-events: none;
+}
+.page-footer .pf-num { font-weight: 700; font-size: 1.1em; color: rgba(255,209,102,0.85); }
+.page-footer .pf-deco { color: rgba(255,209,102,0.3); letter-spacing: 0.4em; }
+
+/* 章节标题升级为"书章式" */
+.chapter-header { padding-left: 24px !important; border-left-color: #ffd166 !important; border-left-width: 5px !important; position: relative; }
+.chapter-header::before {
+    content: '❦'; position: absolute; left: -32px; top: 50%; transform: translateY(-50%);
+    color: rgba(255,209,102,0.5); font-size: 1.4em;
+}
+.chapter-num { color: #ffd166 !important; font-family: 'Georgia', serif; font-style: italic; }
+.chapter-title { font-family: 'Georgia', 'PingFang SC', serif !important; }
+
+/* 翻页器 */
+.page-turner {
+    display: flex; justify-content: space-between; align-items: center; gap: 14px;
+    margin-top: 30px; padding: 18px 24px;
+    background: linear-gradient(135deg, rgba(255,209,102,0.06), rgba(255,126,182,0.04));
+    border: 1px solid rgba(255,209,102,0.25); border-radius: 12px;
+}
+.page-turner a {
+    flex: 1; max-width: 280px;
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 16px; border-radius: 8px;
+    text-decoration: none; font-weight: 600;
+    background: rgba(0,0,0,0.3); color: #e8eeff;
+    border: 1px solid rgba(255,255,255,0.08);
+    transition: all 0.3s;
+}
+.page-turner a:hover { background: rgba(255,209,102,0.15); color: #ffd166; border-color: rgba(255,209,102,0.5); transform: translateY(-2px); }
+.page-turner a.prev { justify-content: flex-start; }
+.page-turner a.next { justify-content: flex-end; }
+.page-turner a.toc { flex: 0 0 auto; max-width: 120px; justify-content: center; background: rgba(255,209,102,0.12); color: #ffd166; }
+.page-turner .pt-label { font-size: 0.72em; opacity: 0.6; letter-spacing: 0.1em; text-transform: uppercase; display: block; }
+.page-turner .pt-title { font-size: 0.95em; }
+.page-turner a.disabled { opacity: 0.3; pointer-events: none; }
+
+/* 封面页 */
+.book-cover {
+    min-height: 92vh !important;
+    padding: 80px 60px !important;
+    margin: 30px auto 50px !important;
+    background:
+        radial-gradient(ellipse at center, rgba(255,209,102,0.18), transparent 60%),
+        linear-gradient(135deg, #2a1f60 0%, #1a1238 50%, #0d0825 100%) !important;
+    border: 2px solid rgba(255,209,102,0.4) !important;
+    box-shadow:
+        0 40px 100px rgba(0,0,0,0.7),
+        inset 0 0 80px rgba(255,209,102,0.06),
+        inset 24px 0 40px -28px rgba(0,0,0,0.85),
+        0 0 0 1px rgba(255,209,102,0.3) !important;
+    display: flex !important; flex-direction: column; justify-content: center; align-items: center;
+    text-align: center; position: relative; overflow: hidden;
+}
+.book-cover::before {
+    /* 封面金色装饰边框 */
+    content: ''; position: absolute; inset: 30px;
+    border: 1px solid rgba(255,209,102,0.35);
+    border-radius: 4px; pointer-events: none;
+}
+.book-cover::after {
+    /* 闪光粒子 */
+    content: ''; position: absolute; inset: 0;
+    background:
+        radial-gradient(circle at 15% 20%, rgba(255,209,102,0.6) 1px, transparent 2px),
+        radial-gradient(circle at 80% 30%, rgba(126,255,170,0.4) 1px, transparent 2px),
+        radial-gradient(circle at 25% 75%, rgba(90,224,255,0.4) 1px, transparent 2px),
+        radial-gradient(circle at 75% 80%, rgba(255,126,182,0.5) 1px, transparent 2px);
+    pointer-events: none; opacity: 0.7;
+    animation: coverSparkle 8s ease-in-out infinite;
+}
+@keyframes coverSparkle { 0%, 100% { opacity: 0.4; } 50% { opacity: 0.9; } }
+.book-cover .cover-eyebrow { font-size: 0.95em; letter-spacing: 0.5em; color: #ffd166; font-weight: 600; margin-bottom: 28px; text-transform: uppercase; }
+.book-cover .cover-title {
+    font-size: 4em; font-weight: 800; line-height: 1.15;
+    background: linear-gradient(90deg, #ffd166, #ff7eb6, #5ae0ff, #7effaa, #ffd166);
+    background-size: 200% 100%;
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+    animation: bgShift 6s ease infinite;
+    font-family: 'Georgia', 'PingFang SC', serif;
+    margin-bottom: 18px;
+    text-shadow: 0 0 60px rgba(255,209,102,0.3);
+}
+.book-cover .cover-subtitle { font-size: 1.4em; color: #e0e8ff; font-style: italic; margin-bottom: 12px; font-family: 'Georgia', serif; }
+.book-cover .cover-tagline { font-size: 1em; color: #a0b0e0; max-width: 600px; line-height: 1.8; margin: 28px auto; }
+.book-cover .cover-divider { width: 80px; height: 2px; background: linear-gradient(90deg, transparent, #ffd166, transparent); margin: 20px auto; }
+.book-cover .cover-meta {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 16px; max-width: 720px; margin: 30px auto 0;
+}
+.book-cover .cover-meta-item {
+    background: rgba(0,0,0,0.4); border: 1px solid rgba(255,209,102,0.2);
+    padding: 14px 18px; border-radius: 8px;
+}
+.book-cover .cover-meta-item .k { font-size: 0.75em; color: #ffd166; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 4px; }
+.book-cover .cover-meta-item .v { font-size: 1.05em; color: #fff; font-weight: 700; }
+.book-cover .cover-author {
+    margin-top: 36px; padding-top: 24px; border-top: 1px solid rgba(255,209,102,0.2);
+    color: #b0b8d8; font-size: 0.95em; font-style: italic;
+}
+.book-cover .cover-cta {
+    margin-top: 30px;
+    display: inline-block; padding: 14px 36px;
+    background: linear-gradient(135deg, #ffd166, #ff7eb6);
+    color: #1a0f00; font-weight: 800; text-decoration: none;
+    border-radius: 30px; font-size: 1.05em; letter-spacing: 0.05em;
+    box-shadow: 0 10px 30px rgba(255,209,102,0.4);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+.book-cover .cover-cta:hover { transform: translateY(-3px) scale(1.04); box-shadow: 0 16px 40px rgba(255,209,102,0.6); }
+
+/* 目录页 */
+.book-toc {
+    padding: 60px !important;
+    margin: 30px auto !important;
+}
+.book-toc h2 {
+    text-align: center; font-family: 'Georgia', serif;
+    font-size: 2.4em; color: #ffd166; margin-bottom: 12px;
+    letter-spacing: 0.2em;
+}
+.book-toc .toc-sub { text-align: center; color: #a0b0e0; font-style: italic; margin-bottom: 36px; font-size: 1em; }
+.book-toc .toc-divider { width: 100px; height: 2px; background: linear-gradient(90deg, transparent, #ffd166, transparent); margin: 0 auto 36px; }
+.book-toc ol { list-style: none; counter-reset: toc-counter; padding: 0; max-width: 760px; margin: 0 auto; }
+.book-toc ol li {
+    counter-increment: toc-counter;
+    display: flex; align-items: baseline; padding: 12px 0;
+    border-bottom: 1px dashed rgba(255,209,102,0.15);
+    transition: padding-left 0.3s, color 0.3s;
+}
+.book-toc ol li:hover { padding-left: 12px; }
+.book-toc ol li::before {
+    content: counter(toc-counter, decimal-leading-zero);
+    font-family: 'Georgia', serif; font-style: italic;
+    color: #ffd166; font-size: 1.1em; font-weight: 700;
+    min-width: 50px;
+}
+.book-toc ol li a {
+    flex: 1; color: #e8eeff; text-decoration: none;
+    font-size: 1.05em; padding: 0 12px;
+    transition: color 0.2s;
+}
+.book-toc ol li a:hover { color: #ffd166; }
+.book-toc ol li .toc-page {
+    color: #ffd166; font-family: 'Georgia', serif;
+    font-weight: 700; min-width: 40px; text-align: right;
+    opacity: 0.7;
+}
+.book-toc ol li .toc-dots {
+    flex: 1; border-bottom: 1px dotted rgba(255,209,102,0.25);
+    margin: 0 8px; transform: translateY(-4px);
+}
+
+/* 进度提示文字 */
+.read-progress {
+    position: fixed; bottom: 24px; left: 24px; z-index: 50;
+    background: rgba(20,12,40,0.92); backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,209,102,0.3);
+    border-radius: 24px; padding: 8px 18px;
+    font-size: 0.85em; color: #ffd166;
+    font-family: 'Georgia', serif; letter-spacing: 0.05em;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    display: flex; align-items: center; gap: 10px;
+}
+.read-progress::before { content: '📖'; }
+
+@media (max-width: 720px) {
+    .chapter { padding: 60px 24px 70px !important; margin: 24px auto !important; }
+    .page-header, .page-footer { left: 24px; right: 24px; }
+    .book-cover .cover-title { font-size: 2.4em !important; }
+    .book-cover { padding: 50px 28px !important; }
+    .page-turner { flex-direction: column; }
+    .page-turner a { max-width: 100% !important; }
+    .read-progress { left: 12px; bottom: 12px; font-size: 0.78em; padding: 6px 12px; }
+}
 </style>
 </head>
 <body>
@@ -195,6 +476,36 @@ table.eco tr:hover td { background: rgba(126,255,170,0.06); }
     </div>
 </nav>
 <aside class="chapter-map" id="chapter-map"></aside>
+<div class="read-progress" id="read-progress">第 1 / 14 页</div>
+
+<!-- ============ 封面 ============ -->
+<section class="chapter book-cover" id="cover" data-title="封面" data-skip-pagination="1">
+    <div class="cover-eyebrow">A Pre-Sales Architect's Field Manual</div>
+    <h1 class="cover-title">Ray 架构 · 售前手册</h1>
+    <div class="cover-divider"></div>
+    <div class="cover-subtitle">"星图档案"百万图智能识别工程</div>
+    <p class="cover-tagline">
+        从 14 天到 4 小时的鸿沟跨越 ——<br>
+        一名资深大数据售前架构师，<br>
+        如何用 11 章故事，把 Ray 装配进客户场景。
+    </p>
+    <div class="cover-meta">
+        <div class="cover-meta-item"><div class="k">章节</div><div class="v">11 章 + 尾声</div></div>
+        <div class="cover-meta-item"><div class="k">数据规模</div><div class="v">100 万图</div></div>
+        <div class="cover-meta-item"><div class="k">提速比</div><div class="v">84×</div></div>
+        <div class="cover-meta-item"><div class="k">集群</div><div class="v">8 GPU + 16 CPU</div></div>
+    </div>
+    <div class="cover-author">基于 Ray 2.x · 参考 OSDI 2018 论文 & Ray v2 Whitepaper</div>
+    <a href="#book-toc" class="cover-cta">翻开目录 →</a>
+</section>
+
+<!-- ============ 目录 ============ -->
+<section class="chapter book-toc" id="book-toc" data-title="目录" data-skip-pagination="1">
+    <h2>目 录</h2>
+    <div class="toc-sub">CONTENTS · 售前推进项目的 11 章故事线</div>
+    <div class="toc-divider"></div>
+    <ol id="toc-list"></ol>
+</section>
 
 <!-- ============ 项目开篇 · 售前架构师视角 ============ -->
 <section class="chapter" id="ch-0" data-title="项目档案" style="min-height:auto; padding-top:40px; padding-bottom:20px;">
@@ -1783,11 +2094,66 @@ ray.<span class="fn">init</span>(address=<span class="str">'auto'</span>)
 </section>
 
 <script>
-// 进度条 + chapter dots
-const chapters = document.querySelectorAll('.chapter');
+// =============== 📖 一本书模式 · 页眉/页脚/翻页/目录 ===============
+const allSections = Array.from(document.querySelectorAll('.chapter'));
+// 主章节（不含封面、目录），用于编页码
+const pages = allSections.filter(s => !s.dataset.skipPagination);
+const totalPages = pages.length;
+
+// 生成页眉/页脚/翻页器
+pages.forEach((ch, i) => {
+    const num = i + 1;
+    const title = ch.dataset.title || ch.id;
+    const prev = pages[i - 1];
+    const next = pages[i + 1];
+
+    // 页眉
+    const header = document.createElement('div');
+    header.className = 'page-header';
+    header.innerHTML = `<span class="ph-left">RAY · 售前手册</span><span class="ph-right">${title}</span>`;
+    ch.prepend(header);
+
+    // 页脚
+    const footer = document.createElement('div');
+    footer.className = 'page-footer';
+    footer.innerHTML = `<span class="pf-deco">···</span><span class="pf-num">— ${num} —</span><span class="pf-deco">···</span>`;
+    ch.appendChild(footer);
+
+    // 翻页器（在 next-chapter 已存在则跳过，避免重复）
+    const turner = document.createElement('nav');
+    turner.className = 'page-turner';
+    const prevHref = prev ? '#' + prev.id : '#book-toc';
+    const prevTitle = prev ? prev.dataset.title : '返回目录';
+    const nextHref = next ? '#' + next.id : '#cover';
+    const nextTitle = next ? next.dataset.title : '回到封面';
+    turner.innerHTML = `
+        <a href="${prevHref}" class="prev"><span>←</span><span><span class="pt-label">上一页</span><span class="pt-title">${prevTitle}</span></span></a>
+        <a href="#book-toc" class="toc">📑 目录</a>
+        <a href="${nextHref}" class="next"><span><span class="pt-label">下一页</span><span class="pt-title">${nextTitle}</span></span><span>→</span></a>
+    `;
+    ch.appendChild(turner);
+});
+
+// 生成目录页
+const tocList = document.getElementById('toc-list');
+if (tocList) {
+    pages.forEach((ch, i) => {
+        const li = document.createElement('li');
+        const num = String(i + 1).padStart(2, '0');
+        li.innerHTML = `
+            <a href="#${ch.id}">${ch.dataset.title || ch.id}</a>
+            <span class="toc-dots"></span>
+            <span class="toc-page">${num}</span>
+        `;
+        tocList.appendChild(li);
+    });
+}
+
+// 右侧书签栏（所有 section 都加，含封面/目录）
 const map = document.getElementById('chapter-map');
 const fill = document.getElementById('progress-fill');
-chapters.forEach(ch => {
+const readProg = document.getElementById('read-progress');
+allSections.forEach(ch => {
     const dot = document.createElement('a');
     dot.href = '#' + ch.id;
     dot.className = 'chapter-dot';
@@ -1795,19 +2161,48 @@ chapters.forEach(ch => {
     map.appendChild(dot);
 });
 const dots = document.querySelectorAll('.chapter-dot');
+
 function onScroll() {
     const scrolled = window.scrollY;
     const total = document.documentElement.scrollHeight - window.innerHeight;
     fill.style.width = (scrolled / total * 100) + '%';
-    let active = 0;
-    chapters.forEach((ch, i) => {
+    let activeIdx = 0;
+    let activePageIdx = 0;
+    allSections.forEach((ch, i) => {
         const r = ch.getBoundingClientRect();
-        if (r.top < window.innerHeight * 0.4) active = i;
+        if (r.top < window.innerHeight * 0.4) activeIdx = i;
     });
-    dots.forEach((d, i) => d.classList.toggle('active', i === active));
+    pages.forEach((ch, i) => {
+        const r = ch.getBoundingClientRect();
+        if (r.top < window.innerHeight * 0.4) activePageIdx = i;
+    });
+    dots.forEach((d, i) => d.classList.toggle('active', i === activeIdx));
+
+    // 进度文案
+    const cur = allSections[activeIdx];
+    if (cur && cur.dataset.skipPagination) {
+        readProg.textContent = cur.dataset.title || '封面';
+    } else {
+        readProg.textContent = `第 ${activePageIdx + 1} / ${totalPages} 页 · ${pages[activePageIdx].dataset.title}`;
+    }
 }
 window.addEventListener('scroll', onScroll, { passive: true });
 onScroll();
+
+// 翻页快捷键 ← / →
+document.addEventListener('keydown', (e) => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    let curIdx = 0;
+    allSections.forEach((ch, i) => {
+        const r = ch.getBoundingClientRect();
+        if (r.top < window.innerHeight * 0.4) curIdx = i;
+    });
+    if (e.key === 'ArrowRight' && curIdx < allSections.length - 1) {
+        allSections[curIdx + 1].scrollIntoView({ behavior: 'smooth' });
+    } else if (e.key === 'ArrowLeft' && curIdx > 0) {
+        allSections[curIdx - 1].scrollIntoView({ behavior: 'smooth' });
+    }
+});
 </script>
 </body>
 </html>
