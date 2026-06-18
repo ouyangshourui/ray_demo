@@ -88,6 +88,12 @@ def cards_page():
     })
 
 
+@app.route('/architecture')
+def architecture_page():
+    """Ray 架构深入浅出 9 章教程子页面（M1-D5 落地）"""
+    return app.send_static_file('architecture.html')
+
+
 def init_ray():
     """初始化 Ray
 
