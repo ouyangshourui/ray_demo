@@ -460,6 +460,192 @@ body::after {
     .page-turner a { max-width: 100% !important; }
     .read-progress { left: 12px; bottom: 12px; font-size: 0.78em; padding: 6px 12px; }
 }
+
+/* ============================================================
+   📖 FLIP MODE · 左右翻阅（像真实书一样）
+   ============================================================ */
+.flip-toggle {
+    position: fixed; top: 70px; right: 18px; z-index: 60;
+    background: linear-gradient(135deg, rgba(255,209,102,0.18), rgba(255,126,182,0.12));
+    border: 1px solid rgba(255,209,102,0.45);
+    color: #ffd166; font-weight: 700; font-size: 0.85em;
+    padding: 9px 16px; border-radius: 22px; cursor: pointer;
+    backdrop-filter: blur(8px); letter-spacing: 0.05em;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+    transition: all 0.3s;
+    user-select: none;
+}
+.flip-toggle:hover { background: linear-gradient(135deg, rgba(255,209,102,0.3), rgba(255,126,182,0.2)); transform: translateY(-2px); box-shadow: 0 10px 28px rgba(255,209,102,0.3); }
+.flip-toggle::before { content: '📖 '; }
+body.flip-mode .flip-toggle::before { content: '📜 '; }
+
+/* —— 翻书模式 —— */
+body.flip-mode { overflow: hidden !important; height: 100vh; }
+body.flip-mode .top-nav { z-index: 80; }
+body.flip-mode .progress-bar { z-index: 81; }
+body.flip-mode .chapter-map { display: none !important; }
+body.flip-mode .read-progress { bottom: 18px; left: 50%; transform: translateX(-50%); }
+
+/* 翻书舞台 */
+.flip-stage {
+    display: none;
+    position: fixed; inset: 0;
+    perspective: 2400px;
+    perspective-origin: center center;
+    z-index: 10;
+    background:
+        radial-gradient(ellipse at center, rgba(255,209,102,0.04), transparent 60%),
+        radial-gradient(ellipse at top, #1a1538 0%, #0a0a1f 60%, #050511 100%);
+}
+body.flip-mode .flip-stage { display: block; }
+
+/* 进入翻书模式后，章节定位到舞台中央 */
+body.flip-mode .chapter {
+    position: absolute !important;
+    top: 60px !important; left: 50% !important;
+    width: min(92vw, 1100px) !important;
+    height: calc(100vh - 100px) !important;
+    margin: 0 !important;
+    max-width: none !important;
+    transform: translateX(-50%);
+    overflow-y: auto;
+    overflow-x: hidden;
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
+    transform-origin: left center;
+    transition: transform 0.85s cubic-bezier(0.55, 0.05, 0.35, 1), opacity 0.3s, box-shadow 0.85s;
+    will-change: transform;
+}
+/* 默认全部隐到右侧外（待翻入） */
+body.flip-mode .chapter {
+    transform: translateX(-50%) translateZ(-200px);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 1;
+}
+/* 当前页：正面朝读者 */
+body.flip-mode .chapter.flip-current {
+    transform: translateX(-50%) translateZ(0) rotateY(0deg);
+    opacity: 1;
+    pointer-events: auto;
+    z-index: 20;
+    box-shadow:
+        0 50px 120px rgba(0,0,0,0.75),
+        0 20px 60px rgba(0,0,0,0.55),
+        inset 24px 0 30px -22px rgba(0,0,0,0.7),
+        0 0 0 1px rgba(255,209,102,0.3),
+        inset 0 1px 0 rgba(255,255,255,0.04);
+}
+/* 已翻过去的（左侧） */
+body.flip-mode .chapter.flip-prev {
+    transform: translateX(-50%) translateZ(-100px) rotateY(-160deg);
+    opacity: 0;
+    z-index: 5;
+}
+/* 即将翻来的（右侧待入） */
+body.flip-mode .chapter.flip-next {
+    transform: translateX(-50%) translateZ(-150px);
+    opacity: 0;
+    z-index: 4;
+}
+
+/* 翻页方向：向后翻（next） */
+body.flip-mode .chapter.flipping-out-left {
+    transform: translateX(-50%) translateZ(-100px) rotateY(-160deg) !important;
+    opacity: 0;
+    transition: transform 0.85s cubic-bezier(0.55, 0.05, 0.35, 1), opacity 0.5s ease 0.35s !important;
+    z-index: 15;
+}
+body.flip-mode .chapter.flipping-in-from-right {
+    transform: translateX(-50%) translateZ(0) rotateY(0deg) !important;
+    opacity: 1 !important;
+    transition: transform 0.85s cubic-bezier(0.55, 0.05, 0.35, 1), opacity 0.4s !important;
+    z-index: 20;
+    animation: pageInRight 0.85s cubic-bezier(0.55, 0.05, 0.35, 1);
+}
+@keyframes pageInRight {
+    0% { transform: translateX(-50%) translateZ(-150px) rotateY(0deg); opacity: 0; }
+    30% { opacity: 1; }
+    100% { transform: translateX(-50%) translateZ(0) rotateY(0deg); opacity: 1; }
+}
+
+/* 翻页方向：向前翻（prev） */
+body.flip-mode .chapter.flipping-out-right {
+    transform: translateX(-50%) translateZ(-150px) !important;
+    opacity: 0 !important;
+    transition: transform 0.85s cubic-bezier(0.55, 0.05, 0.35, 1), opacity 0.5s !important;
+    z-index: 15;
+}
+body.flip-mode .chapter.flipping-in-from-left {
+    transform: translateX(-50%) translateZ(0) rotateY(0deg) !important;
+    opacity: 1 !important;
+    transition: transform 0.85s cubic-bezier(0.55, 0.05, 0.35, 1), opacity 0.4s !important;
+    z-index: 20;
+    animation: pageInLeft 0.85s cubic-bezier(0.55, 0.05, 0.35, 1);
+}
+@keyframes pageInLeft {
+    0% { transform: translateX(-50%) translateZ(-100px) rotateY(-160deg); opacity: 0; }
+    50% { opacity: 0.6; }
+    100% { transform: translateX(-50%) translateZ(0) rotateY(0deg); opacity: 1; }
+}
+
+/* 左右点击区 */
+.flip-zone {
+    display: none;
+    position: fixed; top: 60px; bottom: 0; width: 12vw;
+    z-index: 30; cursor: pointer;
+    background: linear-gradient(90deg, rgba(255,209,102,0) 0%, rgba(255,209,102,0.04) 100%);
+    transition: background 0.3s;
+}
+body.flip-mode .flip-zone { display: flex; align-items: center; justify-content: center; }
+.flip-zone.left { left: 0; }
+.flip-zone.right { right: 0; background: linear-gradient(270deg, rgba(255,209,102,0) 0%, rgba(255,209,102,0.04) 100%); }
+.flip-zone:hover { background: rgba(255,209,102,0.12) !important; }
+.flip-zone .zone-arrow {
+    font-size: 2.5em; color: rgba(255,209,102,0.4);
+    transition: all 0.3s; opacity: 0;
+}
+.flip-zone:hover .zone-arrow { opacity: 1; color: #ffd166; transform: scale(1.2); text-shadow: 0 0 20px rgba(255,209,102,0.6); }
+.flip-zone.disabled { opacity: 0.2; pointer-events: none; }
+
+/* 左右翻页大按钮（中央） */
+.flip-pager {
+    display: none;
+    position: fixed; bottom: 60px; left: 50%; transform: translateX(-50%);
+    z-index: 70; gap: 16px;
+    background: rgba(20,12,40,0.9); backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,209,102,0.3);
+    border-radius: 30px; padding: 8px 14px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+}
+body.flip-mode .flip-pager { display: flex; align-items: center; }
+.flip-pager button {
+    background: rgba(255,209,102,0.12); border: 1px solid rgba(255,209,102,0.3);
+    color: #ffd166; cursor: pointer; padding: 8px 16px;
+    border-radius: 20px; font-size: 0.92em; font-weight: 600;
+    display: flex; align-items: center; gap: 6px;
+    transition: all 0.2s;
+}
+.flip-pager button:hover:not(:disabled) { background: rgba(255,209,102,0.25); transform: translateY(-1px); }
+.flip-pager button:disabled { opacity: 0.3; cursor: not-allowed; }
+.flip-pager .flip-counter { color: #ffd166; font-family: 'Georgia', serif; font-size: 0.92em; padding: 0 12px; min-width: 90px; text-align: center; letter-spacing: 0.05em; }
+
+/* 翻书模式下隐藏章末翻页器（用顶层的代替） */
+body.flip-mode .page-turner { display: none; }
+
+/* 翻书模式：自定义滚动条 */
+body.flip-mode .chapter::-webkit-scrollbar { width: 6px; }
+body.flip-mode .chapter::-webkit-scrollbar-track { background: transparent; }
+body.flip-mode .chapter::-webkit-scrollbar-thumb { background: rgba(255,209,102,0.3); border-radius: 3px; }
+body.flip-mode .chapter::-webkit-scrollbar-thumb:hover { background: rgba(255,209,102,0.5); }
+
+@media (max-width: 720px) {
+    body.flip-mode .chapter { width: 96vw !important; top: 56px !important; height: calc(100vh - 90px) !important; padding: 50px 18px 60px !important; }
+    .flip-zone { width: 18vw; }
+    .flip-pager { bottom: 12px; padding: 6px 8px; }
+    .flip-pager button { padding: 6px 10px; font-size: 0.8em; }
+    .flip-toggle { top: 60px; right: 10px; padding: 7px 12px; font-size: 0.75em; }
+}
 </style>
 </head>
 <body>
@@ -477,6 +663,17 @@ body::after {
 </nav>
 <aside class="chapter-map" id="chapter-map"></aside>
 <div class="read-progress" id="read-progress">第 1 / 14 页</div>
+
+<!-- 翻书模式控件 -->
+<button class="flip-toggle" id="flip-toggle" title="切换翻书模式 (B)">翻书模式</button>
+<div class="flip-stage" id="flip-stage"></div>
+<div class="flip-zone left" id="flip-zone-left"><span class="zone-arrow">‹</span></div>
+<div class="flip-zone right" id="flip-zone-right"><span class="zone-arrow">›</span></div>
+<div class="flip-pager" id="flip-pager">
+    <button id="flip-prev" title="上一页 (←)">‹ 上一页</button>
+    <span class="flip-counter" id="flip-counter">1 / 15</span>
+    <button id="flip-next" title="下一页 (→)">下一页 ›</button>
+</div>
 
 <!-- ============ 封面 ============ -->
 <section class="chapter book-cover" id="cover" data-title="封面" data-skip-pagination="1">
@@ -2189,9 +2386,10 @@ function onScroll() {
 window.addEventListener('scroll', onScroll, { passive: true });
 onScroll();
 
-// 翻页快捷键 ← / →
+// 翻页快捷键 ← / →（仅滚动模式生效；翻书模式由 FlipBook 自己接管）
 document.addEventListener('keydown', (e) => {
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    if (document.body.classList.contains('flip-mode')) return; // 让翻书模式自己处理
     let curIdx = 0;
     allSections.forEach((ch, i) => {
         const r = ch.getBoundingClientRect();
@@ -2203,6 +2401,197 @@ document.addEventListener('keydown', (e) => {
         allSections[curIdx - 1].scrollIntoView({ behavior: 'smooth' });
     }
 });
+
+// =============== 📖 FLIP BOOK · 左右翻阅模式 ===============
+const FlipBook = (() => {
+    const body = document.body;
+    const stage = document.getElementById('flip-stage');
+    const toggleBtn = document.getElementById('flip-toggle');
+    const zoneL = document.getElementById('flip-zone-left');
+    const zoneR = document.getElementById('flip-zone-right');
+    const btnPrev = document.getElementById('flip-prev');
+    const btnNext = document.getElementById('flip-next');
+    const counter = document.getElementById('flip-counter');
+
+    let currentIdx = 0;
+    let animating = false;
+    let savedScrollY = 0;
+
+    const total = allSections.length;
+
+    // 把章节移到 stage 容器内（通过 CSS 控制位置；这里仅做 class 标记）
+    function applyClasses() {
+        allSections.forEach((ch, i) => {
+            ch.classList.remove('flip-current', 'flip-prev', 'flip-next',
+                'flipping-out-left', 'flipping-out-right',
+                'flipping-in-from-right', 'flipping-in-from-left');
+            if (i === currentIdx) ch.classList.add('flip-current');
+            else if (i < currentIdx) ch.classList.add('flip-prev');
+            else ch.classList.add('flip-next');
+        });
+        updateUI();
+    }
+
+    function updateUI() {
+        counter.textContent = `${currentIdx + 1} / ${total}`;
+        btnPrev.disabled = currentIdx === 0;
+        btnNext.disabled = currentIdx === total - 1;
+        zoneL.classList.toggle('disabled', currentIdx === 0);
+        zoneR.classList.toggle('disabled', currentIdx === total - 1);
+
+        // 同步进度条 + 阅读提示 + 书签
+        fill.style.width = ((currentIdx) / Math.max(1, total - 1) * 100) + '%';
+        const cur = allSections[currentIdx];
+        if (cur.dataset.skipPagination) {
+            readProg.textContent = cur.dataset.title || '封面';
+        } else {
+            const pageIdx = pages.indexOf(cur);
+            readProg.textContent = `第 ${pageIdx + 1} / ${totalPages} 页 · ${cur.dataset.title}`;
+        }
+        dots.forEach((d, i) => d.classList.toggle('active', i === currentIdx));
+        // 当前页滚回顶部
+        cur.scrollTop = 0;
+    }
+
+    function flipTo(targetIdx, dir) {
+        if (animating) return;
+        if (targetIdx < 0 || targetIdx >= total || targetIdx === currentIdx) return;
+        animating = true;
+        const fromCh = allSections[currentIdx];
+        const toCh = allSections[targetIdx];
+
+        // 清除可能残留的 transition class
+        [fromCh, toCh].forEach(c => c.classList.remove('flip-current', 'flip-prev', 'flip-next'));
+
+        if (dir === 'next') {
+            fromCh.classList.add('flipping-out-left');
+            toCh.classList.add('flipping-in-from-right');
+        } else {
+            fromCh.classList.add('flipping-out-right');
+            toCh.classList.add('flipping-in-from-left');
+        }
+
+        setTimeout(() => {
+            currentIdx = targetIdx;
+            animating = false;
+            applyClasses();
+        }, 850);
+    }
+
+    function next() { flipTo(currentIdx + 1, 'next'); }
+    function prev() { flipTo(currentIdx - 1, 'prev'); }
+
+    function findCurrentByScroll() {
+        let idx = 0;
+        allSections.forEach((ch, i) => {
+            const r = ch.getBoundingClientRect();
+            if (r.top < window.innerHeight * 0.4) idx = i;
+        });
+        return idx;
+    }
+
+    function enable() {
+        savedScrollY = window.scrollY;
+        currentIdx = findCurrentByScroll();
+        body.classList.add('flip-mode');
+        // 把 chapter 移到 stage 中保持 transform-origin/perspective 生效
+        allSections.forEach(ch => stage.appendChild(ch));
+        applyClasses();
+        toggleBtn.textContent = '滚动模式';
+        localStorage.setItem('arch-flip-mode', '1');
+    }
+
+    function disable() {
+        body.classList.remove('flip-mode');
+        // 把 chapter 还回原位置（按原顺序追加到 body 中合适位置——直接放回 body 末尾前）
+        const anchor = document.querySelector('.read-progress');
+        // 维持原 DOM 顺序：chapter 们原本在 anchor 之后；用 anchor.parentNode 在 anchor 后面 insertAfter
+        // 但因为已被搬走，这里按数组顺序追加到 body 中（在 stage 之后）
+        allSections.forEach(ch => {
+            ch.classList.remove('flip-current', 'flip-prev', 'flip-next',
+                'flipping-out-left', 'flipping-out-right',
+                'flipping-in-from-right', 'flipping-in-from-left');
+            document.body.insertBefore(ch, document.querySelector('script'));
+        });
+        toggleBtn.textContent = '翻书模式';
+        localStorage.setItem('arch-flip-mode', '0');
+        // 恢复滚动位置到当前页
+        setTimeout(() => {
+            allSections[currentIdx].scrollIntoView({ behavior: 'auto', block: 'start' });
+        }, 50);
+    }
+
+    function toggle() {
+        if (body.classList.contains('flip-mode')) disable();
+        else enable();
+    }
+
+    // 事件绑定
+    toggleBtn.addEventListener('click', toggle);
+    btnNext.addEventListener('click', next);
+    btnPrev.addEventListener('click', prev);
+    zoneR.addEventListener('click', next);
+    zoneL.addEventListener('click', prev);
+
+    document.addEventListener('keydown', (e) => {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+        // B 键切换
+        if (e.key === 'b' || e.key === 'B') {
+            e.preventDefault();
+            toggle();
+            return;
+        }
+        if (!body.classList.contains('flip-mode')) return;
+        if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') {
+            e.preventDefault(); next();
+        } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+            e.preventDefault(); prev();
+        } else if (e.key === 'Home') {
+            e.preventDefault(); flipTo(0, 'prev');
+        } else if (e.key === 'End') {
+            e.preventDefault(); flipTo(total - 1, 'next');
+        } else if (e.key === 'Escape') {
+            disable();
+        }
+    });
+
+    // 触摸滑动（手机）
+    let touchStartX = 0, touchStartY = 0;
+    document.addEventListener('touchstart', (e) => {
+        if (!body.classList.contains('flip-mode')) return;
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+    }, { passive: true });
+    document.addEventListener('touchend', (e) => {
+        if (!body.classList.contains('flip-mode')) return;
+        const dx = e.changedTouches[0].clientX - touchStartX;
+        const dy = e.changedTouches[0].clientY - touchStartY;
+        if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.3) {
+            if (dx < 0) next(); else prev();
+        }
+    }, { passive: true });
+
+    // 锚点跳转拦截：在翻书模式下，#ch-x 链接应触发翻页
+    document.addEventListener('click', (e) => {
+        const a = e.target.closest('a[href^="#"]');
+        if (!a) return;
+        if (!body.classList.contains('flip-mode')) return;
+        const id = a.getAttribute('href').slice(1);
+        const idx = allSections.findIndex(s => s.id === id);
+        if (idx >= 0 && idx !== currentIdx) {
+            e.preventDefault();
+            flipTo(idx, idx > currentIdx ? 'next' : 'prev');
+        }
+    });
+
+    // 初始化：根据 localStorage 决定是否进入翻书模式
+    if (localStorage.getItem('arch-flip-mode') === '1') {
+        // 等所有 DOM 装配完
+        setTimeout(() => enable(), 0);
+    }
+
+    return { enable, disable, toggle, next, prev };
+})();
 </script>
 </body>
 </html>
