@@ -6,6 +6,22 @@
 #   ./start.sh restart   # 强制杀端口后重启
 #   ./start.sh stop      # 仅停止
 #   ./start.sh status    # 查看进程 + 端口
+#
+# 注意：本脚本必须用 bash 执行，不要用 `sh start.sh`！
+#   - macOS 的 /bin/sh 是 POSIX dash 风格，不支持 `local`，且对 `set -u` 更严格
+#   - 历史故障：用户曾用 `sh start.sh` 触发 `pids: unbound variable` + 乱码报错
+#   - 下面的自检会在被 sh/dash 调用时友好提示并自动 re-exec 到 bash
+
+# ---- 自检：保证用 bash 解释 ----
+if [ -z "${BASH_VERSION:-}" ]; then
+    if command -v bash >/dev/null 2>&1; then
+        # 用户用 `sh start.sh` 进来，自动切换到 bash 重新执行
+        exec bash "$0" "$@"
+    else
+        echo "[ERROR] 本脚本需要 bash，未找到 bash，请安装后再试" >&2
+        exit 1
+    fi
+fi
 
 set -u
 
@@ -18,7 +34,7 @@ color_warn(){ printf "\033[33m%s\033[0m\n" "$*"; }
 color_err() { printf "\033[31m%s\033[0m\n" "$*"; }
 
 kill_port() {
-    local pids
+    local pids=""
     pids=$(lsof -ti :"$PORT" 2>/dev/null || true)
     if [ -n "$pids" ]; then
         color_warn "端口 $PORT 被占用，PID: $pids，强制终止..."
@@ -26,7 +42,7 @@ kill_port() {
         kill -9 $pids 2>/dev/null || true
         sleep 1
         # 二次确认
-        local left
+        local left=""
         left=$(lsof -ti :"$PORT" 2>/dev/null || true)
         if [ -n "$left" ]; then
             color_err "端口 $PORT 仍被占用：$left，请手动处理"
@@ -37,7 +53,7 @@ kill_port() {
         color_ok "端口 $PORT 空闲"
     fi
     # 兜底：杀掉残留的同名 app.py 进程（同目录）
-    local app_pids
+    local app_pids=""
     app_pids=$(pgrep -f "python.* $ROOT_DIR/$APP_FILE" 2>/dev/null || true)
     if [ -n "$app_pids" ]; then
         color_warn "发现残留 $APP_FILE 进程：$app_pids，一并清理"
