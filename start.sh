@@ -12,16 +12,30 @@
 #   - 历史故障：用户曾用 `sh start.sh` 触发 `pids: unbound variable` + 乱码报错
 #   - 下面的自检会在被 sh/dash 调用时友好提示并自动 re-exec 到 bash
 
-# ---- 自检：保证用 bash 解释 ----
+# ---- 自检：保证用 bash 解释（且不是 bash 的 sh 模式）----
+# 坑：macOS 的 /bin/sh 其实是 bash 3.2 的 POSIX 模式，BASH_VERSION 仍有值，
+#     单凭 `[ -z "$BASH_VERSION" ]` 判定不出来。这里用三重判定：
+#     1) BASH_VERSION 为空（真 dash/zsh 调用）
+#     2) bash 处于 posix 模式（sh start.sh 触发）
+#     3) $0 以 sh 结尾（兜底）
+_need_reexec=0
 if [ -z "${BASH_VERSION:-}" ]; then
+    _need_reexec=1
+elif set -o 2>/dev/null | grep -q '^posix.*on$'; then
+    _need_reexec=1
+fi
+case "${0##*/}" in
+    sh|*/sh) _need_reexec=1 ;;
+esac
+if [ "$_need_reexec" = "1" ]; then
     if command -v bash >/dev/null 2>&1; then
-        # 用户用 `sh start.sh` 进来，自动切换到 bash 重新执行
         exec bash "$0" "$@"
     else
         echo "[ERROR] 本脚本需要 bash，未找到 bash，请安装后再试" >&2
         exit 1
     fi
 fi
+unset _need_reexec
 
 set -u
 
