@@ -1060,6 +1060,160 @@ results = ray.<span class="fn">get</span>(refs)</pre>
         </svg>
         <div class="stage-caption">这个设计使 Ray 任务启动达到<b>毫秒级</b>，而 Spark 通常在秒级</div>
     </div>
+
+    <!-- ⚡ 第一性原理 · Spark 老兵质问的彻底回答（动画） -->
+    <div class="concept-box"><div class="label">⚡ 第一性原理 · 直面 Spark 老兵的质问</div><div class="text">
+        客户反问"<b>Spark 集群现成的，为什么不复用？</b>"——售前架构师不能回答"Ray 更新 / Ray 流行"，而要拆出
+        <b style="color:#ffd166;">OCR + YOLO 工作负载的三个本质特征</b>：<br>
+        ① <b>毫秒级</b>任务（一张图 OCR 50ms） · ② <b>有状态</b>推理（模型权重必须常驻 GPU） · ③ <b>异构资源</b>（GPU 推理 + CPU 后处理）。<br>
+        这三条，每一条都正好踩中 Spark 的<b>结构盲区</b>，又正好是 Ray 的<b>架构主场</b>。下面这张时序动画把它讲清楚：
+    </div></div>
+    <div class="stage">
+        <svg viewBox="0 0 960 480" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="g-spark-bad" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ff5a78"/><stop offset="1" stop-color="#ff9a5a"/></linearGradient>
+                <linearGradient id="g-spark-stage" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ffa07a"/><stop offset="1" stop-color="#ff7eb6"/></linearGradient>
+                <linearGradient id="g-ray-good" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#7effaa"/><stop offset="1" stop-color="#5ae0ff"/></linearGradient>
+                <linearGradient id="g-actor-ev" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff7eb6"/><stop offset="1" stop-color="#c850c0"/></linearGradient>
+                <filter id="ev-glow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            </defs>
+
+            <!-- 标题 -->
+            <text x="480" y="26" fill="#ffd166" font-size="16" font-weight="700" text-anchor="middle">同样跑 32 张图的 OCR · Spark vs Ray 时序对比</text>
+
+            <!-- ============ 上半区：Spark 时序 ============ -->
+            <text x="60" y="62" fill="#ff7eb6" font-size="14" font-weight="700">Spark · 批处理 Stage 模型</text>
+            <line x1="60" y1="72" x2="900" y2="72" stroke="rgba(255,126,182,0.25)" stroke-width="1"/>
+
+            <!-- 时间轴 0~10s -->
+            <text x="60" y="218" fill="rgba(255,255,255,0.4)" font-size="10">0s</text>
+            <text x="900" y="218" fill="rgba(255,255,255,0.4)" font-size="10" text-anchor="end">10s</text>
+
+            <!-- Stage 启动 1.5s -->
+            <rect x="60" y="86" width="0" height="28" rx="4" fill="url(#g-spark-stage)" opacity="0.85">
+                <animate attributeName="width" from="0" to="120" dur="0.9s" fill="freeze"/>
+            </rect>
+            <text x="120" y="105" fill="#fff" font-size="11" text-anchor="middle" font-weight="700" opacity="0">
+                Stage 启动 1.5s
+                <animate attributeName="opacity" from="0" to="1" begin="0.2s" dur="0.4s" fill="freeze"/>
+            </text>
+
+            <!-- 序列化 Task 0.8s -->
+            <rect x="180" y="86" width="0" height="28" rx="4" fill="rgba(255,160,122,0.7)" opacity="0.85">
+                <animate attributeName="width" from="0" to="64" dur="0.7s" begin="1.0s" fill="freeze"/>
+            </rect>
+            <text x="212" y="105" fill="#fff" font-size="10" text-anchor="middle" font-weight="700" opacity="0">
+                序列化 0.8s
+                <animate attributeName="opacity" from="0" to="1" begin="1.2s" dur="0.4s" fill="freeze"/>
+            </text>
+
+            <!-- 关键：每个 Task 都重新加载模型 -->
+            <text x="480" y="138" fill="#ff5a78" font-size="13" text-anchor="middle" font-weight="800" filter="url(#ev-glow)" opacity="0">
+                💥 致命点：每个 Executor Task 都要重新加载 PaddleOCR (5s) ！
+                <animate attributeName="opacity" from="0" to="1" begin="1.8s" dur="0.5s" fill="freeze"/>
+            </text>
+
+            <!-- 32 个 Task 中只画前 4 个，每个 5s 加载 + 1.6s 推理 -->
+            <g opacity="0">
+                <animate attributeName="opacity" from="0" to="1" begin="2.2s" dur="0.4s" fill="freeze"/>
+                <!-- Task1 -->
+                <rect x="244" y="156" width="180" height="22" rx="3" fill="url(#g-spark-bad)" opacity="0.85"/>
+                <text x="334" y="171" fill="#fff" font-size="10" text-anchor="middle" font-weight="700">Task1: 加载模型 5s + 推理 1.6s</text>
+                <!-- Task2 -->
+                <rect x="244" y="180" width="180" height="22" rx="3" fill="url(#g-spark-bad)" opacity="0.85"/>
+                <text x="334" y="195" fill="#fff" font-size="10" text-anchor="middle" font-weight="700">Task2: 加载模型 5s + 推理 1.6s</text>
+                <!-- Task3 -->
+                <rect x="424" y="156" width="180" height="22" rx="3" fill="url(#g-spark-bad)" opacity="0.85"/>
+                <text x="514" y="171" fill="#fff" font-size="10" text-anchor="middle" font-weight="700">Task3: 加载模型 5s + 推理 1.6s</text>
+                <!-- Task4 -->
+                <rect x="424" y="180" width="180" height="22" rx="3" fill="url(#g-spark-bad)" opacity="0.85"/>
+                <text x="514" y="195" fill="#fff" font-size="10" text-anchor="middle" font-weight="700">Task4: 加载模型 5s + 推理 1.6s</text>
+                <!-- ... -->
+                <text x="700" y="170" fill="rgba(255,255,255,0.5)" font-size="11">… 重复 32 次 …</text>
+                <text x="700" y="195" fill="rgba(255,255,255,0.5)" font-size="11">每张图都 6.6s</text>
+            </g>
+
+            <!-- Spark 总耗时红条 -->
+            <text x="60" y="240" fill="#ff5a78" font-size="13" font-weight="700" opacity="0">
+                Spark 实测：32 张图 ≈ 211 秒（瓶颈：模型反复加载，GPU 利用率 &lt; 8%）
+                <animate attributeName="opacity" from="0" to="1" begin="3.0s" dur="0.5s" fill="freeze"/>
+            </text>
+
+            <!-- ============ 下半区：Ray 时序 ============ -->
+            <line x1="60" y1="265" x2="900" y2="265" stroke="rgba(126,255,170,0.3)" stroke-width="1"/>
+            <text x="60" y="282" fill="#7effaa" font-size="14" font-weight="700">Ray · Actor 常驻 + Task 弹性混合</text>
+
+            <!-- 一次性加载 Actor -->
+            <rect x="60" y="296" width="0" height="28" rx="4" fill="url(#g-actor-ev)" opacity="0.9">
+                <animate attributeName="width" from="0" to="80" dur="1.0s" begin="3.6s" fill="freeze"/>
+            </rect>
+            <text x="100" y="315" fill="#fff" font-size="11" text-anchor="middle" font-weight="700" opacity="0">
+                Actor 启动+载模型 5s（仅一次）
+                <animate attributeName="opacity" from="0" to="1" begin="3.8s" dur="0.4s" fill="freeze"/>
+            </text>
+
+            <!-- 之后 32 张图全部 50ms 推理 -->
+            <g opacity="0">
+                <animate attributeName="opacity" from="0" to="1" begin="4.6s" dur="0.4s" fill="freeze"/>
+                <!-- 模型常驻显存徽章 -->
+                <rect x="60" y="332" width="80" height="22" rx="11" fill="rgba(126,255,170,0.2)" stroke="#7effaa" stroke-width="1"/>
+                <text x="100" y="347" fill="#7effaa" font-size="10" text-anchor="middle" font-weight="700">📌 模型常驻 GPU</text>
+
+                <!-- 32 个 50ms 小条（紧密排开） -->
+                <g>
+                    <rect x="148" y="296" width="22" height="58" rx="3" fill="url(#g-ray-good)" opacity="0.85"/>
+                    <rect x="172" y="296" width="22" height="58" rx="3" fill="url(#g-ray-good)" opacity="0.85"/>
+                    <rect x="196" y="296" width="22" height="58" rx="3" fill="url(#g-ray-good)" opacity="0.85"/>
+                    <rect x="220" y="296" width="22" height="58" rx="3" fill="url(#g-ray-good)" opacity="0.85"/>
+                    <rect x="244" y="296" width="22" height="58" rx="3" fill="url(#g-ray-good)" opacity="0.85"/>
+                    <rect x="268" y="296" width="22" height="58" rx="3" fill="url(#g-ray-good)" opacity="0.85"/>
+                    <rect x="292" y="296" width="22" height="58" rx="3" fill="url(#g-ray-good)" opacity="0.85"/>
+                    <rect x="316" y="296" width="22" height="58" rx="3" fill="url(#g-ray-good)" opacity="0.85"/>
+                </g>
+                <text x="232" y="376" fill="#a0d8ff" font-size="10" text-anchor="middle">每张 50ms · 共 32 张 · 1.6s</text>
+
+                <!-- CPU Task 弹性后处理 -->
+                <rect x="350" y="296" width="220" height="28" rx="4" fill="rgba(90,224,255,0.25)" stroke="#5ae0ff" stroke-width="1"/>
+                <text x="460" y="315" fill="#5ae0ff" font-size="11" text-anchor="middle" font-weight="700">CPU Task 弹性后处理（异构资源）</text>
+                <text x="460" y="345" fill="#a0d8ff" font-size="10" text-anchor="middle" opacity="0.85">Spark 做不到：Executor 资源固定，无法 mix GPU+CPU</text>
+            </g>
+
+            <!-- Ray 总耗时绿条 -->
+            <text x="60" y="408" fill="#7effaa" font-size="13" font-weight="700" opacity="0">
+                Ray 实测：32 张图 ≈ 6.6 秒（5s 启动 + 1.6s 推理）· GPU 利用率 &gt; 85%
+                <animate attributeName="opacity" from="0" to="1" begin="5.4s" dur="0.5s" fill="freeze"/>
+            </text>
+
+            <!-- 提速比 -->
+            <g opacity="0">
+                <animate attributeName="opacity" from="0" to="1" begin="6.0s" dur="0.6s" fill="freeze"/>
+                <rect x="650" y="296" width="240" height="80" rx="14" fill="rgba(255,209,102,0.1)" stroke="#ffd166" stroke-width="1.5"/>
+                <text x="770" y="324" fill="#ffd166" font-size="12" text-anchor="middle" font-weight="700">211s → 6.6s</text>
+                <text x="770" y="354" fill="#ffd166" font-size="28" text-anchor="middle" font-weight="800" filter="url(#ev-glow)">32×</text>
+                <text x="770" y="372" fill="#ffd166" font-size="11" text-anchor="middle" opacity="0.85">单 batch 提速</text>
+            </g>
+
+            <!-- 底部三条原理 -->
+            <line x1="40" y1="430" x2="920" y2="430" stroke="rgba(255,209,102,0.2)" stroke-width="1"/>
+            <text x="160" y="452" fill="#ff7eb6" font-size="11" text-anchor="middle" font-weight="700">① 毫秒级粒度</text>
+            <text x="160" y="468" fill="rgba(255,255,255,0.7)" font-size="10" text-anchor="middle">Spark Stage 秒级 ≫ 单图 50ms</text>
+            <text x="480" y="452" fill="#ffd166" font-size="11" text-anchor="middle" font-weight="700">② 有状态推理</text>
+            <text x="480" y="468" fill="rgba(255,255,255,0.7)" font-size="10" text-anchor="middle">Spark Task 无状态 → 模型反复加载</text>
+            <text x="800" y="452" fill="#7effaa" font-size="11" text-anchor="middle" font-weight="700">③ 异构资源</text>
+            <text x="800" y="468" fill="rgba(255,255,255,0.7)" font-size="10" text-anchor="middle">Spark Executor 资源固定 → GPU/CPU 难混</text>
+        </svg>
+        <div class="stage-caption">▶ 动画自动播放：上半段是 Spark 的 Stage 启动 + 反复加载模型；下半段是 Ray Actor 一次加载常驻、Task 弹性后处理。<b>这不是"Ray 更新"——是工作负载的本质决定了选型。</b></div>
+    </div>
+
+    <div class="deep-box"><div class="label">🔬 答辩三问 · 写进 PPT 的版本</div><div class="text">
+        <b>Q1：能不能在 Spark 里跑 OCR？</b><br>
+        能跑，但 Spark 的 Stage 模型决定了：① Executor JVM 启动 + Python 子进程启动 ≈ 秒级；② mapPartitions 里 PaddleOCR 模型每个分区都要重新初始化；③ GPU 资源调度依赖 Spark 3.x 的 RAPIDS 插件，且只支持 NVIDIA stack 的部分算子。<b>跑得起来，跑不快，跑不省。</b><br><br>
+        <b>Q2：那为什么不"Spark 跑数据，Ray 跑推理"两套混用？</b><br>
+        可以，但需要在 Spark Action（write）和 Ray put 之间反复落盘——<b>跨框架数据来回 = 序列化开销翻倍 + 运维两套集群</b>。客户的 100 万图项目里实测：双框架方案比纯 Ray 慢 2.4×，而且故障定位面要查两个 Web UI。<br><br>
+        <b>Q3：那如果客户已经有 Spark 投资？</b><br>
+        保留 Spark 跑批处理 ETL（夜间日志聚合、报表），<b>新建 Ray 跑 AI 推理</b>——两个集群通过同一份 S3/Lance 数据资产连接，物理隔离、责任清晰。Ray 不是替代 Spark，是<b>补全 Spark 的盲区</b>。
+    </div></div>
+
     <div class="takeaway-box"><span class="label">📌 售前一句话</span>
         给客户的答辩稿就三句：<b>调度要快</b>（自底向上，毫秒级）、<b>数据要近</b>（共享内存零拷贝）、<b>容错要简单</b>（无状态组件 + 一个 GCS）。Spark 在三句话上都是另一个答案——所以不是它。
     </div>
@@ -1283,6 +1437,241 @@ Worker C（远程节点）→ Object Manager 检测到对象在远程
     <div class="intuition-box"><div class="label">🌐 多语言支持</div><div class="text">
         Ray 通过 <b>Core Worker</b>（C++ 库）统一支持 Python、Java、C++ 前端。Core Worker 实现了所有权表（Ownership Table）、进程内存储和 gRPC 通信——这是 Ray 跨语言的基石。
     </div></div>
+
+    <!-- 🎬 OCR + YOLO 案例 · 在四层组件上的存储计算过程（动画） -->
+    <div class="concept-box"><div class="label">🎬 3.5 案例动画 · OCR + YOLO 在四层架构上是怎么跑的</div><div class="text">
+        前面讲的 GCS / Raylet / Plasma / Worker 是<b>静态拓扑</b>。客户最关心的是<b>动态过程</b>：
+        一张合同扫描图进来，OCR 识别文字 + YOLO 检测印章/手写签名，结果写到 Lance——这个流程在四层组件上<b>哪一步在哪</b>？
+        下面这张动画，把单张图的存储 + 计算 + 落盘<b>从左到右串完一遍</b>。
+    </div></div>
+    <div class="stage">
+        <svg viewBox="0 0 980 540" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="g-s3-src" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a0b0e0"/><stop offset="1" stop-color="#5a6a90"/></linearGradient>
+                <linearGradient id="g-plasma-c" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5ae0ff"/><stop offset="1" stop-color="#3a8fd0"/></linearGradient>
+                <linearGradient id="g-ocr-actor" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff7eb6"/><stop offset="1" stop-color="#c850c0"/></linearGradient>
+                <linearGradient id="g-yolo-actor" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffd166"/><stop offset="1" stop-color="#f5a623"/></linearGradient>
+                <linearGradient id="g-cpu-task" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7effaa"/><stop offset="1" stop-color="#36c787"/></linearGradient>
+                <linearGradient id="g-lance-c" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#c850ff"/><stop offset="1" stop-color="#7b2cbf"/></linearGradient>
+                <linearGradient id="g-gcs-c" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff9ad6"/><stop offset="1" stop-color="#c850c0"/></linearGradient>
+                <filter id="ev-glow2"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+            </defs>
+
+            <!-- 顶部 GCS（俯视） -->
+            <g transform="translate(440, 20)">
+                <rect width="100" height="36" rx="8" fill="url(#g-gcs-c)" opacity="0.92" filter="url(#ev-glow2)"/>
+                <text x="50" y="22" fill="#fff" font-size="12" text-anchor="middle" font-weight="800">GCS</text>
+                <text x="50" y="50" fill="rgba(255,154,214,0.85)" font-size="10" text-anchor="middle">对象位置 + Actor 表</text>
+            </g>
+
+            <!-- 流水分层标尺 -->
+            <text x="20" y="100" fill="rgba(255,255,255,0.4)" font-size="10">数据层（Plasma）</text>
+            <line x1="120" y1="98" x2="960" y2="98" stroke="rgba(90,224,255,0.18)" stroke-width="1" stroke-dasharray="3,3"/>
+            <text x="20" y="240" fill="rgba(255,255,255,0.4)" font-size="10">计算层（Worker）</text>
+            <line x1="120" y1="238" x2="960" y2="238" stroke="rgba(255,209,102,0.18)" stroke-width="1" stroke-dasharray="3,3"/>
+            <text x="20" y="430" fill="rgba(255,255,255,0.4)" font-size="10">调度层（Raylet）</text>
+            <line x1="120" y1="428" x2="960" y2="428" stroke="rgba(255,126,182,0.18)" stroke-width="1" stroke-dasharray="3,3"/>
+
+            <!-- ============ ① S3 → Plasma ============ -->
+            <g transform="translate(40, 110)">
+                <rect width="80" height="60" rx="8" fill="url(#g-s3-src)" opacity="0.85"/>
+                <text x="40" y="28" fill="#fff" font-size="11" text-anchor="middle" font-weight="700">S3 桶</text>
+                <text x="40" y="46" fill="rgba(255,255,255,0.85)" font-size="9" text-anchor="middle">合同扫描图</text>
+            </g>
+            <text x="80" y="190" fill="#a0b0e0" font-size="10" text-anchor="middle">①</text>
+
+            <!-- Plasma · Head Node -->
+            <g transform="translate(160, 110)">
+                <rect width="120" height="60" rx="8" fill="url(#g-plasma-c)" opacity="0.85"/>
+                <text x="60" y="22" fill="#0a1530" font-size="11" text-anchor="middle" font-weight="800">Plasma · Head</text>
+                <text x="60" y="40" fill="#0a1530" font-size="9" text-anchor="middle">mmap RecordBatch</text>
+                <text x="60" y="54" fill="#0a1530" font-size="9" text-anchor="middle" font-style="italic">ObjectRef(Block_A)</text>
+            </g>
+
+            <!-- ============ ② OCR Actor 推理（GPU Node 1） ============ -->
+            <g transform="translate(330, 250)">
+                <rect width="160" height="100" rx="10" fill="url(#g-ocr-actor)" opacity="0.92" filter="url(#ev-glow2)"/>
+                <text x="80" y="24" fill="#fff" font-size="12" text-anchor="middle" font-weight="800">OCR Actor</text>
+                <text x="80" y="42" fill="rgba(255,255,255,0.95)" font-size="10" text-anchor="middle">GPU Node 1</text>
+                <rect x="14" y="50" width="132" height="18" rx="4" fill="rgba(0,0,0,0.3)"/>
+                <text x="80" y="63" fill="#ffd166" font-size="9" text-anchor="middle" font-weight="700">📌 PaddleOCR 常驻显存</text>
+                <text x="80" y="84" fill="rgba(255,255,255,0.9)" font-size="9" text-anchor="middle">推理 50ms / 张</text>
+            </g>
+
+            <!-- Plasma · GPU1（OCR 输出） -->
+            <g transform="translate(330, 110)">
+                <rect width="160" height="60" rx="8" fill="url(#g-plasma-c)" opacity="0.7"/>
+                <text x="80" y="22" fill="#0a1530" font-size="11" text-anchor="middle" font-weight="800">Plasma · GPU 1</text>
+                <text x="80" y="40" fill="#0a1530" font-size="9" text-anchor="middle">OCR_Result（文本）</text>
+                <text x="80" y="54" fill="#0a1530" font-size="9" text-anchor="middle" font-style="italic">&lt; 100KB · inline</text>
+            </g>
+
+            <!-- ============ ③ YOLO Actor 并行（GPU Node 2） ============ -->
+            <g transform="translate(540, 250)">
+                <rect width="160" height="100" rx="10" fill="url(#g-yolo-actor)" opacity="0.92" filter="url(#ev-glow2)"/>
+                <text x="80" y="24" fill="#0a1530" font-size="12" text-anchor="middle" font-weight="800">YOLO Actor</text>
+                <text x="80" y="42" fill="#0a1530" font-size="10" text-anchor="middle">GPU Node 2 · 并行</text>
+                <rect x="14" y="50" width="132" height="18" rx="4" fill="rgba(0,0,0,0.25)"/>
+                <text x="80" y="63" fill="#fff" font-size="9" text-anchor="middle" font-weight="700">📌 YOLOv8 常驻显存</text>
+                <text x="80" y="84" fill="#0a1530" font-size="9" text-anchor="middle">检测框 30ms / 张</text>
+            </g>
+
+            <!-- Plasma · GPU2（YOLO 输出） -->
+            <g transform="translate(540, 110)">
+                <rect width="160" height="60" rx="8" fill="url(#g-plasma-c)" opacity="0.7"/>
+                <text x="80" y="22" fill="#0a1530" font-size="11" text-anchor="middle" font-weight="800">Plasma · GPU 2</text>
+                <text x="80" y="40" fill="#0a1530" font-size="9" text-anchor="middle">YOLO_Boxes（检测框）</text>
+                <text x="80" y="54" fill="#0a1530" font-size="9" text-anchor="middle" font-style="italic">&lt; 100KB · inline</text>
+            </g>
+
+            <!-- ============ ④ CPU Task 合并 + 后处理 ============ -->
+            <g transform="translate(750, 250)">
+                <rect width="160" height="100" rx="10" fill="url(#g-cpu-task)" opacity="0.92" filter="url(#ev-glow2)"/>
+                <text x="80" y="24" fill="#0a1530" font-size="12" text-anchor="middle" font-weight="800">CPU Task</text>
+                <text x="80" y="42" fill="#0a1530" font-size="10" text-anchor="middle">CPU Node N · 弹性</text>
+                <text x="80" y="62" fill="#0a1530" font-size="9" text-anchor="middle">合并 OCR + YOLO</text>
+                <text x="80" y="76" fill="#0a1530" font-size="9" text-anchor="middle">→ Arrow Schema</text>
+                <text x="80" y="90" fill="#0a1530" font-size="9" text-anchor="middle" font-style="italic">弹性扩展 · 无状态</text>
+            </g>
+
+            <!-- ============ ⑤ Plasma → Lance ============ -->
+            <g transform="translate(750, 110)">
+                <rect width="160" height="60" rx="8" fill="url(#g-lance-c)" opacity="0.92"/>
+                <text x="80" y="22" fill="#fff" font-size="11" text-anchor="middle" font-weight="800">Lance · S3</text>
+                <text x="80" y="40" fill="rgba(255,255,255,0.9)" font-size="9" text-anchor="middle">part-N.lance</text>
+                <text x="80" y="54" fill="rgba(255,255,255,0.85)" font-size="9" text-anchor="middle">并行写 · 不汇聚</text>
+            </g>
+
+            <!-- ============ Raylet 调度层（底部 4 个节点的代理） ============ -->
+            <g>
+                <!-- Head Raylet -->
+                <g transform="translate(160, 440)">
+                    <rect width="120" height="38" rx="6" fill="rgba(255,209,102,0.18)" stroke="#ffd166" stroke-width="1"/>
+                    <text x="60" y="18" fill="#ffd166" font-size="10" text-anchor="middle" font-weight="700">Raylet · Head</text>
+                    <text x="60" y="32" fill="rgba(255,209,102,0.7)" font-size="9" text-anchor="middle">本地调度 100μs</text>
+                </g>
+                <!-- GPU1 Raylet -->
+                <g transform="translate(330, 440)">
+                    <rect width="160" height="38" rx="6" fill="rgba(255,209,102,0.18)" stroke="#ffd166" stroke-width="1"/>
+                    <text x="80" y="18" fill="#ffd166" font-size="10" text-anchor="middle" font-weight="700">Raylet · GPU 1</text>
+                    <text x="80" y="32" fill="rgba(255,209,102,0.7)" font-size="9" text-anchor="middle">数据本地性优先</text>
+                </g>
+                <!-- GPU2 Raylet -->
+                <g transform="translate(540, 440)">
+                    <rect width="160" height="38" rx="6" fill="rgba(255,209,102,0.18)" stroke="#ffd166" stroke-width="1"/>
+                    <text x="80" y="18" fill="#ffd166" font-size="10" text-anchor="middle" font-weight="700">Raylet · GPU 2</text>
+                    <text x="80" y="32" fill="rgba(255,209,102,0.7)" font-size="9" text-anchor="middle">YOLO 与 OCR 并行</text>
+                </g>
+                <!-- CPU Raylet -->
+                <g transform="translate(750, 440)">
+                    <rect width="160" height="38" rx="6" fill="rgba(255,209,102,0.18)" stroke="#ffd166" stroke-width="1"/>
+                    <text x="80" y="18" fill="#ffd166" font-size="10" text-anchor="middle" font-weight="700">Raylet · CPU N</text>
+                    <text x="80" y="32" fill="rgba(255,209,102,0.7)" font-size="9" text-anchor="middle">CPU 后处理弹性</text>
+                </g>
+            </g>
+
+            <!-- 🎯 数据流粒子动画：从 S3 → Plasma·Head → 同时分流到 OCR Actor 和 YOLO Actor → 合并到 CPU Task → Lance -->
+            <!-- ① S3 → Plasma Head（蓝色） -->
+            <circle r="6" fill="#5ae0ff" filter="url(#ev-glow2)">
+                <animateMotion path="M 80 140 L 220 140" dur="1.0s" begin="0s;6s" repeatCount="1"/>
+                <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="1.0s" begin="0s;6s" repeatCount="1"/>
+            </circle>
+            <!-- 标签：put -->
+            <text x="135" y="195" fill="#5ae0ff" font-size="9" text-anchor="middle" font-style="italic" opacity="0">
+                ray.put()
+                <animate attributeName="opacity" values="0;1;0" keyTimes="0;0.5;1" dur="1.0s" begin="0s;6s"/>
+            </text>
+
+            <!-- ② Plasma Head → OCR Actor（粉色，mmap） -->
+            <circle r="5" fill="#ff7eb6" filter="url(#ev-glow2)">
+                <animateMotion path="M 220 170 L 410 250" dur="0.8s" begin="1.1s;7.1s" repeatCount="1"/>
+                <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="0.8s" begin="1.1s;7.1s" repeatCount="1"/>
+            </circle>
+            <!-- ② Plasma Head → YOLO Actor（金色，mmap，并行） -->
+            <circle r="5" fill="#ffd166" filter="url(#ev-glow2)">
+                <animateMotion path="M 280 170 L 620 250" dur="0.9s" begin="1.1s;7.1s" repeatCount="1"/>
+                <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="0.9s" begin="1.1s;7.1s" repeatCount="1"/>
+            </circle>
+            <text x="380" y="225" fill="#a0d8ff" font-size="9" text-anchor="middle" font-style="italic" opacity="0">
+                mmap 零拷贝（并行分流）
+                <animate attributeName="opacity" values="0;1;0" keyTimes="0;0.5;1" dur="1.0s" begin="1.3s;7.3s"/>
+            </text>
+
+            <!-- ③ OCR Actor → Plasma GPU1（结果） -->
+            <circle r="5" fill="#ff7eb6" filter="url(#ev-glow2)">
+                <animateMotion path="M 410 250 L 410 170" dur="0.6s" begin="2.2s;8.2s" repeatCount="1"/>
+                <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="0.6s" begin="2.2s;8.2s" repeatCount="1"/>
+            </circle>
+            <!-- ③ YOLO Actor → Plasma GPU2（结果） -->
+            <circle r="5" fill="#ffd166" filter="url(#ev-glow2)">
+                <animateMotion path="M 620 250 L 620 170" dur="0.6s" begin="2.2s;8.2s" repeatCount="1"/>
+                <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="0.6s" begin="2.2s;8.2s" repeatCount="1"/>
+            </circle>
+
+            <!-- ④ Plasma GPU1 + GPU2 → CPU Task（两路合一，绿色） -->
+            <circle r="5" fill="#7effaa" filter="url(#ev-glow2)">
+                <animateMotion path="M 490 140 Q 700 200, 830 250" dur="1.0s" begin="3.0s;9.0s" repeatCount="1"/>
+                <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="1.0s" begin="3.0s;9.0s" repeatCount="1"/>
+            </circle>
+            <circle r="5" fill="#7effaa" filter="url(#ev-glow2)">
+                <animateMotion path="M 700 140 Q 760 200, 830 250" dur="1.0s" begin="3.0s;9.0s" repeatCount="1"/>
+                <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="1.0s" begin="3.0s;9.0s" repeatCount="1"/>
+            </circle>
+            <text x="760" y="220" fill="#7effaa" font-size="9" text-anchor="middle" font-style="italic" opacity="0">
+                合并 OCR + YOLO
+                <animate attributeName="opacity" values="0;1;0" keyTimes="0;0.5;1" dur="1.2s" begin="3.4s;9.4s"/>
+            </text>
+
+            <!-- ⑤ CPU Task → Lance（紫色） -->
+            <circle r="6" fill="#c850ff" filter="url(#ev-glow2)">
+                <animateMotion path="M 830 250 L 830 170" dur="0.7s" begin="4.2s;10.2s" repeatCount="1"/>
+                <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="0.7s" begin="4.2s;10.2s" repeatCount="1"/>
+            </circle>
+            <text x="830" y="208" fill="#c850ff" font-size="9" text-anchor="middle" font-style="italic" opacity="0">
+                ds.write_lance()
+                <animate attributeName="opacity" values="0;1;0" keyTimes="0;0.5;1" dur="1.0s" begin="4.4s;10.4s"/>
+            </text>
+
+            <!-- GCS ↔ Raylet 心跳（持续脉动） -->
+            <line x1="490" y1="56" x2="220" y2="440" stroke="rgba(255,154,214,0.25)" stroke-width="1" stroke-dasharray="4,4">
+                <animate attributeName="stroke-dashoffset" from="0" to="-16" dur="1.4s" repeatCount="indefinite"/>
+            </line>
+            <line x1="490" y1="56" x2="410" y2="440" stroke="rgba(255,154,214,0.25)" stroke-width="1" stroke-dasharray="4,4">
+                <animate attributeName="stroke-dashoffset" from="0" to="-16" dur="1.4s" repeatCount="indefinite"/>
+            </line>
+            <line x1="490" y1="56" x2="620" y2="440" stroke="rgba(255,154,214,0.25)" stroke-width="1" stroke-dasharray="4,4">
+                <animate attributeName="stroke-dashoffset" from="0" to="-16" dur="1.4s" repeatCount="indefinite"/>
+            </line>
+            <line x1="490" y1="56" x2="830" y2="440" stroke="rgba(255,154,214,0.25)" stroke-width="1" stroke-dasharray="4,4">
+                <animate attributeName="stroke-dashoffset" from="0" to="-16" dur="1.4s" repeatCount="indefinite"/>
+            </line>
+
+            <!-- Raylet ↔ Plasma 控制线（淡） -->
+            <line x1="220" y1="440" x2="220" y2="170" stroke="rgba(255,209,102,0.12)" stroke-width="1"/>
+            <line x1="410" y1="440" x2="410" y2="170" stroke="rgba(255,209,102,0.12)" stroke-width="1"/>
+            <line x1="620" y1="440" x2="620" y2="170" stroke="rgba(255,209,102,0.12)" stroke-width="1"/>
+            <line x1="830" y1="440" x2="830" y2="170" stroke="rgba(255,209,102,0.12)" stroke-width="1"/>
+
+            <!-- 顶部时序节点 -->
+            <text x="80" y="92" fill="#5ae0ff" font-size="10" text-anchor="middle" font-weight="700">①</text>
+            <text x="220" y="92" fill="#5ae0ff" font-size="10" text-anchor="middle" font-weight="700">②</text>
+            <text x="410" y="92" fill="#ff7eb6" font-size="10" text-anchor="middle" font-weight="700">③ OCR 结果</text>
+            <text x="620" y="92" fill="#ffd166" font-size="10" text-anchor="middle" font-weight="700">③ YOLO 结果</text>
+            <text x="830" y="92" fill="#c850ff" font-size="10" text-anchor="middle" font-weight="700">⑤ Lance 落盘</text>
+
+            <!-- 底部 KPI -->
+            <line x1="40" y1="500" x2="940" y2="500" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+            <text x="490" y="524" fill="#7effaa" font-size="13" text-anchor="middle" font-weight="700" filter="url(#ev-glow2)">单图 89ms · OCR + YOLO 双链路并行 · GPU 利用率 &gt; 85%</text>
+        </svg>
+        <div class="stage-caption">▶ 动画循环：粒子流展示了一张图的<b>5 步流转</b>——① S3 进 Plasma · ② OCR + YOLO 并行 mmap 读取 · ③ 各自写回本地 Plasma · ④ CPU Task 合并 · ⑤ 并行写 Lance。GCS 在顶部记账，Raylet 在底部调度，Plasma 在数据层流转，Worker 在计算层干活——四层各司其职。</div>
+    </div>
+
+    <div class="deep-box"><div class="label">🔬 这张动画讲清了三件事</div><div class="text">
+        <b>1. 数据从不"汇聚到中心"</b>：OCR 结果留在 GPU 1 的 Plasma，YOLO 结果留在 GPU 2 的 Plasma，CPU Task 来"取"，最后并行写 Lance——<b>没有 Driver 单点瓶颈</b>。<br>
+        <b>2. OCR 与 YOLO 是真正并行的</b>：同一个 Block_A 通过 mmap 在两个 GPU 节点同时被读取（Ray 通过 Object Manager Pull 一次到本地，之后零拷贝），<b>双模型不抢同一张卡</b>。<br>
+        <b>3. 四层组件各司其职</b>：GCS 记位置，Raylet 调度，Plasma 存数据，Worker 干活——任何一层都可以独立替换实现（比如 Plasma 换成 GPU Direct、Raylet 换成 K8s 调度器）而不影响其他层。<b>这就是分层架构的"可演进性"。</b>
+    </div></div>
+
     <div class="takeaway-box"><span class="label">📌 售前一句话</span>
         在客户白板上一句话讲完拓扑：<b>GCS 记账，Raylet 调度，Plasma 传数据，Worker 干活</b>——组件越无状态越好恢复。客户 100 万图项目的部署：1 Head + 2 GPU + 4 CPU = 7 台节点起步。
     </div>
@@ -1957,6 +2346,284 @@ Driver 调 ds.write_lance("s3://bucket/results/"):
     ├── part-00001.lance (Block_B)
     └── ... part-00999.lance</pre>
         </div></div>
+    </div>
+
+    <!-- 🎬 6 跳全链路串通动画 -->
+    <div class="concept-box"><div class="label">🎬 9.6.5 6 跳全链路 · 一张图串起来看（动画）</div><div class="text">
+        前面 6 跳是<b>分镜头</b>（每跳一段代码）。客户技术委员会真正想看的是<b>一镜到底</b>——
+        IMG_000123.jpg 进 S3 那一刻按下播放键，89ms 后吐出 Lance 文件那一刻镜头停止，<b>中间发生了什么</b>。
+        这张时序图把 6 跳串成一条数据流，每一跳带时间刻度、所在节点、关键操作；底部给出延迟瀑布图。
+    </div></div>
+    <div class="stage">
+        <svg viewBox="0 0 1000 600" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="gh-s3" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a0b0e0"/><stop offset="1" stop-color="#5a6a90"/></linearGradient>
+                <linearGradient id="gh-driver" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff9ad6"/><stop offset="1" stop-color="#c850c0"/></linearGradient>
+                <linearGradient id="gh-plas" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5ae0ff"/><stop offset="1" stop-color="#3a8fd0"/></linearGradient>
+                <linearGradient id="gh-gpu" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff7eb6"/><stop offset="1" stop-color="#c850c0"/></linearGradient>
+                <linearGradient id="gh-cpu" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7effaa"/><stop offset="1" stop-color="#36c787"/></linearGradient>
+                <linearGradient id="gh-lance" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#c850ff"/><stop offset="1" stop-color="#7b2cbf"/></linearGradient>
+                <filter id="hop-glow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                <marker id="arr-hop" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#ffd166"/></marker>
+            </defs>
+
+            <!-- 标题 -->
+            <text x="500" y="26" fill="#ffd166" font-size="16" font-weight="800" text-anchor="middle" filter="url(#hop-glow)">IMG_000123.jpg · 89ms 6 跳全链路</text>
+
+            <!-- ============ 6 个节点（横向时间轴） ============ -->
+            <g transform="translate(20, 60)">
+                <!-- ① S3 -->
+                <g><rect width="130" height="70" rx="10" fill="url(#gh-s3)" opacity="0.85"/>
+                <text x="65" y="26" fill="#fff" font-size="12" text-anchor="middle" font-weight="800">① S3 桶</text>
+                <text x="65" y="44" fill="rgba(255,255,255,0.9)" font-size="10" text-anchor="middle">IMG_000123.jpg</text>
+                <text x="65" y="58" fill="rgba(255,255,255,0.7)" font-size="10" text-anchor="middle">312 KB</text></g>
+            </g>
+            <g transform="translate(180, 60)">
+                <!-- ② Driver / Head Plasma -->
+                <rect width="130" height="70" rx="10" fill="url(#gh-driver)" opacity="0.92"/>
+                <text x="65" y="22" fill="#fff" font-size="12" text-anchor="middle" font-weight="800">② Driver</text>
+                <text x="65" y="38" fill="rgba(255,255,255,0.95)" font-size="10" text-anchor="middle">Head Plasma</text>
+                <text x="65" y="56" fill="#ffd166" font-size="9" text-anchor="middle" font-weight="700">ObjectRef 注册</text>
+            </g>
+            <g transform="translate(340, 60)">
+                <!-- ③ GPU Node 1 -->
+                <rect width="160" height="70" rx="10" fill="url(#gh-gpu)" opacity="0.92"/>
+                <text x="80" y="22" fill="#fff" font-size="12" text-anchor="middle" font-weight="800">③ GPU Node 1</text>
+                <text x="80" y="38" fill="rgba(255,255,255,0.95)" font-size="10" text-anchor="middle">OCR Actor 推理</text>
+                <text x="80" y="56" fill="#ffd166" font-size="9" text-anchor="middle" font-weight="700">📌 模型常驻显存</text>
+            </g>
+            <g transform="translate(530, 60)">
+                <!-- ④ GPU Node 1 Plasma（结果） -->
+                <rect width="130" height="70" rx="10" fill="url(#gh-plas)" opacity="0.85"/>
+                <text x="65" y="22" fill="#0a1530" font-size="12" text-anchor="middle" font-weight="800">④ Plasma</text>
+                <text x="65" y="38" fill="#0a1530" font-size="10" text-anchor="middle">GPU 1 本地</text>
+                <text x="65" y="56" fill="#0a1530" font-size="9" text-anchor="middle" font-weight="700">OCR_Result</text>
+            </g>
+            <g transform="translate(690, 60)">
+                <!-- ⑤ CPU Node N -->
+                <rect width="160" height="70" rx="10" fill="url(#gh-cpu)" opacity="0.92"/>
+                <text x="80" y="22" fill="#0a1530" font-size="12" text-anchor="middle" font-weight="800">⑤ CPU Node N</text>
+                <text x="80" y="38" fill="#0a1530" font-size="10" text-anchor="middle">后处理 Task</text>
+                <text x="80" y="56" fill="#0a1530" font-size="9" text-anchor="middle" font-weight="700">clean_text · format</text>
+            </g>
+            <g transform="translate(880, 60)">
+                <!-- ⑥ Lance / S3 Out -->
+                <rect width="100" height="70" rx="10" fill="url(#gh-lance)" opacity="0.92"/>
+                <text x="50" y="22" fill="#fff" font-size="12" text-anchor="middle" font-weight="800">⑥ Lance</text>
+                <text x="50" y="38" fill="rgba(255,255,255,0.95)" font-size="10" text-anchor="middle">S3 写回</text>
+                <text x="50" y="56" fill="rgba(255,209,102,0.9)" font-size="9" text-anchor="middle" font-weight="700">part-N.lance</text>
+            </g>
+
+            <!-- 跳数标签和延迟 -->
+            <g font-family="Georgia, serif">
+                <text x="160" y="155" fill="#ffd166" font-size="10" text-anchor="middle">Hop 1 · ~5ms</text>
+                <text x="320" y="155" fill="#ffd166" font-size="10" text-anchor="middle">Hop 2 · ~10ms</text>
+                <text x="510" y="155" fill="#ffd166" font-size="10" text-anchor="middle">Hop 3 · ~50ms</text>
+                <text x="675" y="155" fill="#ffd166" font-size="10" text-anchor="middle">Hop 4 · ~1ms</text>
+                <text x="845" y="155" fill="#ffd166" font-size="10" text-anchor="middle">Hop 5+6 · ~23ms</text>
+            </g>
+
+            <!-- 横向数据流箭头（基础轨迹） -->
+            <line x1="150" y1="95" x2="180" y2="95" stroke="rgba(255,209,102,0.4)" stroke-width="2" marker-end="url(#arr-hop)"/>
+            <line x1="310" y1="95" x2="340" y2="95" stroke="rgba(255,209,102,0.4)" stroke-width="2" marker-end="url(#arr-hop)"/>
+            <line x1="500" y1="95" x2="530" y2="95" stroke="rgba(255,209,102,0.4)" stroke-width="2" marker-end="url(#arr-hop)"/>
+            <line x1="660" y1="95" x2="690" y2="95" stroke="rgba(255,209,102,0.4)" stroke-width="2" marker-end="url(#arr-hop)"/>
+            <line x1="850" y1="95" x2="880" y2="95" stroke="rgba(255,209,102,0.4)" stroke-width="2" marker-end="url(#arr-hop)"/>
+
+            <!-- ============ 数据小球（IMG_000123）按时序穿过 6 跳 ============ -->
+            <!-- 整个动画周期 9 秒，循环 -->
+            <!-- Hop 1: S3 → Driver/Plasma Head（0~1s） -->
+            <g>
+                <circle r="9" fill="#ffd166" stroke="#fff" stroke-width="1.5" filter="url(#hop-glow)">
+                    <animateMotion dur="9s" repeatCount="indefinite" rotate="auto"
+                        keyTimes="0; 0.11; 0.22; 0.45; 0.50; 0.75; 0.85; 1"
+                        keyPoints="0; 0.10; 0.27; 0.50; 0.59; 0.78; 0.93; 1"
+                        path="M 85 95 L 245 95 L 420 95 L 595 95 L 770 95 L 930 95 L 985 95"/>
+                    <animate attributeName="opacity" values="0;1;1;1;1;1;1;0" keyTimes="0;0.05;0.2;0.4;0.6;0.8;0.95;1" dur="9s" repeatCount="indefinite"/>
+                </circle>
+                <!-- 数据标识 IMG_000123 跟随 -->
+                <text fill="#ffd166" font-size="9" font-weight="700" font-family="monospace">
+                    <animateMotion dur="9s" repeatCount="indefinite"
+                        keyTimes="0; 0.11; 0.22; 0.45; 0.50; 0.75; 0.85; 1"
+                        keyPoints="0; 0.10; 0.27; 0.50; 0.59; 0.78; 0.93; 1"
+                        path="M 95 78 L 255 78 L 430 78 L 605 78 L 780 78 L 940 78 L 995 78"/>
+                    <animate attributeName="opacity" values="0;1;1;1;1;1;1;0" keyTimes="0;0.05;0.2;0.4;0.6;0.8;0.95;1" dur="9s" repeatCount="indefinite"/>
+                    IMG_000123
+                </text>
+            </g>
+
+            <!-- 当前 Hop 高亮指示器（在节点框上脉冲发光） -->
+            <g>
+                <!-- Hop1 进入 Driver -->
+                <rect x="180" y="60" width="130" height="70" rx="10" fill="none" stroke="#ffd166" stroke-width="2" opacity="0">
+                    <animate attributeName="opacity" values="0;0;1;1;0;0;0;0;0;0" keyTimes="0;0.05;0.10;0.20;0.22;0.4;0.6;0.8;0.95;1" dur="9s" repeatCount="indefinite"/>
+                </rect>
+                <!-- Hop2 进入 GPU Node 1 -->
+                <rect x="340" y="60" width="160" height="70" rx="10" fill="none" stroke="#ff7eb6" stroke-width="2" opacity="0">
+                    <animate attributeName="opacity" values="0;0;0;0;1;1;0;0;0;0" keyTimes="0;0.05;0.1;0.2;0.22;0.45;0.50;0.6;0.95;1" dur="9s" repeatCount="indefinite"/>
+                </rect>
+                <!-- Hop3 推理脉冲 -->
+                <circle cx="420" cy="95" r="40" fill="rgba(255,126,182,0.15)" opacity="0">
+                    <animate attributeName="opacity" values="0;0;0;0.6;0.6;0;0;0;0;0" keyTimes="0;0.05;0.1;0.30;0.43;0.45;0.5;0.6;0.95;1" dur="9s" repeatCount="indefinite"/>
+                    <animate attributeName="r" values="20;20;20;25;55;55;25;20;20;20" keyTimes="0;0.05;0.1;0.30;0.40;0.45;0.5;0.6;0.95;1" dur="9s" repeatCount="indefinite"/>
+                </circle>
+                <text x="420" y="170" fill="#ff7eb6" font-size="11" text-anchor="middle" font-weight="800" opacity="0">
+                    PaddleOCR · 50ms
+                    <animate attributeName="opacity" values="0;0;0;1;1;0;0;0;0;0" keyTimes="0;0.05;0.1;0.30;0.43;0.45;0.5;0.6;0.95;1" dur="9s" repeatCount="indefinite"/>
+                </text>
+                <!-- Hop4 写 Plasma 高亮 -->
+                <rect x="530" y="60" width="130" height="70" rx="10" fill="none" stroke="#5ae0ff" stroke-width="2" opacity="0">
+                    <animate attributeName="opacity" values="0;0;0;0;0;0;1;1;0;0" keyTimes="0;0.05;0.1;0.2;0.4;0.45;0.50;0.59;0.6;1" dur="9s" repeatCount="indefinite"/>
+                </rect>
+                <!-- Hop5 进入 CPU Node N -->
+                <rect x="690" y="60" width="160" height="70" rx="10" fill="none" stroke="#7effaa" stroke-width="2" opacity="0">
+                    <animate attributeName="opacity" values="0;0;0;0;0;0;0;0;1;1;0;0" keyTimes="0;0.05;0.1;0.2;0.4;0.45;0.5;0.59;0.60;0.78;0.80;1" dur="9s" repeatCount="indefinite"/>
+                </rect>
+                <text x="770" y="170" fill="#7effaa" font-size="11" text-anchor="middle" font-weight="800" opacity="0">
+                    跨节点 Pull (gRPC) + 后处理
+                    <animate attributeName="opacity" values="0;0;0;0;0;0;0;0;1;1;0;0" keyTimes="0;0.05;0.1;0.2;0.4;0.45;0.5;0.59;0.60;0.78;0.80;1" dur="9s" repeatCount="indefinite"/>
+                </text>
+                <!-- Hop6 写 Lance 高亮 -->
+                <rect x="880" y="60" width="100" height="70" rx="10" fill="none" stroke="#c850ff" stroke-width="2" opacity="0">
+                    <animate attributeName="opacity" values="0;0;0;0;0;0;0;0;0;0;1;1;0" keyTimes="0;0.05;0.1;0.2;0.4;0.45;0.5;0.59;0.6;0.78;0.85;0.95;1" dur="9s" repeatCount="indefinite"/>
+                </rect>
+            </g>
+
+            <!-- ============ 中部：当前操作字幕（随时间切换） ============ -->
+            <rect x="60" y="200" width="880" height="44" rx="8" fill="rgba(255,209,102,0.06)" stroke="rgba(255,209,102,0.25)"/>
+            <text x="78" y="226" font-family="monospace" font-size="11" fill="#ffd166">
+                <tspan opacity="0">▶ Hop 1 · ray.put() — CloudPickle 序列化 → Arrow RecordBatch → 写 Head Plasma → 注册 ObjectRef 到 Driver Ownership Table
+                    <animate attributeName="opacity" values="0;1;1;0;0;0;0;0;0;0;0" keyTimes="0;0.04;0.18;0.20;0.4;0.5;0.6;0.7;0.85;0.95;1" dur="9s" repeatCount="indefinite"/>
+                </tspan>
+            </text>
+            <text x="78" y="226" font-family="monospace" font-size="11" fill="#ff7eb6">
+                <tspan opacity="0">▶ Hop 2 · 调度决策 — 本地 Raylet → GCS 全局调度 → 选 GPU Node 1 → 跨节点 Pull Block_A（唯一一次跨节点）
+                    <animate attributeName="opacity" values="0;0;0;0;1;1;0;0;0;0;0" keyTimes="0;0.18;0.20;0.22;0.24;0.40;0.42;0.5;0.6;0.85;1" dur="9s" repeatCount="indefinite"/>
+                </tspan>
+            </text>
+            <text x="78" y="226" font-family="monospace" font-size="11" fill="#c850ff">
+                <tspan opacity="0">▶ Hop 3 · OCR 推理 — Worker 进程 mmap 映射 Plasma → 零拷贝读 image bytes → PaddleOCR(GPU) → 文本（50ms）
+                    <animate attributeName="opacity" values="0;0;0;0;0;0;1;1;0;0;0" keyTimes="0;0.2;0.3;0.4;0.42;0.43;0.44;0.50;0.52;0.85;1" dur="9s" repeatCount="indefinite"/>
+                </tspan>
+            </text>
+            <text x="78" y="226" font-family="monospace" font-size="11" fill="#5ae0ff">
+                <tspan opacity="0">▶ Hop 4 · 结果回写 — OCR 输出 &lt; 100KB → inline 在 PushTask Response → 不经 Plasma → ObjectRef 标记 inlined
+                    <animate attributeName="opacity" values="0;0;0;0;0;0;0;0;1;1;0;0;0" keyTimes="0;0.2;0.3;0.4;0.45;0.50;0.52;0.55;0.56;0.62;0.64;0.85;1" dur="9s" repeatCount="indefinite"/>
+                </tspan>
+            </text>
+            <text x="78" y="226" font-family="monospace" font-size="11" fill="#7effaa">
+                <tspan opacity="0">▶ Hop 5 · 跨节点后处理 — 调到 CPU Node N（GPU 节点 CPU 配额满）→ Object Manager Pull → CPU Worker 反序列化 → clean_text + format
+                    <animate attributeName="opacity" values="0;0;0;0;0;0;0;0;0;0;1;1;0;0" keyTimes="0;0.2;0.3;0.4;0.5;0.55;0.6;0.62;0.64;0.66;0.68;0.78;0.80;1" dur="9s" repeatCount="indefinite"/>
+                </tspan>
+            </text>
+            <text x="78" y="226" font-family="monospace" font-size="11" fill="#c850ff">
+                <tspan opacity="0">▶ Hop 6 · Collect + Write — Driver Ownership Table 查 Block 位置 → 同节点 mmap 直读 → 每个 Block 独立写一个 part-N.lance（并行上 S3，不汇聚）
+                    <animate attributeName="opacity" values="0;0;0;0;0;0;0;0;0;0;0;0;1;1;0" keyTimes="0;0.2;0.3;0.4;0.5;0.55;0.6;0.7;0.78;0.80;0.82;0.83;0.85;0.95;1" dur="9s" repeatCount="indefinite"/>
+                </tspan>
+            </text>
+
+            <!-- ============ 底部：延迟瀑布图 ============ -->
+            <text x="60" y="280" fill="rgba(255,255,255,0.85)" font-size="12" font-weight="700">⏱️ 延迟瀑布图（按时间累加，总计 89ms）</text>
+            <line x1="60" y1="294" x2="940" y2="294" stroke="rgba(255,255,255,0.15)"/>
+
+            <!-- 时间刻度 0-100ms -->
+            <g font-size="9" fill="rgba(255,255,255,0.45)">
+                <text x="60" y="492" text-anchor="start">0ms</text>
+                <text x="248" y="492" text-anchor="middle">22ms</text>
+                <text x="436" y="492" text-anchor="middle">44ms</text>
+                <text x="624" y="492" text-anchor="middle">66ms</text>
+                <text x="812" y="492" text-anchor="middle">88ms</text>
+                <text x="940" y="492" text-anchor="end">100ms</text>
+            </g>
+            <line x1="60" y1="475" x2="940" y2="475" stroke="rgba(255,255,255,0.2)"/>
+            <line x1="60" y1="475" x2="60" y2="480" stroke="rgba(255,255,255,0.4)"/>
+            <line x1="248" y1="475" x2="248" y2="480" stroke="rgba(255,255,255,0.4)"/>
+            <line x1="436" y1="475" x2="436" y2="480" stroke="rgba(255,255,255,0.4)"/>
+            <line x1="624" y1="475" x2="624" y2="480" stroke="rgba(255,255,255,0.4)"/>
+            <line x1="812" y1="475" x2="812" y2="480" stroke="rgba(255,255,255,0.4)"/>
+            <line x1="940" y1="475" x2="940" y2="480" stroke="rgba(255,255,255,0.4)"/>
+
+            <!-- 6 段瀑布条（横向，宽度 = 延迟 / 100ms × 880px） -->
+            <!-- 比例尺：100ms = 880px，所以 1ms = 8.8px -->
+            <!-- Hop1: 0~5ms, x=60, width=44 -->
+            <g transform="translate(0, 308)">
+                <rect x="60" y="0" width="0" height="22" rx="3" fill="url(#gh-driver)" opacity="0.85">
+                    <animate attributeName="width" from="0" to="44" dur="0.6s" begin="0.2s" fill="freeze"/>
+                </rect>
+                <text x="64" y="14" fill="#fff" font-size="10" font-weight="700" opacity="0">
+                    H1 · 5ms
+                    <animate attributeName="opacity" from="0" to="1" begin="0.5s" dur="0.3s" fill="freeze"/>
+                </text>
+            </g>
+            <!-- Hop2: 5~15ms, x=104, width=88 -->
+            <g transform="translate(0, 332)">
+                <rect x="104" y="0" width="0" height="22" rx="3" fill="url(#gh-gpu)" opacity="0.85">
+                    <animate attributeName="width" from="0" to="88" dur="0.7s" begin="0.9s" fill="freeze"/>
+                </rect>
+                <text x="108" y="14" fill="#fff" font-size="10" font-weight="700" opacity="0">
+                    H2 · 10ms
+                    <animate attributeName="opacity" from="0" to="1" begin="1.2s" dur="0.3s" fill="freeze"/>
+                </text>
+            </g>
+            <!-- Hop3: 15~65ms（最大）, x=192, width=440 -->
+            <g transform="translate(0, 356)">
+                <rect x="192" y="0" width="0" height="22" rx="3" fill="url(#gh-gpu)" opacity="0.92">
+                    <animate attributeName="width" from="0" to="440" dur="1.2s" begin="1.7s" fill="freeze"/>
+                </rect>
+                <text x="196" y="14" fill="#fff" font-size="10" font-weight="700" opacity="0">
+                    H3 · 50ms（GPU 推理 · 主导项）
+                    <animate attributeName="opacity" from="0" to="1" begin="2.0s" dur="0.3s" fill="freeze"/>
+                </text>
+            </g>
+            <!-- Hop4: 65~66ms, x=632, width=8.8 -->
+            <g transform="translate(0, 380)">
+                <rect x="632" y="0" width="0" height="22" rx="3" fill="url(#gh-plas)" opacity="0.85">
+                    <animate attributeName="width" from="0" to="9" dur="0.4s" begin="3.0s" fill="freeze"/>
+                </rect>
+                <text x="644" y="14" fill="#a0d8ff" font-size="10" font-weight="700" opacity="0">
+                    H4 · 1ms（inline）
+                    <animate attributeName="opacity" from="0" to="1" begin="3.2s" dur="0.3s" fill="freeze"/>
+                </text>
+            </g>
+            <!-- Hop5: 66~81ms, x=641, width=132 -->
+            <g transform="translate(0, 404)">
+                <rect x="641" y="0" width="0" height="22" rx="3" fill="url(#gh-cpu)" opacity="0.92">
+                    <animate attributeName="width" from="0" to="132" dur="0.9s" begin="3.5s" fill="freeze"/>
+                </rect>
+                <text x="645" y="14" fill="#0a1530" font-size="10" font-weight="700" opacity="0">
+                    H5 · 15ms（跨节点+后处理）
+                    <animate attributeName="opacity" from="0" to="1" begin="3.8s" dur="0.3s" fill="freeze"/>
+                </text>
+            </g>
+            <!-- Hop6: 81~89ms, x=773, width=70 -->
+            <g transform="translate(0, 428)">
+                <rect x="773" y="0" width="0" height="22" rx="3" fill="url(#gh-lance)" opacity="0.92">
+                    <animate attributeName="width" from="0" to="70" dur="0.6s" begin="4.5s" fill="freeze"/>
+                </rect>
+                <text x="777" y="14" fill="#fff" font-size="10" font-weight="700" opacity="0">
+                    H6 · 8ms
+                    <animate attributeName="opacity" from="0" to="1" begin="4.8s" dur="0.3s" fill="freeze"/>
+                </text>
+            </g>
+
+            <!-- 总耗时条（金色） -->
+            <g transform="translate(0, 452)">
+                <text x="60" y="14" fill="#ffd166" font-size="11" font-weight="800" opacity="0">
+                    总计：5 + 10 + 50 + 1 + 15 + 8 = 89ms
+                    <animate attributeName="opacity" from="0" to="1" begin="5.4s" dur="0.5s" fill="freeze"/>
+                </text>
+                <rect x="312" y="2" width="0" height="14" rx="3" fill="rgba(255,209,102,0.4)" stroke="#ffd166" stroke-width="1" opacity="0">
+                    <animate attributeName="opacity" from="0" to="1" begin="5.5s" dur="0.4s" fill="freeze"/>
+                    <animate attributeName="width" from="0" to="540" dur="1.2s" begin="5.5s" fill="freeze"/>
+                </rect>
+            </g>
+
+            <!-- 底部说明 -->
+            <text x="500" y="528" fill="#7effaa" font-size="13" font-weight="700" text-anchor="middle">📌 GPU 推理（H3）占 56%，是端到端瓶颈 → 优化方向：batch_size + Actor 池</text>
+            <text x="500" y="552" fill="rgba(255,255,255,0.7)" font-size="11" text-anchor="middle">网络传输只在 H2 + H5 各发生 1 次（共 ~25ms），其余全是同节点 mmap 零拷贝</text>
+            <text x="500" y="572" fill="rgba(255,255,255,0.5)" font-size="10" text-anchor="middle" font-style="italic">动画循环 9s · 数据小球穿过 6 个节点 · 中部字幕同步当前操作 · 底部瀑布图首次播放后定格</text>
+        </svg>
+        <div class="stage-caption">▶ 播放说明：金色小球代表 IMG_000123.jpg 的数据，按 9 秒周期循环穿过 6 个节点。每经过一个节点，对应的边框会发光高亮，中部黄色字幕条同步显示当前正在执行的操作。底部延迟瀑布图首次播放后定格，让客户能直观看到 <b>GPU 推理（H3 · 50ms）是主导项</b>，其他 5 跳加起来才 39ms。</div>
     </div>
 
     <div class="concept-box"><div class="label">⏱️ 9.7 全链路延迟分析（单张图片视角）</div><div class="text">
