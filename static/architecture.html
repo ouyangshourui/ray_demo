@@ -4122,6 +4122,303 @@ Driver 调 ds.write_lance("s3://bucket/results/"):
         <div class="stage-caption">▶ 播放说明：金色小球代表 IMG_000123.jpg 的数据，按 9 秒周期循环穿过 6 个节点。每经过一个节点，对应的边框会发光高亮，中部黄色字幕条同步显示当前正在执行的操作。底部延迟瀑布图首次播放后定格，让客户能直观看到 <b>GPU 推理（H3 · 50ms）是主导项</b>，其他 5 跳加起来才 39ms。</div>
     </div>
 
+    <!-- 🔬 9.6.6 6 跳分镜特写 · 每跳内部子步骤逐条展开 -->
+    <div class="concept-box" id="ch-9-6-6"><div class="label">🔬 9.6.6 6 跳分镜特写 · 每跳内部子步骤逐条展开</div><div class="text">
+        上面"一镜到底"是<b>俯瞰视角</b>，每跳只闪一下边框 + 一行字幕。但客户技委经常追问：
+        <b>"Hop1 的 5 个子步骤具体怎么发生？""Hop2 的本地 Raylet 跟 GCS 是怎么对话的？"</b>
+        所以下面给每跳配一张<b>分镜特写</b>——把内部子步骤用编号方块按时序点亮，每个步骤独立标注耗时与作用，让客户能<b>逐帧追问</b>。
+    </div></div>
+
+    <!-- ① Hop 1 · S3 → Driver → Plasma -->
+    <div class="stage">
+        <div class="stage-title" style="font-size:14px;color:#ffd166;font-weight:800;margin-bottom:8px;">① 第一跳 · S3 → Driver → Plasma（数据进入 Ray 世界 · 5ms · 5 个子步骤）</div>
+        <svg viewBox="0 0 1000 280" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="h1-s3" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a0b0e0"/><stop offset="1" stop-color="#5a6a90"/></linearGradient>
+                <linearGradient id="h1-pink" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff9ad6"/><stop offset="1" stop-color="#c850c0"/></linearGradient>
+                <linearGradient id="h1-cyan" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5ae0ff"/><stop offset="1" stop-color="#3a8fd0"/></linearGradient>
+                <linearGradient id="h1-grn" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7effaa"/><stop offset="1" stop-color="#36c787"/></linearGradient>
+                <marker id="h1-a" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#ffd166"/></marker>
+            </defs>
+            <g transform="translate(20,110)"><rect width="110" height="60" rx="8" fill="url(#h1-s3)" opacity="0.85"/><text x="55" y="24" fill="#fff" font-size="12" text-anchor="middle" font-weight="800">S3 桶</text><text x="55" y="44" fill="rgba(255,255,255,0.85)" font-size="10" text-anchor="middle">312 KB</text></g>
+            <line x1="130" y1="140" x2="180" y2="140" stroke="#ffd166" stroke-width="2" marker-end="url(#h1-a)"/>
+            <text x="155" y="132" fill="#ffd166" font-size="10" text-anchor="middle">read_images()</text>
+            <rect x="180" y="40" width="660" height="200" rx="12" fill="rgba(200,80,192,0.08)" stroke="rgba(255,154,214,0.5)" stroke-dasharray="4,3"/>
+            <text x="510" y="34" fill="#ff9ad6" font-size="12" text-anchor="middle" font-weight="800">Driver Core Worker（Head Node 进程内）</text>
+            <g font-family="monospace">
+                <rect x="200" y="70" width="120" height="64" rx="6" fill="rgba(255,154,214,0.18)" stroke="rgba(255,154,214,0.4)"/>
+                <text x="260" y="90" fill="#ffd166" font-size="11" text-anchor="middle" font-weight="800">S1 CloudPickle</text>
+                <text x="260" y="108" fill="rgba(255,255,255,0.85)" font-size="9" text-anchor="middle">Python obj →</text>
+                <text x="260" y="122" fill="rgba(255,255,255,0.85)" font-size="9" text-anchor="middle">Arrow Batch</text>
+                <rect x="332" y="70" width="120" height="64" rx="6" fill="rgba(90,224,255,0.16)" stroke="rgba(90,224,255,0.45)"/>
+                <text x="392" y="90" fill="#5ae0ff" font-size="11" text-anchor="middle" font-weight="800">S2 写 Plasma</text>
+                <text x="392" y="108" fill="rgba(255,255,255,0.85)" font-size="9" text-anchor="middle">mmap 共享内存</text>
+                <text x="392" y="122" fill="rgba(255,255,255,0.85)" font-size="9" text-anchor="middle">Head Node 本地</text>
+                <rect x="464" y="70" width="120" height="64" rx="6" fill="rgba(255,209,102,0.16)" stroke="rgba(255,209,102,0.5)"/>
+                <text x="524" y="90" fill="#ffd166" font-size="11" text-anchor="middle" font-weight="800">S3 ObjectRef</text>
+                <text x="524" y="108" fill="rgba(255,255,255,0.85)" font-size="9" text-anchor="middle">ID=0x7fa3..01</text>
+                <text x="524" y="122" fill="rgba(255,255,255,0.85)" font-size="9" text-anchor="middle">owner=Driver</text>
+                <rect x="596" y="70" width="120" height="64" rx="6" fill="rgba(200,80,192,0.18)" stroke="rgba(200,80,192,0.5)"/>
+                <text x="656" y="90" fill="#ff9ad6" font-size="11" text-anchor="middle" font-weight="800">S4 注册 Owner</text>
+                <text x="656" y="108" fill="rgba(255,255,255,0.85)" font-size="9" text-anchor="middle">Ownership Table</text>
+                <text x="656" y="122" fill="rgba(255,255,255,0.85)" font-size="9" text-anchor="middle">本地 hash 表</text>
+                <rect x="728" y="70" width="120" height="64" rx="6" fill="rgba(126,255,170,0.16)" stroke="rgba(126,255,170,0.5)"/>
+                <text x="788" y="90" fill="#7effaa" font-size="11" text-anchor="middle" font-weight="800">S5 上报 GCS</text>
+                <text x="788" y="108" fill="rgba(255,255,255,0.85)" font-size="9" text-anchor="middle">对象位置</text>
+                <text x="788" y="122" fill="rgba(255,255,255,0.85)" font-size="9" text-anchor="middle">= Head Node</text>
+            </g>
+            <line x1="320" y1="102" x2="332" y2="102" stroke="rgba(255,209,102,0.6)" stroke-width="1.5" marker-end="url(#h1-a)"/>
+            <line x1="452" y1="102" x2="464" y2="102" stroke="rgba(255,209,102,0.6)" stroke-width="1.5" marker-end="url(#h1-a)"/>
+            <line x1="584" y1="102" x2="596" y2="102" stroke="rgba(255,209,102,0.6)" stroke-width="1.5" marker-end="url(#h1-a)"/>
+            <line x1="716" y1="102" x2="728" y2="102" stroke="rgba(255,209,102,0.6)" stroke-width="1.5" marker-end="url(#h1-a)"/>
+            <g transform="translate(220,180)"><rect width="160" height="40" rx="6" fill="url(#h1-cyan)" opacity="0.85"/><text x="80" y="18" fill="#0a1530" font-size="11" text-anchor="middle" font-weight="800">Plasma · Block_A</text><text x="80" y="32" fill="#0a1530" font-size="9" text-anchor="middle">5 MB · mmap 区</text></g>
+            <g transform="translate(660,180)"><rect width="180" height="40" rx="6" fill="url(#h1-grn)" opacity="0.9"/><text x="90" y="18" fill="#0a1530" font-size="11" text-anchor="middle" font-weight="800">GCS 全局元数据表</text><text x="90" y="32" fill="#0a1530" font-size="9" text-anchor="middle">Block_A → Head Node</text></g>
+            <line x1="392" y1="134" x2="300" y2="180" stroke="rgba(90,224,255,0.7)" stroke-width="1.5" marker-end="url(#h1-a)"/>
+            <line x1="788" y1="134" x2="750" y2="180" stroke="rgba(126,255,170,0.7)" stroke-width="1.5" marker-end="url(#h1-a)"/>
+            <g>
+                <rect x="200" y="70" width="120" height="64" rx="6" fill="none" stroke="#ffd166" stroke-width="2.5" opacity="0"><animate attributeName="opacity" values="0;1;1;0;0;0;0;0;0;0;0" keyTimes="0;0.05;0.18;0.20;0.4;0.5;0.6;0.7;0.85;0.95;1" dur="5s" repeatCount="indefinite"/></rect>
+                <rect x="332" y="70" width="120" height="64" rx="6" fill="none" stroke="#5ae0ff" stroke-width="2.5" opacity="0"><animate attributeName="opacity" values="0;0;0;1;1;0;0;0;0;0;0" keyTimes="0;0.18;0.20;0.22;0.40;0.42;0.6;0.7;0.85;0.95;1" dur="5s" repeatCount="indefinite"/></rect>
+                <rect x="464" y="70" width="120" height="64" rx="6" fill="none" stroke="#ffd166" stroke-width="2.5" opacity="0"><animate attributeName="opacity" values="0;0;0;0;0;1;1;0;0;0;0" keyTimes="0;0.18;0.20;0.40;0.42;0.44;0.62;0.64;0.85;0.95;1" dur="5s" repeatCount="indefinite"/></rect>
+                <rect x="596" y="70" width="120" height="64" rx="6" fill="none" stroke="#ff9ad6" stroke-width="2.5" opacity="0"><animate attributeName="opacity" values="0;0;0;0;0;0;0;1;1;0;0" keyTimes="0;0.18;0.20;0.40;0.42;0.62;0.64;0.66;0.82;0.84;1" dur="5s" repeatCount="indefinite"/></rect>
+                <rect x="728" y="70" width="120" height="64" rx="6" fill="none" stroke="#7effaa" stroke-width="2.5" opacity="0"><animate attributeName="opacity" values="0;0;0;0;0;0;0;0;0;1;1" keyTimes="0;0.18;0.20;0.40;0.42;0.62;0.64;0.82;0.84;0.86;1" dur="5s" repeatCount="indefinite"/></rect>
+            </g>
+            <text x="500" y="258" fill="rgba(255,255,255,0.7)" font-size="11" text-anchor="middle">⚠️ <tspan fill="#ffd166" font-weight="700">惰性执行</tspan>：read_images() 只构建 Block 元数据（文件列表+偏移），实际读取延迟到 map_batches() 触发 Task 时才发生</text>
+            <text x="500" y="274" fill="rgba(255,255,255,0.5)" font-size="10" text-anchor="middle" font-style="italic">.repartition() 和 .map_batches() 也只构建执行计划 · 不触发数据加载</text>
+        </svg>
+        <div class="stage-caption">▶ <b>S1→S5</b> 依次点亮：序列化 → 写 Plasma → 生成 ObjectRef → 注册 Ownership Table → 上报 GCS。蓝色斜线表示 S2 写入 Plasma 的物理位置，绿色斜线表示 S5 通知 GCS 全局元数据。</div>
+    </div>
+
+    <!-- ② Hop 2 · 调度 + 跨节点 Pull -->
+    <div class="stage">
+        <div class="stage-title" style="font-size:14px;color:#ff7eb6;font-weight:800;margin-bottom:8px;">② 第二跳 · Driver → Raylet → GPU Worker（调度决策 + 数据本地性 · 10ms · 5 个子步骤）</div>
+        <svg viewBox="0 0 1000 320" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="h2-pink" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff9ad6"/><stop offset="1" stop-color="#c850c0"/></linearGradient>
+                <linearGradient id="h2-yel" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffd166"/><stop offset="1" stop-color="#e08c00"/></linearGradient>
+                <linearGradient id="h2-grn" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7effaa"/><stop offset="1" stop-color="#36c787"/></linearGradient>
+                <linearGradient id="h2-mag" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff7eb6"/><stop offset="1" stop-color="#c850c0"/></linearGradient>
+                <linearGradient id="h2-cyan" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5ae0ff"/><stop offset="1" stop-color="#3a8fd0"/></linearGradient>
+                <marker id="h2-a" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#ffd166"/></marker>
+                <marker id="h2-am" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#ff7eb6"/></marker>
+            </defs>
+            <g transform="translate(20,50)"><rect width="130" height="80" rx="10" fill="url(#h2-pink)" opacity="0.9"/><text x="65" y="24" fill="#fff" font-size="12" text-anchor="middle" font-weight="800">Driver</text><text x="65" y="42" fill="rgba(255,255,255,0.85)" font-size="9" text-anchor="middle">map_batches(ocr_fn)</text><text x="65" y="58" fill="#ffd166" font-size="9" text-anchor="middle" font-weight="700">S1 构造 TaskSpec</text><text x="65" y="72" fill="rgba(255,255,255,0.6)" font-size="8" text-anchor="middle">resources: num_gpus=1</text></g>
+            <g transform="translate(200,50)"><rect width="160" height="80" rx="10" fill="url(#h2-yel)" opacity="0.85"/><text x="80" y="20" fill="#0a1530" font-size="12" text-anchor="middle" font-weight="800">本地 Raylet (Head)</text><text x="80" y="36" fill="#0a1530" font-size="9" text-anchor="middle">S2 RequestWorkerLease</text><text x="80" y="52" fill="#0a1530" font-size="9" text-anchor="middle">检查本地 GPU</text><text x="80" y="68" fill="#a02000" font-size="9" text-anchor="middle" font-weight="800">本地满载 → 问 GCS</text></g>
+            <g transform="translate(420,50)"><rect width="180" height="80" rx="10" fill="url(#h2-grn)" opacity="0.9"/><text x="90" y="20" fill="#0a1530" font-size="12" text-anchor="middle" font-weight="800">GCS 全局调度器</text><text x="90" y="36" fill="#0a1530" font-size="9" text-anchor="middle">S3 决策</text><text x="90" y="50" fill="#0a1530" font-size="9" text-anchor="middle">查 Block_A 位置 = Head</text><text x="90" y="64" fill="#0a1530" font-size="9" text-anchor="middle">查 GPU 资源 = GPU Node 1</text><text x="90" y="76" fill="#a02000" font-size="9" text-anchor="middle" font-weight="800">牺牲数据本地性</text></g>
+            <g transform="translate(660,50)"><rect width="150" height="80" rx="10" fill="url(#h2-yel)" opacity="0.85"/><text x="75" y="20" fill="#0a1530" font-size="12" text-anchor="middle" font-weight="800">GPU Node 1 Raylet</text><text x="75" y="36" fill="#0a1530" font-size="9" text-anchor="middle">S4 转发分配 Worker</text><text x="75" y="52" fill="#0a1530" font-size="9" text-anchor="middle">分配 GPU=1</text><text x="75" y="68" fill="#0a1530" font-size="9" text-anchor="middle">绑定 Block_A 引用</text></g>
+            <g transform="translate(845,50)"><rect width="140" height="80" rx="10" fill="url(#h2-mag)" opacity="0.9"/><text x="70" y="20" fill="#fff" font-size="12" text-anchor="middle" font-weight="800">GPU Node 1</text><text x="70" y="36" fill="rgba(255,255,255,0.85)" font-size="9" text-anchor="middle">Object Manager</text><text x="70" y="52" fill="#ffd166" font-size="9" text-anchor="middle" font-weight="800">S5 跨节点 Pull</text><text x="70" y="68" fill="rgba(255,255,255,0.85)" font-size="9" text-anchor="middle">→ 本地 Plasma</text></g>
+            <g transform="translate(20,180)"><rect width="200" height="50" rx="8" fill="url(#h2-cyan)" opacity="0.85"/><text x="100" y="20" fill="#0a1530" font-size="12" text-anchor="middle" font-weight="800">Head Plasma · Block_A</text><text x="100" y="38" fill="#0a1530" font-size="10" text-anchor="middle">5 MB 原图</text></g>
+            <g transform="translate(845,180)"><rect width="140" height="50" rx="8" fill="url(#h2-cyan)" opacity="0.85"/><text x="70" y="20" fill="#0a1530" font-size="12" text-anchor="middle" font-weight="800">GPU 1 Plasma</text><text x="70" y="38" fill="#0a1530" font-size="10" text-anchor="middle">Block_A（拉取）</text></g>
+            <line x1="220" y1="205" x2="845" y2="205" stroke="#ff7eb6" stroke-width="3" stroke-dasharray="6,4" marker-end="url(#h2-am)"/>
+            <text x="532" y="198" fill="#ff7eb6" font-size="12" text-anchor="middle" font-weight="800">🌐 gRPC 跨节点传输（5 MB / ~5ms · 全链路第 1 次跨节点）</text>
+            <text x="532" y="225" fill="rgba(255,255,255,0.6)" font-size="10" text-anchor="middle">后续同节点读全是 mmap 零拷贝 · 跨节点的另一次发生在 Hop 5（OCR_Result）</text>
+            <line x1="150" y1="90" x2="200" y2="90" stroke="#ffd166" stroke-width="2" marker-end="url(#h2-a)"/>
+            <line x1="360" y1="90" x2="420" y2="90" stroke="#ffd166" stroke-width="2" marker-end="url(#h2-a)"/>
+            <line x1="600" y1="90" x2="660" y2="90" stroke="#ffd166" stroke-width="2" marker-end="url(#h2-a)"/>
+            <line x1="810" y1="90" x2="845" y2="90" stroke="#ffd166" stroke-width="2" marker-end="url(#h2-a)"/>
+            <g>
+                <rect x="20" y="50" width="130" height="80" rx="10" fill="none" stroke="#ffd166" stroke-width="2.5" opacity="0"><animate attributeName="opacity" values="0;1;1;0;0;0;0;0;0;0;0" keyTimes="0;0.05;0.18;0.20;0.4;0.5;0.6;0.7;0.85;0.95;1" dur="6s" repeatCount="indefinite"/></rect>
+                <rect x="200" y="50" width="160" height="80" rx="10" fill="none" stroke="#ffd166" stroke-width="2.5" opacity="0"><animate attributeName="opacity" values="0;0;0;1;1;0;0;0;0;0;0" keyTimes="0;0.18;0.20;0.22;0.38;0.4;0.6;0.7;0.85;0.95;1" dur="6s" repeatCount="indefinite"/></rect>
+                <rect x="420" y="50" width="180" height="80" rx="10" fill="none" stroke="#7effaa" stroke-width="2.5" opacity="0"><animate attributeName="opacity" values="0;0;0;0;0;1;1;0;0;0;0" keyTimes="0;0.18;0.20;0.38;0.4;0.42;0.6;0.62;0.85;0.95;1" dur="6s" repeatCount="indefinite"/></rect>
+                <rect x="660" y="50" width="150" height="80" rx="10" fill="none" stroke="#ffd166" stroke-width="2.5" opacity="0"><animate attributeName="opacity" values="0;0;0;0;0;0;0;1;1;0;0" keyTimes="0;0.18;0.20;0.38;0.4;0.6;0.62;0.64;0.78;0.80;1" dur="6s" repeatCount="indefinite"/></rect>
+                <rect x="845" y="50" width="140" height="80" rx="10" fill="none" stroke="#ff7eb6" stroke-width="2.5" opacity="0"><animate attributeName="opacity" values="0;0;0;0;0;0;0;0;0;1;1" keyTimes="0;0.18;0.20;0.38;0.4;0.6;0.62;0.78;0.80;0.82;1" dur="6s" repeatCount="indefinite"/></rect>
+                <circle r="6" fill="#ff7eb6" opacity="0"><animate attributeName="opacity" values="0;0;0;0;0;0;0;0;1;1;0" keyTimes="0;0.1;0.2;0.4;0.5;0.6;0.7;0.78;0.80;0.95;1" dur="6s" repeatCount="indefinite"/><animateMotion dur="6s" repeatCount="indefinite" path="M 220 205 L 845 205" keyTimes="0;0.78;0.95;1" keyPoints="0;0;1;1"/></circle>
+            </g>
+            <text x="500" y="265" fill="rgba(255,255,255,0.7)" font-size="11" text-anchor="middle">📌 <tspan fill="#ffd166" font-weight="700">本地优先 / 全局兜底</tspan>：本地 Raylet 100μs 快速决策 · 满载才升级到 GCS 全局调度</text>
+            <text x="500" y="282" fill="rgba(255,255,255,0.6)" font-size="10" text-anchor="middle">数据本地性 vs 资源弹性 · GCS 在两者间博弈：宁可付 5ms 跨节点传输，也要让 GPU 不空转</text>
+            <text x="500" y="302" fill="rgba(255,255,255,0.5)" font-size="10" text-anchor="middle" font-style="italic">A. 本地有空闲 GPU → 走快速路径（~100μs）｜B. 本地满载 → 升级 GCS 全局决策（~10ms）</text>
+        </svg>
+        <div class="stage-caption">▶ <b>S1→S5</b> 顺序点亮调度链 · 红色虚线箭头是<b>全链路第 1 次跨节点 gRPC 传输</b>（Block_A 5 MB ~5ms）。后续同节点读全部走 mmap 零拷贝。</div>
+    </div>
+
+    <!-- ③ Hop 3 · Plasma → Worker → GPU 推理 -->
+    <div class="stage">
+        <div class="stage-title" style="font-size:14px;color:#c850ff;font-weight:800;margin-bottom:8px;">③ 第三跳 · Plasma → Actor Worker → GPU 推理（零拷贝执行 · 50ms · 5 个子步骤）</div>
+        <svg viewBox="0 0 1000 320" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="h3-cyan" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5ae0ff"/><stop offset="1" stop-color="#3a8fd0"/></linearGradient>
+                <linearGradient id="h3-yel" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffd166"/><stop offset="1" stop-color="#e08c00"/></linearGradient>
+                <linearGradient id="h3-pink" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff7eb6"/><stop offset="1" stop-color="#c850c0"/></linearGradient>
+                <linearGradient id="h3-prp" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#c850ff"/><stop offset="1" stop-color="#7b2cbf"/></linearGradient>
+                <marker id="h3-a" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#ffd166"/></marker>
+            </defs>
+            <text x="500" y="20" fill="rgba(255,255,255,0.7)" font-size="11" text-anchor="middle" font-style="italic">GPU Node 1 节点内（同进程组 · mmap 共享内存）</text>
+            <rect x="20" y="35" width="960" height="220" rx="14" fill="rgba(200,80,255,0.05)" stroke="rgba(200,80,255,0.3)" stroke-dasharray="6,4"/>
+            <g transform="translate(50,100)"><rect width="140" height="90" rx="10" fill="url(#h3-cyan)" opacity="0.85"/><text x="70" y="26" fill="#0a1530" font-size="12" text-anchor="middle" font-weight="800">本地 Plasma</text><text x="70" y="46" fill="#0a1530" font-size="10" text-anchor="middle">Block_A（已拉取）</text><text x="70" y="62" fill="#0a1530" font-size="10" text-anchor="middle">5 MB 共享内存</text><text x="70" y="78" fill="#a02000" font-size="9" text-anchor="middle" font-weight="800">mmap 区</text></g>
+            <g transform="translate(240,90)"><rect width="180" height="110" rx="10" fill="url(#h3-yel)" opacity="0.85"/><text x="90" y="22" fill="#0a1530" font-size="12" text-anchor="middle" font-weight="800">Task Worker (C++)</text><text x="90" y="40" fill="#0a1530" font-size="10" text-anchor="middle" font-weight="700">S1 接收 PushTask RPC</text><text x="90" y="56" fill="#0a1530" font-size="9" text-anchor="middle">S2 解析 args[0]=ObjectRef</text><text x="90" y="70" fill="#0a1530" font-size="9" text-anchor="middle">S3 mmap 映射 Plasma</text><text x="90" y="84" fill="#0a1530" font-size="9" text-anchor="middle">→ 进程地址空间</text><text x="90" y="100" fill="#a02000" font-size="9" text-anchor="middle" font-weight="800">⚡ 零拷贝</text></g>
+            <g transform="translate(470,90)"><rect width="180" height="110" rx="10" fill="url(#h3-pink)" opacity="0.9"/><text x="90" y="22" fill="#fff" font-size="12" text-anchor="middle" font-weight="800">OCR Actor Pool</text><text x="90" y="40" fill="rgba(255,255,255,0.95)" font-size="10" text-anchor="middle" font-weight="700">S4 .recognize.remote()</text><text x="90" y="56" fill="rgba(255,255,255,0.85)" font-size="9" text-anchor="middle">Actor Worker 常驻</text><text x="90" y="70" fill="rgba(255,255,255,0.85)" font-size="9" text-anchor="middle">PaddleOCR 模型已加载</text><text x="90" y="86" fill="#ffd166" font-size="10" text-anchor="middle" font-weight="800">📌 GPU 显存常驻</text><text x="90" y="100" fill="rgba(255,255,255,0.7)" font-size="9" text-anchor="middle">不重复加载模型</text></g>
+            <g transform="translate(700,90)"><rect width="240" height="110" rx="10" fill="url(#h3-prp)" opacity="0.92"/><text x="120" y="22" fill="#fff" font-size="12" text-anchor="middle" font-weight="800">S5 · GPU 推理</text><text x="120" y="40" fill="rgba(255,255,255,0.95)" font-size="10" text-anchor="middle">image bytes → GPU Tensor</text><text x="120" y="56" fill="rgba(255,255,255,0.95)" font-size="10" text-anchor="middle">PaddleOCR forward()</text><text x="120" y="74" fill="#ffd166" font-size="14" text-anchor="middle" font-weight="800">~50ms / 张</text><text x="120" y="92" fill="rgba(255,255,255,0.85)" font-size="10" text-anchor="middle">batch=32 → ~1.6s</text><text x="120" y="106" fill="rgba(255,255,255,0.7)" font-size="9" text-anchor="middle">输出：识别文本 + 置信度</text></g>
+            <line x1="190" y1="145" x2="240" y2="145" stroke="#5ae0ff" stroke-width="2.5" marker-end="url(#h3-a)"/>
+            <text x="215" y="138" fill="#5ae0ff" font-size="9" text-anchor="middle" font-weight="700">mmap</text>
+            <line x1="420" y1="145" x2="470" y2="145" stroke="#ffd166" stroke-width="2.5" marker-end="url(#h3-a)"/>
+            <text x="445" y="138" fill="#ffd166" font-size="9" text-anchor="middle" font-weight="700">.remote()</text>
+            <line x1="650" y1="145" x2="700" y2="145" stroke="#ff7eb6" stroke-width="2.5" marker-end="url(#h3-a)"/>
+            <text x="675" y="138" fill="#ff7eb6" font-size="9" text-anchor="middle" font-weight="700">forward</text>
+            <g>
+                <rect x="240" y="90" width="180" height="110" rx="10" fill="none" stroke="#ffd166" stroke-width="2.5" opacity="0"><animate attributeName="opacity" values="0;1;1;0;0;0;0;0;0" keyTimes="0;0.05;0.25;0.27;0.5;0.6;0.8;0.95;1" dur="5s" repeatCount="indefinite"/></rect>
+                <rect x="470" y="90" width="180" height="110" rx="10" fill="none" stroke="#ff7eb6" stroke-width="2.5" opacity="0"><animate attributeName="opacity" values="0;0;0;1;1;0;0;0;0" keyTimes="0;0.25;0.27;0.30;0.45;0.47;0.7;0.95;1" dur="5s" repeatCount="indefinite"/></rect>
+                <rect x="700" y="90" width="240" height="110" rx="10" fill="none" stroke="#c850ff" stroke-width="3" opacity="0"><animate attributeName="opacity" values="0;0;0;0;0;1;1;0;0" keyTimes="0;0.25;0.30;0.45;0.50;0.52;0.92;0.95;1" dur="5s" repeatCount="indefinite"/></rect>
+                <circle cx="820" cy="145" r="20" fill="rgba(200,80,255,0.2)" opacity="0"><animate attributeName="opacity" values="0;0;0;0;0;0.6;0.6;0;0" keyTimes="0;0.25;0.30;0.45;0.50;0.55;0.85;0.95;1" dur="5s" repeatCount="indefinite"/><animate attributeName="r" values="20;20;20;20;20;30;65;65;20" keyTimes="0;0.25;0.30;0.45;0.50;0.55;0.85;0.95;1" dur="5s" repeatCount="indefinite"/></circle>
+            </g>
+            <text x="500" y="278" fill="#ffd166" font-size="12" text-anchor="middle" font-weight="700">💡 为什么不是 Task 直接调 OCR？</text>
+            <text x="500" y="296" fill="rgba(255,255,255,0.85)" font-size="11" text-anchor="middle">Task Worker 是<b>一次性</b>的，跑完就回收，模型权重随之释放</text>
+            <text x="500" y="312" fill="rgba(255,255,255,0.85)" font-size="11" text-anchor="middle">Actor Worker 跟随 Actor 实例<b>常驻</b>，<tspan fill="#ffd166" font-weight="700">模型常驻 GPU 显存</tspan>，下一张图直接复用</text>
+        </svg>
+        <div class="stage-caption">▶ Worker mmap 映射 Plasma 实现<b>零拷贝</b>·走 Actor Pool 模式让 PaddleOCR 模型常驻 GPU 显存·这是节省 1-2 秒模型加载的关键设计。</div>
+    </div>
+
+    <!-- ④ Hop 4 · 结果回写（inline 优化） -->
+    <div class="stage">
+        <div class="stage-title" style="font-size:14px;color:#5ae0ff;font-weight:800;margin-bottom:8px;">④ 第四跳 · GPU Worker → Plasma → ObjectRef（结果回写 · 1ms · inline 优化）</div>
+        <svg viewBox="0 0 1000 320" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="h4-pink" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff7eb6"/><stop offset="1" stop-color="#c850c0"/></linearGradient>
+                <linearGradient id="h4-mag" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff9ad6"/><stop offset="1" stop-color="#c850c0"/></linearGradient>
+                <linearGradient id="h4-grn" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7effaa"/><stop offset="1" stop-color="#36c787"/></linearGradient>
+                <marker id="h4-a" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#ffd166"/></marker>
+            </defs>
+            <g transform="translate(20,130)"><rect width="140" height="80" rx="10" fill="url(#h4-pink)" opacity="0.9"/><text x="70" y="26" fill="#fff" font-size="12" text-anchor="middle" font-weight="800">OCR Actor</text><text x="70" y="44" fill="rgba(255,255,255,0.85)" font-size="10" text-anchor="middle">推理完成</text><text x="70" y="62" fill="#ffd166" font-size="10" text-anchor="middle" font-weight="700">return ocr_text</text></g>
+            <g transform="translate(200,50)"><polygon points="60,0 120,40 60,80 0,40" fill="rgba(255,209,102,0.15)" stroke="#ffd166" stroke-width="2"/><text x="60" y="36" fill="#ffd166" font-size="11" text-anchor="middle" font-weight="800">Core Worker</text><text x="60" y="52" fill="#ffd166" font-size="10" text-anchor="middle" font-weight="700">size &lt; 100 KiB?</text></g>
+            <g transform="translate(400,30)"><rect width="280" height="90" rx="10" fill="rgba(126,255,170,0.12)" stroke="#7effaa" stroke-width="2"/><text x="140" y="22" fill="#7effaa" font-size="13" text-anchor="middle" font-weight="800">情况 A · 小对象（&lt; 100 KiB）</text><text x="140" y="40" fill="rgba(255,255,255,0.9)" font-size="10" text-anchor="middle">→ 直接 inline 在 PushTask Response</text><text x="140" y="56" fill="rgba(255,255,255,0.9)" font-size="10" text-anchor="middle">→ <tspan font-weight="700">不经过 Plasma</tspan></text><text x="140" y="72" fill="#ffd166" font-size="10" text-anchor="middle" font-weight="700">ObjectRef 标记 "inlined"</text><text x="140" y="86" fill="#7effaa" font-size="9" text-anchor="middle" font-style="italic">⚡ 延迟最低 ~1ms（典型 OCR 单张）</text></g>
+            <g transform="translate(400,200)"><rect width="280" height="90" rx="10" fill="rgba(90,224,255,0.12)" stroke="#5ae0ff" stroke-width="2"/><text x="140" y="22" fill="#5ae0ff" font-size="13" text-anchor="middle" font-weight="800">情况 B · 大对象（≥ 100 KiB）</text><text x="140" y="40" fill="rgba(255,255,255,0.9)" font-size="10" text-anchor="middle">→ 写入<tspan font-weight="700">本地</tspan> Plasma（GPU Node 1）</text><text x="140" y="56" fill="rgba(255,255,255,0.9)" font-size="10" text-anchor="middle">→ ObjectRef 指向 Plasma 位置</text><text x="140" y="72" fill="#ffd166" font-size="10" text-anchor="middle" font-weight="700">Driver Ownership 记录：在 GPU Node 1</text><text x="140" y="86" fill="#5ae0ff" font-size="9" text-anchor="middle" font-style="italic">Raylet 心跳同步对象位置到 GCS</text></g>
+            <g transform="translate(720,50)"><rect width="260" height="80" rx="10" fill="url(#h4-mag)" opacity="0.85"/><text x="130" y="22" fill="#fff" font-size="12" text-anchor="middle" font-weight="800">Driver Ownership Table</text><text x="130" y="40" fill="rgba(255,255,255,0.9)" font-size="10" text-anchor="middle">{ ObjectRef_OCR_Result_001:</text><text x="130" y="55" fill="#ffd166" font-size="10" text-anchor="middle">  location="GPU Node 1",</text><text x="130" y="70" fill="#ffd166" font-size="10" text-anchor="middle">  size=87KB, status="inlined" }</text></g>
+            <g transform="translate(720,200)"><rect width="260" height="80" rx="10" fill="url(#h4-grn)" opacity="0.85"/><text x="130" y="22" fill="#0a1530" font-size="12" text-anchor="middle" font-weight="800">GCS（仅大对象同步）</text><text x="130" y="40" fill="#0a1530" font-size="10" text-anchor="middle">情况 B 才需 Raylet 心跳上报</text><text x="130" y="56" fill="#0a1530" font-size="10" text-anchor="middle">情况 A inline 不进 Plasma</text><text x="130" y="72" fill="#a02000" font-size="9" text-anchor="middle" font-weight="800">→ 不污染 GCS 全局表</text></g>
+            <line x1="160" y1="170" x2="200" y2="90" stroke="#ffd166" stroke-width="2" marker-end="url(#h4-a)"/>
+            <line x1="320" y1="70" x2="400" y2="60" stroke="#7effaa" stroke-width="2" marker-end="url(#h4-a)"/>
+            <line x1="320" y1="100" x2="400" y2="230" stroke="#5ae0ff" stroke-width="2" marker-end="url(#h4-a)"/>
+            <line x1="680" y1="60" x2="720" y2="80" stroke="#ffd166" stroke-width="1.5" marker-end="url(#h4-a)"/>
+            <line x1="680" y1="240" x2="720" y2="220" stroke="#5ae0ff" stroke-width="1.5" marker-end="url(#h4-a)"/>
+            <g>
+                <rect x="400" y="30" width="280" height="90" rx="10" fill="none" stroke="#7effaa" stroke-width="3" opacity="0"><animate attributeName="opacity" values="0;0;1;1;0;0;1;1;0" keyTimes="0;0.15;0.20;0.50;0.55;0.7;0.75;0.95;1" dur="4s" repeatCount="indefinite"/></rect>
+                <rect x="400" y="200" width="280" height="90" rx="10" fill="none" stroke="#5ae0ff" stroke-width="2" opacity="0"><animate attributeName="opacity" values="0;0;0;0;0;0.6;0.6;0;0" keyTimes="0;0.15;0.20;0.50;0.55;0.6;0.65;0.7;1" dur="4s" repeatCount="indefinite"/></rect>
+            </g>
+            <text x="500" y="305" fill="rgba(255,255,255,0.6)" font-size="10" text-anchor="middle" font-style="italic">📌 Ray 的 inline 优化：&lt; 100 KiB 直接走 RPC 内联，避开 Plasma 写入开销 → 单张 OCR 文本 ~87 KB 走 A 路径 ~1ms</text>
+        </svg>
+        <div class="stage-caption">▶ Core Worker 根据返回值大小走两条路径：<b>A 路径（&lt; 100 KiB inline）</b>是 OCR 单张文本的常规路径，绿色边框常亮；B 路径仅在大对象（如 batch 结果或图像）才触发。</div>
+    </div>
+
+    <!-- ⑤ Hop 5 · 跨节点后处理 -->
+    <div class="stage">
+        <div class="stage-title" style="font-size:14px;color:#7effaa;font-weight:800;margin-bottom:8px;">⑤ 第五跳 · ObjectRef → CPU Worker（跨节点后处理 · 15ms · 6 个子步骤）</div>
+        <svg viewBox="0 0 1000 360" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="h5-pink" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff7eb6"/><stop offset="1" stop-color="#c850c0"/></linearGradient>
+                <linearGradient id="h5-yel" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffd166"/><stop offset="1" stop-color="#e08c00"/></linearGradient>
+                <linearGradient id="h5-grn" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7effaa"/><stop offset="1" stop-color="#36c787"/></linearGradient>
+                <linearGradient id="h5-cyan" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5ae0ff"/><stop offset="1" stop-color="#3a8fd0"/></linearGradient>
+                <marker id="h5-a" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#ffd166"/></marker>
+                <marker id="h5-ag" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#7effaa"/></marker>
+            </defs>
+            <g transform="translate(20,50)">
+                <rect width="260" height="280" rx="12" fill="rgba(255,126,182,0.06)" stroke="rgba(255,126,182,0.4)" stroke-dasharray="5,3"/>
+                <text x="130" y="20" fill="#ff7eb6" font-size="12" text-anchor="middle" font-weight="800">GPU Node 1</text>
+                <rect x="20" y="40" width="220" height="60" rx="8" fill="url(#h5-cyan)" opacity="0.85"/>
+                <text x="130" y="64" fill="#0a1530" font-size="11" text-anchor="middle" font-weight="800">本地 Plasma</text>
+                <text x="130" y="84" fill="#0a1530" font-size="10" text-anchor="middle">OCR_Result（87 KB · 文本）</text>
+                <rect x="20" y="120" width="220" height="60" rx="8" fill="url(#h5-yel)" opacity="0.85"/>
+                <text x="130" y="142" fill="#0a1530" font-size="11" text-anchor="middle" font-weight="800">本地 Raylet</text>
+                <text x="130" y="162" fill="#0a1530" font-size="10" text-anchor="middle">S1 检查本地 CPU 配额</text>
+                <text x="130" y="176" fill="#a02000" font-size="9" text-anchor="middle" font-weight="800">CPU 配额少 → 无空余</text>
+                <rect x="20" y="200" width="220" height="60" rx="8" fill="url(#h5-pink)" opacity="0.7"/>
+                <text x="130" y="222" fill="#fff" font-size="11" text-anchor="middle" font-weight="800">Object Manager</text>
+                <text x="130" y="242" fill="rgba(255,255,255,0.9)" font-size="10" text-anchor="middle">S3 准备 Pull 远端</text>
+            </g>
+            <g transform="translate(320,130)"><rect width="180" height="120" rx="10" fill="url(#h5-grn)" opacity="0.9"/><text x="90" y="22" fill="#0a1530" font-size="13" text-anchor="middle" font-weight="800">GCS 全局调度</text><text x="90" y="42" fill="#0a1530" font-size="10" text-anchor="middle">S2 决策</text><text x="90" y="58" fill="#0a1530" font-size="10" text-anchor="middle">查 CPU 节点列表</text><text x="90" y="74" fill="#0a1530" font-size="10" text-anchor="middle">CPU Node N CPU 充足</text><text x="90" y="92" fill="#0a1530" font-size="10" text-anchor="middle">→ 调到 CPU Node N</text><text x="90" y="110" fill="#a02000" font-size="9" text-anchor="middle" font-weight="800">postprocess cpu=0.5</text></g>
+            <g transform="translate(540,50)">
+                <rect width="440" height="280" rx="12" fill="rgba(126,255,170,0.06)" stroke="rgba(126,255,170,0.4)" stroke-dasharray="5,3"/>
+                <text x="220" y="20" fill="#7effaa" font-size="12" text-anchor="middle" font-weight="800">CPU Node N（CPU 充足）</text>
+                <rect x="20" y="40" width="200" height="60" rx="8" fill="url(#h5-cyan)" opacity="0.85"/>
+                <text x="120" y="62" fill="#0a1530" font-size="11" text-anchor="middle" font-weight="800">本地 Plasma</text>
+                <text x="120" y="82" fill="#0a1530" font-size="10" text-anchor="middle">S4 收到拉取的 OCR_Result</text>
+                <rect x="240" y="40" width="180" height="60" rx="8" fill="url(#h5-grn)" opacity="0.7"/>
+                <text x="330" y="62" fill="#0a1530" font-size="11" text-anchor="middle" font-weight="800">CPU Worker</text>
+                <text x="330" y="80" fill="#0a1530" font-size="10" text-anchor="middle">S5 mmap 读 + 反序列化</text>
+                <rect x="120" y="120" width="200" height="60" rx="8" fill="rgba(126,255,170,0.18)" stroke="rgba(126,255,170,0.6)" stroke-width="2"/>
+                <text x="220" y="142" fill="#7effaa" font-size="11" text-anchor="middle" font-weight="800">postprocess() 执行</text>
+                <text x="220" y="158" fill="rgba(255,255,255,0.85)" font-size="10" text-anchor="middle">clean_text + format</text>
+                <text x="220" y="172" fill="#ffd166" font-size="9" text-anchor="middle" font-weight="700">~5ms / 张</text>
+                <rect x="120" y="200" width="200" height="60" rx="8" fill="url(#h5-cyan)" opacity="0.7"/>
+                <text x="220" y="222" fill="#0a1530" font-size="11" text-anchor="middle" font-weight="800">S6 写回本地 Plasma</text>
+                <text x="220" y="242" fill="#0a1530" font-size="10" text-anchor="middle">或 inline 返回 Driver</text>
+            </g>
+            <line x1="280" y1="290" x2="540" y2="80" stroke="#7effaa" stroke-width="3" stroke-dasharray="6,4" marker-end="url(#h5-ag)"/>
+            <text x="410" y="190" fill="#7effaa" font-size="11" text-anchor="middle" font-weight="800" transform="rotate(-22 410 190)">🌐 全链路第 2 次跨节点</text>
+            <text x="410" y="207" fill="rgba(255,255,255,0.7)" font-size="10" text-anchor="middle" font-style="italic" transform="rotate(-22 410 207)">87 KB · ~10ms</text>
+            <line x1="240" y1="200" x2="320" y2="170" stroke="#ffd166" stroke-width="1.5" marker-end="url(#h5-a)"/>
+            <text x="280" y="200" fill="#ffd166" font-size="9" text-anchor="middle">问 GCS</text>
+            <line x1="500" y1="170" x2="540" y2="80" stroke="#ffd166" stroke-width="1.5" marker-end="url(#h5-a)"/>
+            <text x="528" y="120" fill="#ffd166" font-size="9" text-anchor="middle">分配 Worker</text>
+            <g>
+                <rect x="40" y="170" width="220" height="60" rx="8" fill="none" stroke="#ffd166" stroke-width="2.5" opacity="0"><animate attributeName="opacity" values="0;1;1;0;0;0;0;0;0;0;0" keyTimes="0;0.05;0.18;0.20;0.4;0.5;0.6;0.7;0.85;0.95;1" dur="6s" repeatCount="indefinite"/></rect>
+                <rect x="320" y="130" width="180" height="120" rx="10" fill="none" stroke="#7effaa" stroke-width="2.5" opacity="0"><animate attributeName="opacity" values="0;0;0;1;1;0;0;0;0;0;0" keyTimes="0;0.18;0.20;0.22;0.36;0.4;0.6;0.7;0.85;0.95;1" dur="6s" repeatCount="indefinite"/></rect>
+                <rect x="40" y="250" width="220" height="60" rx="8" fill="none" stroke="#ff7eb6" stroke-width="2.5" opacity="0"><animate attributeName="opacity" values="0;0;0;0;0;1;1;0;0;0;0" keyTimes="0;0.18;0.20;0.36;0.4;0.42;0.55;0.6;0.85;0.95;1" dur="6s" repeatCount="indefinite"/></rect>
+                <rect x="560" y="90" width="200" height="60" rx="8" fill="none" stroke="#5ae0ff" stroke-width="2.5" opacity="0"><animate attributeName="opacity" values="0;0;0;0;0;0;0;1;1;0;0" keyTimes="0;0.18;0.20;0.36;0.4;0.55;0.6;0.62;0.74;0.78;1" dur="6s" repeatCount="indefinite"/></rect>
+                <rect x="660" y="170" width="200" height="60" rx="8" fill="none" stroke="#7effaa" stroke-width="3" opacity="0"><animate attributeName="opacity" values="0;0;0;0;0;0;0;0;0;1;1" keyTimes="0;0.18;0.20;0.36;0.4;0.55;0.62;0.74;0.78;0.80;1" dur="6s" repeatCount="indefinite"/></rect>
+                <circle r="6" fill="#7effaa" opacity="0"><animate attributeName="opacity" values="0;0;0;0;0;0;1;1;0;0;0" keyTimes="0;0.18;0.20;0.36;0.4;0.55;0.60;0.70;0.72;0.85;1" dur="6s" repeatCount="indefinite"/><animateMotion dur="6s" repeatCount="indefinite" path="M 280 290 L 540 80" keyTimes="0;0.60;0.72;1" keyPoints="0;0;1;1"/></circle>
+            </g>
+            <text x="500" y="350" fill="rgba(255,255,255,0.6)" font-size="11" text-anchor="middle">📊 全链路<tspan font-weight="700">仅 2 次</tspan>跨节点：<tspan fill="#ff7eb6" font-weight="700">Hop2 拉原图（5MB ~5ms）</tspan> + <tspan fill="#7effaa" font-weight="700">Hop5 拉 OCR 结果（87KB ~10ms）</tspan>，其余全是同节点 mmap</text>
+        </svg>
+        <div class="stage-caption">▶ <b>S1→S6</b> 顺序：本地 Raylet 检查 → GCS 决策跨节点 → Object Manager 拉数据 → CPU Worker 反序列化 → 后处理 → 写回。绿色虚线箭头是<b>全链路第 2 次（也是最后一次）跨节点传输</b>。</div>
+    </div>
+
+    <!-- ⑥ Hop 6 · ray.get + Write Lance -->
+    <div class="stage">
+        <div class="stage-title" style="font-size:14px;color:#c850ff;font-weight:800;margin-bottom:8px;">⑥ 第六跳 · ray.get() → write_lance（最终收集与持久化 · 8ms · 5 个子步骤 · 并行不汇聚）</div>
+        <svg viewBox="0 0 1000 380" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <linearGradient id="h6-mag" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff9ad6"/><stop offset="1" stop-color="#c850c0"/></linearGradient>
+                <linearGradient id="h6-cyan" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5ae0ff"/><stop offset="1" stop-color="#3a8fd0"/></linearGradient>
+                <linearGradient id="h6-prp" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#c850ff"/><stop offset="1" stop-color="#7b2cbf"/></linearGradient>
+                <linearGradient id="h6-s3" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a0b0e0"/><stop offset="1" stop-color="#5a6a90"/></linearGradient>
+                <marker id="h6-a" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#ffd166"/></marker>
+            </defs>
+            <g transform="translate(20,50)"><rect width="180" height="100" rx="10" fill="url(#h6-mag)" opacity="0.9"/><text x="90" y="22" fill="#fff" font-size="12" text-anchor="middle" font-weight="800">Driver</text><text x="90" y="40" fill="rgba(255,255,255,0.9)" font-size="10" text-anchor="middle">ds.write_lance(s3://...)</text><text x="90" y="58" fill="#ffd166" font-size="10" text-anchor="middle" font-weight="700">S1 Ray Data Collect</text><text x="90" y="74" fill="rgba(255,255,255,0.85)" font-size="9" text-anchor="middle">每 Block 已是 Arrow Batch</text><text x="90" y="90" fill="rgba(255,255,255,0.85)" font-size="9" text-anchor="middle">S2 查 Ownership Table</text></g>
+            <g transform="translate(240,30)">
+                <text x="280" y="14" fill="#ffd166" font-size="11" text-anchor="middle" font-weight="800">S3 · 各节点 Block 状态（同节点 mmap / 远程 Pull 二选一）</text>
+                <rect x="0" y="20" width="560" height="140" rx="10" fill="rgba(90,224,255,0.05)" stroke="rgba(90,224,255,0.3)" stroke-dasharray="4,3"/>
+                <g transform="translate(20,40)"><rect width="120" height="100" rx="8" fill="url(#h6-cyan)" opacity="0.85"/><text x="60" y="22" fill="#0a1530" font-size="11" text-anchor="middle" font-weight="800">Block_A</text><text x="60" y="40" fill="#0a1530" font-size="9" text-anchor="middle">GPU Node 1</text><text x="60" y="58" fill="#0a1530" font-size="9" text-anchor="middle">同节点 mmap</text><text x="60" y="76" fill="#a02000" font-size="9" text-anchor="middle" font-weight="800">⚡ 零拷贝直读</text><text x="60" y="92" fill="#0a1530" font-size="9" text-anchor="middle">~0.5ms</text></g>
+                <g transform="translate(160,40)"><rect width="120" height="100" rx="8" fill="url(#h6-cyan)" opacity="0.6"/><text x="60" y="22" fill="#0a1530" font-size="11" text-anchor="middle" font-weight="800">Block_B</text><text x="60" y="40" fill="#0a1530" font-size="9" text-anchor="middle">CPU Node N（远）</text><text x="60" y="58" fill="#0a1530" font-size="9" text-anchor="middle">Object Manager Pull</text><text x="60" y="76" fill="#a02000" font-size="9" text-anchor="middle" font-weight="800">→ 本地 Plasma</text><text x="60" y="92" fill="#0a1530" font-size="9" text-anchor="middle">~3ms</text></g>
+                <g transform="translate(300,40)"><rect width="120" height="100" rx="8" fill="url(#h6-cyan)" opacity="0.85"/><text x="60" y="22" fill="#0a1530" font-size="11" text-anchor="middle" font-weight="800">Block_C</text><text x="60" y="40" fill="#0a1530" font-size="9" text-anchor="middle">GPU Node 2</text><text x="60" y="58" fill="#0a1530" font-size="9" text-anchor="middle">同节点 mmap</text><text x="60" y="76" fill="#a02000" font-size="9" text-anchor="middle" font-weight="800">⚡ 零拷贝直读</text><text x="60" y="92" fill="#0a1530" font-size="9" text-anchor="middle">~0.5ms</text></g>
+                <g transform="translate(440,40)"><rect width="100" height="100" rx="8" fill="rgba(90,224,255,0.15)" stroke="rgba(90,224,255,0.4)" stroke-dasharray="3,2"/><text x="50" y="22" fill="rgba(255,255,255,0.7)" font-size="11" text-anchor="middle" font-weight="800">···</text><text x="50" y="50" fill="rgba(255,255,255,0.7)" font-size="9" text-anchor="middle">Block_N</text><text x="50" y="68" fill="rgba(255,255,255,0.6)" font-size="9" text-anchor="middle">分布在</text><text x="50" y="82" fill="rgba(255,255,255,0.6)" font-size="9" text-anchor="middle">各 Worker 节点</text></g>
+            </g>
+            <g transform="translate(820,30)"><rect width="160" height="160" rx="10" fill="url(#h6-prp)" opacity="0.92"/><text x="80" y="22" fill="#fff" font-size="12" text-anchor="middle" font-weight="800">S4 · Lance Writer</text><text x="80" y="40" fill="rgba(255,255,255,0.9)" font-size="10" text-anchor="middle" font-weight="700">每 Block 独立写一文件</text><text x="80" y="56" fill="rgba(255,255,255,0.85)" font-size="9" text-anchor="middle">📌 不汇聚到单点！</text><text x="80" y="78" fill="#ffd166" font-size="10" text-anchor="middle" font-weight="700">part-0000.lance</text><text x="80" y="94" fill="#ffd166" font-size="10" text-anchor="middle" font-weight="700">part-0001.lance</text><text x="80" y="110" fill="#ffd166" font-size="10" text-anchor="middle" font-weight="700">part-0002.lance</text><text x="80" y="126" fill="rgba(255,255,255,0.7)" font-size="9" text-anchor="middle">···</text><text x="80" y="146" fill="#ffd166" font-size="11" text-anchor="middle" font-weight="800">N 个 Worker 并行</text></g>
+            <g transform="translate(820,220)"><rect width="160" height="80" rx="10" fill="url(#h6-s3)" opacity="0.9"/><text x="80" y="22" fill="#fff" font-size="12" text-anchor="middle" font-weight="800">S5 · S3 写回</text><text x="80" y="40" fill="rgba(255,255,255,0.85)" font-size="10" text-anchor="middle">s3://bucket/results/</text><text x="80" y="56" fill="#ffd166" font-size="10" text-anchor="middle">part-00000.lance</text><text x="80" y="70" fill="#ffd166" font-size="10" text-anchor="middle">···  part-00999.lance</text></g>
+            <line x1="200" y1="100" x2="240" y2="100" stroke="#ffd166" stroke-width="2" marker-end="url(#h6-a)"/>
+            <line x1="800" y1="100" x2="820" y2="100" stroke="#ffd166" stroke-width="2" marker-end="url(#h6-a)"/>
+            <line x1="900" y1="190" x2="900" y2="220" stroke="#c850ff" stroke-width="2" marker-end="url(#h6-a)"/>
+            <text x="906" y="208" fill="#c850ff" font-size="10">并行上传</text>
+            <g transform="translate(20,200)">
+                <text x="0" y="14" fill="#7effaa" font-size="13" font-weight="800">📌 Lance Writer 关键设计：每 Block 独立成文件 · 不汇聚单点 · 写入并行度 = Block 数</text>
+                <rect x="0" y="30" width="780" height="2" fill="rgba(126,255,170,0.4)"/>
+                <g font-size="10" fill="rgba(255,255,255,0.85)">
+                    <text x="0" y="56">▶ <tspan fill="#ffd166" font-weight="700">同节点 Block</tspan>：mmap 直读 → 反序列化为 Arrow → 写本地磁盘临时文件 → 上传 S3</text>
+                    <text x="0" y="76">▶ <tspan fill="#ffd166" font-weight="700">远程 Block</tspan>：Object Manager 跨节点 Pull → 落到本地 Plasma → 后续步骤同上</text>
+                    <text x="0" y="96">▶ <tspan fill="#ffd166" font-weight="700">并行写入</tspan>：1000 个 Block 由 N 个 Worker 同时写 → S3 形成 part-00000~00999.lance</text>
+                    <text x="0" y="116">▶ <tspan fill="#ff7eb6" font-weight="700">对比 Spark</tspan>：write 是 sink 算子，最后一个 Stage 全部 partition 通常需要 collect 到 driver 或单点 commit；Ray 直接每节点独立 commit S3，<tspan fill="#7effaa" font-weight="700">无单点瓶颈</tspan></text>
+                </g>
+            </g>
+            <g>
+                <rect x="20" y="50" width="180" height="100" rx="10" fill="none" stroke="#ffd166" stroke-width="2.5" opacity="0"><animate attributeName="opacity" values="0;1;1;0;0;0;0;0;0" keyTimes="0;0.05;0.20;0.22;0.4;0.5;0.7;0.95;1" dur="5s" repeatCount="indefinite"/></rect>
+                <rect x="240" y="50" width="560" height="140" rx="10" fill="none" stroke="#5ae0ff" stroke-width="2.5" opacity="0"><animate attributeName="opacity" values="0;0;0;1;1;0;0;0;0" keyTimes="0;0.20;0.22;0.30;0.55;0.58;0.7;0.95;1" dur="5s" repeatCount="indefinite"/></rect>
+                <rect x="820" y="30" width="160" height="160" rx="10" fill="none" stroke="#c850ff" stroke-width="3" opacity="0"><animate attributeName="opacity" values="0;0;0;0;0;1;1;0;0" keyTimes="0;0.20;0.22;0.55;0.58;0.60;0.85;0.95;1" dur="5s" repeatCount="indefinite"/></rect>
+                <rect x="820" y="220" width="160" height="80" rx="10" fill="none" stroke="#a0b0e0" stroke-width="2.5" opacity="0"><animate attributeName="opacity" values="0;0;0;0;0;0;0;1;1" keyTimes="0;0.20;0.22;0.55;0.58;0.85;0.88;0.90;1" dur="5s" repeatCount="indefinite"/></rect>
+            </g>
+            <text x="500" y="360" fill="rgba(255,255,255,0.6)" font-size="11" text-anchor="middle" font-style="italic">最终 S3 目录形成 N 个 part-*.lance 文件 · Lance 后续可直接做向量索引（IVF_PQ / HNSW）支持向量检索</text>
+        </svg>
+        <div class="stage-caption">▶ <b>S1→S5</b> 顺序：Driver Collect → 查 Ownership Table → 各节点 Block（同节点 mmap / 远程 Pull）→ Lance Writer 每 Block 独立写一文件 → 并行上传 S3。<b>对比 Spark：无单点 commit 瓶颈</b>。</div>
+    </div>
+
+    <!-- 6 跳分镜总结 -->
+    <div class="takeaway-box"><div class="label">🎯 9.6.6 分镜要点 · 一句话总结</div><div class="text">
+        <b>6 跳 31 个子步骤</b>，每个子步骤都是真实的 Ray 内部行为：
+        <span style="color:#ffd166;">①序列化+Plasma+ObjectRef+Owner+GCS（5 步）</span>
+        → <span style="color:#ff7eb6;">②TaskSpec+本地Raylet+GCS+远端Raylet+ObjectMgr Pull（5 步）</span>
+        → <span style="color:#c850ff;">③PushTask+解析ObjectRef+mmap+ActorPool+GPU推理（5 步）</span>
+        → <span style="color:#5ae0ff;">④判定大小→inline 或 写Plasma+Owner记录（4 步）</span>
+        → <span style="color:#7effaa;">⑤本地Raylet+GCS决策+ObjectMgr Pull+CPU Worker+postprocess+回写（6 步）</span>
+        → <span style="color:#c850ff;">⑥Collect+查Owner+各节点 mmap/Pull+Lance独立写+并行上 S3（5 步）</span>。<br>
+        <b>一句话记忆法</b>：<tspan style="color:#ffd166;">序列化进 Plasma，调度跨节点拉，mmap 零拷贝推理，inline 跳过大对象，跨节点拉后处理，每节点独立写 S3</tspan>。
+    </div></div>
+
     <div class="concept-box"><div class="label">⏱️ 9.7 全链路延迟分析（单张图片视角）</div><div class="text">
         把 6 跳的延迟加起来，就能算出 Ray 集群处理一张图的端到端时间。<br>
         <b>测算前提</b>：节点间 10 GbE（实测 ~1 GB/s）、Plasma 共享内存零拷贝（mmap，<b>不计入网络</b>）、对象典型尺寸<b>原图 5MB / OCR 文本 &lt;100 KiB / batch 结果 ~200KB</b>。
