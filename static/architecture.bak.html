@@ -769,8 +769,8 @@ body.flip-mode .chapter::-webkit-scrollbar-thumb:hover { background: rgba(255,20
         <a href="/" class="home">← 主页</a>
         <a href="#exec-summary">📊 执行摘要</a>
         <a href="#ch-0">📁 项目档案</a>
-        <a href="#ch-10">⚡ 选型对比</a>
-        <a href="#ch-9">🔬 全链路实战</a>
+        <a href="#ch-8">⚡ 5 阶段流水线</a>
+        <a href="#ch-9">🔬 6 跳全链路</a>
         <a href="#cta">✍️ 决策签字</a>
         <a href="/scenarios">15 场景</a>
         <a href="/stories">行业故事</a>
@@ -802,7 +802,7 @@ body.flip-mode .chapter::-webkit-scrollbar-thumb:hover { background: rgba(255,20
         如何用 11 章故事，把 Ray 装配进客户场景。
     </p>
     <div class="cover-meta">
-        <div class="cover-meta-item"><div class="k">章节</div><div class="v">10 章 + 尾声</div></div>
+        <div class="cover-meta-item"><div class="k">章节</div><div class="v">11 章 + 尾声</div></div>
         <div class="cover-meta-item"><div class="k">数据规模</div><div class="v">100 万图</div></div>
         <div class="cover-meta-item"><div class="k">提速比</div><div class="v">84×</div></div>
         <div class="cover-meta-item"><div class="k">集群</div><div class="v">8 GPU + 16 CPU</div></div>
@@ -814,7 +814,7 @@ body.flip-mode .chapter::-webkit-scrollbar-thumb:hover { background: rgba(255,20
 <!-- ============ 目录 ============ -->
 <section class="chapter book-toc" id="book-toc" data-title="目录" data-skip-pagination="1">
     <h2>目 录</h2>
-    <div class="toc-sub">CONTENTS · 售前推进项目的 10 章故事线（按"痛 → 选 → 理 → 证 → 行"五段排布）</div>
+    <div class="toc-sub">CONTENTS · 售前推进项目的 11 章故事线</div>
     <div class="toc-divider"></div>
     <ol id="toc-list"></ol>
 </section>
@@ -856,9 +856,9 @@ body.flip-mode .chapter::-webkit-scrollbar-thumb:hover { background: rgba(255,20
             </p>
         </div>
 
-        <!-- 金字塔结构（按新骨架：痛点 → 选型 → 原理 → 实战 → 落地） -->
+        <!-- 金字塔结构（大白话版） -->
         <div class="pyramid-wrap">
-            <div class="py-title">PYRAMID · 全书 10 章 · 按客户决策心智重排「痛 / 选 / 理 / 证 / 行」</div>
+            <div class="py-title">PYRAMID · 全书 11 章 · 拆成「为什么 / 怎么做 / 怎么落地」三段说人话</div>
             <div class="pyramid">
                 <div class="py-tier py-t1">
                     <span class="py-mark">CORE THESIS · 一句话核心</span>
@@ -866,29 +866,31 @@ body.flip-mode .chapter::-webkit-scrollbar-thumb:hover { background: rgba(255,20
                 </div>
                 <div class="py-tier py-t2">
                     <div class="py-pillar p1">
-                        <span class="py-mark">PILLAR 1 · 痛 + 选（CIO 看这一段就够）</span>
-                        客户痛在哪 + Ray vs Spark vs Dask 怎么选 · 第 1–2 章
+                        <span class="py-mark">PILLAR 1 · 为什么用 Ray</span>
+                        客户痛在哪 + 为什么 Spark 顶不住 · 第 1–2 章
                     </div>
                     <div class="py-pillar p2">
-                        <span class="py-mark">PILLAR 2 · 理（架构师看这一段）</span>
-                        哲学推导 + 四层架构 + 双引擎 + 调度 + 容错 + Gang · 第 3–8 章
+                        <span class="py-mark">PILLAR 2 · Ray 怎么干活</span>
+                        集群长啥样 + 任务怎么派 + 出错怎么救 · 第 3–7 章
                     </div>
                     <div class="py-pillar p3">
-                        <span class="py-mark">PILLAR 3 · 证 + 行（工程师看这一段）</span>
-                        全链路实战（5 阶段 + 6 跳合体）+ 上线交付 · 第 9–10 章
+                        <span class="py-mark">PILLAR 3 · 怎么落地交付</span>
+                        5 阶段流水线 + 89ms 全程跟踪 + 选型 + 上线 · 第 8–11 章
                     </div>
                 </div>
                 <div class="py-tier py-t3">
                     <a class="py-leaf" href="#ch-1">CH1 痛点</a>
-                    <a class="py-leaf" href="#ch-10">CH2 选型 + 边界</a>
-                    <a class="py-leaf" href="#ch-2">CH3 哲学</a>
-                    <a class="py-leaf" href="#ch-3">CH4 四层</a>
-                    <a class="py-leaf" href="#ch-4">CH5 双引擎</a>
-                    <a class="py-leaf" href="#ch-5">CH6 调度</a>
-                    <a class="py-leaf" href="#ch-6">CH7 容错</a>
-                    <a class="py-leaf" href="#ch-7">CH8 Gang</a>
-                    <a class="py-leaf" href="#ch-8">CH9 全链路</a>
-                    <a class="py-leaf" href="#ch-11">CH10 上线</a>
+                    <a class="py-leaf" href="#ch-2">CH2 选型</a>
+                    <a class="py-leaf" href="#ch-3">CH3 四层架构</a>
+                    <a class="py-leaf" href="#ch-4">CH4 双引擎</a>
+                    <a class="py-leaf" href="#ch-5">CH5 调度</a>
+                    <a class="py-leaf" href="#ch-6">CH6 容错</a>
+                    <a class="py-leaf" href="#ch-7">CH7 Gang</a>
+                    <a class="py-leaf" href="#ch-8">CH8 5 阶段</a>
+                    <a class="py-leaf" href="#ch-9">CH9 6 跳</a>
+                    <a class="py-leaf" href="#ch-10">CH10 对比</a>
+                    <a class="py-leaf" href="#ch-10-5">CH10.5 边界</a>
+                    <a class="py-leaf" href="#ch-11">CH11 上线</a>
                 </div>
             </div>
         </div>
@@ -1348,485 +1350,14 @@ results = ray.<span class="fn">get</span>(refs)</pre>
     <div class="takeaway-box"><span class="label">📌 售前一句话</span>
         Ray = <b>用本地 Python 语法表达分布式计算</b>。后面 10 章，就是把 14天→4小时 这个承诺<b>层层兑现</b>。
     </div>
-    <div class="next-chapter"><a href="#ch-10">下一章：客户先问的第一题 · Ray vs Spark vs Dask 怎么选 ↓</a></div>
-</section>
-<!-- ============ CH 10 · 选型对比 ============ -->
-<section class="chapter" id="ch-10" data-title="选型 · Ray vs Spark vs Dask">
-    <div class="chapter-header">
-        <span class="chapter-num">CHAPTER 02</span>
-        <div><div class="chapter-title">选型速查 · Ray vs Spark vs Dask</div><div class="chapter-subtitle">客户先问的第一题：那我现有的 Spark 怎么办？</div></div>
-    </div>
-    <div class="analogy-hook">
-        <div class="ah-label">先听个比喻</div>
-        <div class="ah-text">三家工具像<b>厨房三台机器</b>：Spark 是<b>大锅蒸笼</b>（量大、稳）、Dask 是<b>多档电饭煲</b>（科学家用 NumPy / Pandas 顺手扩展）、Ray 是<b>分子料理机</b>（AI 推理 / 模型服务 / 强化学习专用）。<b>不是替代，是各管一摊</b>。</div>
-    </div>
-    <div class="top-line">
-        <span class="tl-label">TOP-LINE · 本章一句话</span>
-        <div class="tl-text">三家分工井水不犯河水：<b>Spark 守夜批报表</b>（每天跑一次的财务对账）、<span class="jargon" data-plain="Dask = Python 生态分布式框架，专门把 NumPy/Pandas 单机算力扩展到集群">Dask 守科学计算</span>（实验室常用）、<b>Ray 守 AI 推理 + 模型服务</b>（这次的 OCR/YOLO）。<b>同一份数据三家共用，不重复存</b>。</div>
-    </div>
-    <div class="scene-card">
-        <div class="scene-line">第 10 幕 · 客户复盘 · 给 Spark 一个公道</div>
-        <div class="scene-text">
-            方案过审了，但客户技术副总私下问售前：<b>"那我们的 Spark 集群以后是不是要拆掉？"</b>
-            <b>不是。</b>资深售前架构师不是"全 Ray 论"——
-            报表分析、月度结算、数仓 ETL 这些<b>分钟级粗粒度批处理</b>，Spark 仍然是性价比之王。
-            <b>Ray 主场是 AI 工作负载</b>（OCR/YOLO/训练/RL/推理），<b>Spark 主场是 SQL/批处理</b>，<b>Dask 主场是单机 pandas 装不下</b>。
-            三家工具的边界要给客户讲清——这是售前的诚信底线。
-        </div>
-    </div>
-    <div class="intuition-box"><div class="label">💡 别再纠结了</div><div class="text">
-        三个框架不是替代关系，是<b>不同问题的最优解</b>。看完这张表你就知道怎么选了。
-    </div></div>
-    <table class="eco">
-        <tr><th style="width:18%;">维度</th><th>Ray</th><th>Spark</th><th>Dask</th></tr>
-        <tr><td>设计目标</td><td>AI/ML 通用分布式运行时</td><td>大数据处理引擎</td><td>Python 原生并行计算</td></tr>
-        <tr><td>调度模型</td><td>自底向上两级调度</td><td>中心化 DAG 调度</td><td>中心化动态任务调度</td></tr>
-        <tr><td>数据模型</td><td>不可变对象 + 共享内存</td><td>不可变 RDD/DataFrame</td><td>分块 Array/DataFrame</td></tr>
-        <tr><td>有状态支持</td><td><b style="color:#7effaa;">一等公民（Actor）</b></td><td>有限（Streaming State）</td><td>有限</td></tr>
-        <tr><td>GPU 支持</td><td><b style="color:#7effaa;">原生、细粒度</b></td><td>通过 RAPIDS 间接</td><td>基本支持</td></tr>
-        <tr><td>延迟</td><td><b style="color:#7effaa;">毫秒级任务启动</b></td><td>秒级</td><td>百毫秒级</td></tr>
-        <tr><td>序列化</td><td>Arrow 零拷贝 + CloudPickle</td><td>JVM 序列化 + Py4J</td><td>CloudPickle</td></tr>
-        <tr><td>容错</td><td>血缘重建 + Actor 检查点</td><td>RDD 血缘重新计算</td><td>有限重试</td></tr>
-        <tr><td>Python 亲和性</td><td><b style="color:#7effaa;">原生 Python</b></td><td>PySpark 有 JVM 开销</td><td>原生 Python</td></tr>
-    </table>
-    <div class="concept-box"><div class="label">🎯 选型原则（30 秒速决）</div><div class="text">
-        按【任务粒度 × 是否 GPU/Actor】两个维度分四象限：
-        <ul style="line-height:2; padding-left:22px; margin-top:6px;">
-            <li><b style="color:#7effaa;">细粒度 + GPU/Actor</b>（毫秒级 / 有状态 / 异构）→ <b>Ray</b>（本项目）</li>
-            <li><b style="color:#ffa07a;">粗粒度 + 无状态</b>（TB+ ETL / SQL / 报表批处理）→ <b>Spark</b></li>
-            <li><b style="color:#a0d8ff;">细粒度 + 无状态</b>（中等规模 Pythonic 数据科学 / NumPy 风格）→ <b>Dask</b></li>
-            <li><b style="color:#ff7eb6;">混合场景</b>（数据预处理 + AI 训练）→ <b>Ray Data + Ray Train</b>（一站式）</li>
-        </ul>
-    </div></div>
-    <div class="stage">
-        <svg viewBox="0 0 900 260" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-                <radialGradient id="g-ray-c"><stop offset="0" stop-color="#7effaa"/><stop offset="1" stop-color="#36c787"/></radialGradient>
-                <radialGradient id="g-sp-c"><stop offset="0" stop-color="#ffa07a"/><stop offset="1" stop-color="#e76f51"/></radialGradient>
-                <radialGradient id="g-dk-c"><stop offset="0" stop-color="#a0d8ff"/><stop offset="1" stop-color="#5a99cf"/></radialGradient>
-            </defs>
-            <circle cx="170" cy="130" r="90" fill="url(#g-ray-c)" opacity="0.85"/>
-            <text x="170" y="115" fill="#0a1530" font-size="18" text-anchor="middle" font-weight="700">Ray</text>
-            <text x="170" y="138" fill="#0a1530" font-size="11" text-anchor="middle">AI / ML</text>
-            <text x="170" y="155" fill="#0a1530" font-size="11" text-anchor="middle">GPU + Actor</text>
-            <text x="170" y="172" fill="#0a1530" font-size="11" text-anchor="middle">毫秒级</text>
-            <circle cx="450" cy="130" r="90" fill="url(#g-sp-c)" opacity="0.85"/>
-            <text x="450" y="115" fill="#0a1530" font-size="18" text-anchor="middle" font-weight="700">Spark</text>
-            <text x="450" y="138" fill="#0a1530" font-size="11" text-anchor="middle">Big Data</text>
-            <text x="450" y="155" fill="#0a1530" font-size="11" text-anchor="middle">SQL / ETL</text>
-            <text x="450" y="172" fill="#0a1530" font-size="11" text-anchor="middle">秒级</text>
-            <circle cx="730" cy="130" r="90" fill="url(#g-dk-c)" opacity="0.85"/>
-            <text x="730" y="115" fill="#0a1530" font-size="18" text-anchor="middle" font-weight="700">Dask</text>
-            <text x="730" y="138" fill="#0a1530" font-size="11" text-anchor="middle">Python 原生</text>
-            <text x="730" y="155" fill="#0a1530" font-size="11" text-anchor="middle">数据科学</text>
-            <text x="730" y="172" fill="#0a1530" font-size="11" text-anchor="middle">百毫秒级</text>
-            <text x="450" y="245" fill="#a0b0e0" font-size="13" text-anchor="middle">三个框架不竞争同一块蛋糕，看你切的是哪块</text>
-        </svg>
-        <div class="stage-caption">Ray 不是 "更快的 Spark"，是面向 AI 时代的全新范式</div>
-    </div>
-    <div class="takeaway-box"><span class="label">📌 售前一句话</span>
-        给客户的诚信结论：<b>选 Ray 的理由从来不是"它比 Spark 快"</b>——而是 GPU 异构、毫秒级、有状态 Actor 这三件 Spark 做不了的事。客户原有 Spark 集群继续跑数仓 ETL，Ray 接管 OCR/YOLO/训练/推理，<b>各取所长</b>。
-    </div>
-
-    <!-- ============ CH 10.5 · 与 Spark 的边界本质（三大差异深透） ============ -->
-    <div id="ch-10-5" class="chapter-header" style="margin-top:56px; padding-top:28px; border-top:1px dashed rgba(255,255,255,0.18);">
-        <span class="chapter-num">CHAPTER 02.5</span>
-        <div><div class="chapter-title">与 Spark 的边界本质 · 三大差异深透</div><div class="chapter-subtitle">客户追问："Spark 不能灵活拼装、Ray 才能？" —— 这话只对一半</div></div>
-    </div>
-    <div class="analogy-hook">
-        <div class="ah-label">先把命题摆正</div>
-        <div class="ah-text">"Spark 不支持任务灵活拼装"这句话<b>不严谨</b>。Spark 支持<b>算子级</b>的灵活拼装（DataFrame chain 任意接），但不支持<b>任务级</b>的异构拼装。真正的差距在三件事：<b>DAG 是静态还是动态</b>、<b>任务能不能异构混编</b>、<b>能不能跨范式同图</b>。这一节把这三件事讲透——以后客户再问，5 分钟把人讲服。</div>
-    </div>
-    <div class="top-line">
-        <span class="tl-label">TOP-LINE · 本节一句话</span>
-        <div class="tl-text"><b>Spark 让你"声明数据怎么变"</b>（查询语言风格），<b>Ray 让你"指挥进程怎么跑"</b>（分布式 Python 风格）。前者是数据处理引擎，后者是通用分布式运行时——这是<b>范式差异</b>，不是性能差异。</div>
-    </div>
-
-    <div class="intuition-box"><div class="label">🧭 命题分层判定</div><div class="text">
-        客户那句"Spark 不灵活、Ray 才灵活"必须分三层判，不能一刀切：
-    </div></div>
-    <table class="eco">
-        <tr><th style="width:20%;">层次</th><th style="width:40%;">命题</th><th>判定</th></tr>
-        <tr><td><b>L1 · 计算图灵活性</b></td><td>"Spark 不支持灵活拼装"</td><td><b style="color:#ff7eb6;">❌ 不成立</b> · Spark DAG 也很灵活，map/filter/join/agg 任意 chain</td></tr>
-        <tr><td><b>L2 · 执行模型动态性</b></td><td>"Spark 静态 / Ray 动态"</td><td><b style="color:#ffd166;">✅ 基本成立</b> · Ray 真正运行时生成 DAG，Spark 只能 AQE 微调</td></tr>
-        <tr><td><b>L3 · 任务异构性</b></td><td>"Spark 同质 / Ray 异质"</td><td><b style="color:#7effaa;">✅ 完全成立</b> · Ray 的核心优势所在</td></tr>
-    </table>
-    <div class="concept-box"><div class="label">🎯 精确表述</div><div class="text">
-        Spark 支持<b>同质 Stage DAG</b> 的灵活拼装（要求：批量数据 + 同构算子 + 静态计划）；Ray 支持<b>异构任务图</b> 的灵活拼装（允许：Task/Actor/PG 自由混合 + 运行时动态展开 + 细粒度依赖）。<b>差距在任务模型，不在数据处理。</b>
-    </div></div>
-
-    <!-- ───── 差异 1：DAG 静态 vs 动态 ───── -->
-    <div class="concept-box" style="border-left:4px solid #ffd166; margin-top:32px;"><div class="label">🅰️ 差异一 · DAG 静态 vs 动态</div><div class="text">
-        <b>"提交前定稿"</b> 还是 <b>"边跑边画"</b>——这是两种引擎最根本的世界观分歧。
-    </div></div>
-
-    <div class="scene-card">
-        <div class="scene-line">Spark · 编译期定稿的 DAG（声明式）</div>
-        <div class="scene-text">
-            用户写的是<b>逻辑计划</b>（LogicalPlan），不是执行流程。Catalyst 优化器把它编成 PhysicalPlan，DAGScheduler 按 Shuffle 切 Stage——
-            <b>提交那一刻 DAG 形状已 100% 确定</b>。AQE 能做的只是局部微调（partition coalesce / skew join / broadcast 切换），
-            <b>不能新增节点、不能删除节点、不能改变拓扑</b>。
-        </div>
-    </div>
-    <details class="code-snippet" open><summary>Spark 编译期 DAG 定稿流程</summary>
-<pre>用户代码
-   │
-   ▼
-LogicalPlan（df.filter().join().groupBy()）
-   │
-   ▼ Catalyst 优化器（谓词下推 / 列裁剪 / Join 重排 / CBO）
-   │
-   ▼
-PhysicalPlan（SortMergeJoin / HashAgg / Exchange）
-   │
-   ▼ DAGScheduler 切 Stage（以 Shuffle 为边界）
-   │
-   ▼
-TaskSet 提交执行 ◄── <span class="dec">此刻 DAG 形状已 100% 确定</span>
-
-# 关键约束：if/else/while/递归 这些 Python 控制流
-# 只在 Driver 端跑一次，决定的是"画哪张 DAG"
-# 而不是"DAG 里有什么节点"</pre>
-    </details>
-
-    <div class="scene-card">
-        <div class="scene-line">Ray · 运行时按代码流展开的 DAG（命令式）</div>
-        <div class="scene-text">
-            Ray 程序写的就是<b>执行流程本身</b>——DAG 是 Python 解释器跑代码时<b>副作用式生成</b>的。
-            DAG <b>没有"提交时刻"</b>，整个 Driver 程序的运行过程 = DAG 的生成过程。
-            执行到 <code>task.remote()</code> 就长出一个节点；执行到 <code>if</code> / <code>while</code> / 递归就决定接下来长什么。
-        </div>
-    </div>
-    <details class="code-snippet" open><summary>Ray 真正动态的三个体现</summary>
-<pre># 1) <span class="inc">数据驱动的分支</span>：DAG 形状由数据内容决定
-@ray.remote
-def route(item):
-    if item.confidence &lt; 0.6:
-        return human_review.remote(item)        # 走人工
-    elif item.type == "video":
-        segments = split_video.remote(item)
-        return [process_seg.remote(s) for s in ray.get(segments)]
-    else:
-        return auto_tag.remote(item)
-
-# 2) <span class="inc">递归 DAG</span>：节点数无限，编译期画不出
-@ray.remote
-def fib_dag(n):
-    if n &lt; 2: return n
-    a = fib_dag.remote(n-1)
-    b = fib_dag.remote(n-2)
-    return ray.get(a) + ray.get(b)
-# 注：fib_dag(20) 动态展开 6700+ 个节点，Spark 完全无法表达
-
-# 3) <span class="inc">Actor 状态驱动</span>：DAG 形状随 Actor 内部状态变化
-@ray.remote
-class AdaptiveScheduler:
-    def submit(self, batch):
-        if self.error_rate &gt; 0.1:
-            return retry_with_backoff.remote(batch)  # 异常率高切容错路径
-        else:
-            return fast_path.remote(batch)</pre>
-    </details>
-
-    <div class="stage">
-        <svg viewBox="0 0 900 300" xmlns="http://www.w3.org/2000/svg">
-            <!-- Spark 侧 -->
-            <text x="220" y="30" fill="#ffa07a" font-size="15" text-anchor="middle" font-weight="700">Spark · 静态地图</text>
-            <rect x="60" y="50" width="320" height="220" rx="10" fill="rgba(231,111,81,0.08)" stroke="#e76f51" stroke-width="1.5" stroke-dasharray="4 3"/>
-            <text x="220" y="78" fill="#e8ecff" font-size="12" text-anchor="middle">t=0 · Driver 写完代码 → DAG 节点全部已知</text>
-            <rect x="100" y="100" width="50" height="36" rx="4" fill="#e76f51"/><text x="125" y="123" fill="#fff" font-size="12" text-anchor="middle">T1</text>
-            <rect x="170" y="100" width="50" height="36" rx="4" fill="#e76f51"/><text x="195" y="123" fill="#fff" font-size="12" text-anchor="middle">T2</text>
-            <rect x="240" y="100" width="50" height="36" rx="4" fill="#e76f51"/><text x="265" y="123" fill="#fff" font-size="12" text-anchor="middle">T3</text>
-            <text x="305" y="123" fill="#ffa07a" font-size="11">Stage 0</text>
-            <line x1="220" y1="148" x2="220" y2="172" stroke="#ffd166" stroke-width="2" stroke-dasharray="3 3"/>
-            <text x="270" y="165" fill="#ffd166" font-size="10">Shuffle Barrier</text>
-            <rect x="100" y="180" width="50" height="36" rx="4" fill="#e76f51"/><text x="125" y="203" fill="#fff" font-size="12" text-anchor="middle">T4</text>
-            <rect x="170" y="180" width="50" height="36" rx="4" fill="#e76f51"/><text x="195" y="203" fill="#fff" font-size="12" text-anchor="middle">T5</text>
-            <rect x="240" y="180" width="50" height="36" rx="4" fill="#e76f51"/><text x="265" y="203" fill="#fff" font-size="12" text-anchor="middle">T6</text>
-            <text x="305" y="203" fill="#ffa07a" font-size="11">Stage 1</text>
-            <text x="220" y="248" fill="#a0b0e0" font-size="11" text-anchor="middle">Driver 把整张地图交给集群</text>
-
-            <!-- Ray 侧 -->
-            <text x="680" y="30" fill="#7effaa" font-size="15" text-anchor="middle" font-weight="700">Ray · 动态足迹</text>
-            <rect x="520" y="50" width="320" height="220" rx="10" fill="rgba(126,255,170,0.06)" stroke="#36c787" stroke-width="1.5"/>
-            <text x="680" y="78" fill="#e8ecff" font-size="12" text-anchor="middle">t=0..N · Driver 边跑边长出 DAG</text>
-            <circle cx="560" cy="115" r="14" fill="#36c787"/><text x="560" y="119" fill="#0a1530" font-size="11" text-anchor="middle">A</text>
-            <line x1="574" y1="115" x2="616" y2="115" stroke="#7effaa" stroke-width="1.5"/>
-            <circle cx="630" cy="115" r="14" fill="#36c787"/><text x="630" y="119" fill="#0a1530" font-size="11" text-anchor="middle">B</text>
-            <line x1="630" y1="129" x2="630" y2="160" stroke="#7effaa" stroke-width="1.5" stroke-dasharray="3 2"/>
-            <text x="660" y="115" fill="#a0b0e0" font-size="10">t=1 if 真</text>
-            <line x1="574" y1="125" x2="616" y2="170" stroke="#7effaa" stroke-width="1.5" stroke-dasharray="3 2"/>
-            <circle cx="630" cy="180" r="14" fill="#ffd166"/><text x="630" y="184" fill="#0a1530" font-size="11" text-anchor="middle">C</text>
-            <text x="660" y="183" fill="#a0b0e0" font-size="10">t=2 if 假</text>
-            <circle cx="720" cy="115" r="14" fill="#36c787"/><text x="720" y="119" fill="#0a1530" font-size="11" text-anchor="middle">D</text>
-            <line x1="644" y1="115" x2="706" y2="115" stroke="#7effaa" stroke-width="1.5"/>
-            <text x="750" y="119" fill="#a0b0e0" font-size="10">t=3 循环</text>
-            <circle cx="780" cy="180" r="14" fill="#36c787"/><text x="780" y="184" fill="#0a1530" font-size="11" text-anchor="middle">E</text>
-            <text x="680" y="248" fill="#a0b0e0" font-size="11" text-anchor="middle">DAG 是 Driver 跑步时身后留下的脚印</text>
-        </svg>
-        <div class="stage-caption">同样是 DAG，一个是"地图"，一个是"脚印"——这是世界观差异</div>
-    </div>
-
-    <div class="intuition-box"><div class="label">📋 工程含义对照</div><div class="text">
-        <table class="eco" style="margin-top:8px;">
-            <tr><th style="width:34%;">场景</th><th style="width:18%;">Spark</th><th>原因</th></tr>
-            <tr><td>批量 ETL / SQL</td><td><b style="color:#7effaa;">✅ 完美</b></td><td>DAG 编译期可定 + Catalyst 优化器加成</td></tr>
-            <tr><td>AQE 自适应 Join</td><td>✅ 部分</td><td>局部微调够用</td></tr>
-            <tr><td>数据驱动分支（不同数据走不同 Pipeline）</td><td><b style="color:#ff7eb6;">❌ 困难</b></td><td>需拆多个 Job + 中间落盘</td></tr>
-            <tr><td>递归算法（树搜索 / 分治）</td><td><b style="color:#ff7eb6;">❌ 不可</b></td><td>DAG 形状不可知</td></tr>
-            <tr><td>Agent 多轮规划</td><td><b style="color:#ff7eb6;">❌ 不可</b></td><td>下一步任务取决于上一步 LLM 输出</td></tr>
-            <tr><td>强化学习 rollout</td><td><b style="color:#ff7eb6;">❌ 不可</b></td><td>环境反馈决定下一动作</td></tr>
-        </table>
-    </div></div>
-
-    <!-- ───── 差异 2：任务异构性 ───── -->
-    <div class="concept-box" style="border-left:4px solid #7effaa; margin-top:32px;"><div class="label">🅱️ 差异二 · 任务异构性</div><div class="text">
-        <b>"Stage 内同质"</b> vs <b>"图内任意混编"</b>——这是 RDD 模型的天生限制 vs Ray 资源向量装箱的根本差异。
-    </div></div>
-
-    <div class="scene-card">
-        <div class="scene-line">Spark · RDD 同质化约束</div>
-        <div class="scene-text">
-            RDD 抽象的本质是 <code>(Partition[], Function)</code>——每个 Partition 跑同一个 Function、用同一份资源画像、在同一个 Executor 池里调度。
-            <b>一个 Stage 内的 1000 个 Task 必须穿同一身衣服</b>：要么都 1c2g、要么都 GPU，<b>不能混</b>。
-            想"一部分用 GPU、一部分用 CPU"<b>必须拆 Stage + 中间落盘 + 双集群</b>。
-        </div>
-    </div>
-    <details class="code-snippet"><summary>Spark 实现"OCR 用 GPU、过滤用 CPU"的真实代价</summary>
-<pre># Step 1：CPU 集群跑过滤
-df_raw = spark.read.parquet("...")
-df_filtered = df_raw.filter(...)
-df_filtered.write.parquet("/tmp/middle")    # ❗ 必须落盘
-
-# Step 2：重新启动 GPU 集群
-gpu_spark = SparkSession.builder \
-    .config("spark.executor.resource.gpu.amount", 1) \
-    .getOrCreate()
-df = gpu_spark.read.parquet("/tmp/middle")  # ❗ 重新读
-df.mapInPandas(ocr_udf).write.parquet("...")
-
-# 代价：<span class="dec">中间落盘 IO 放大 + 双集群资源浪费 + GPU 集群常驻成本</span></pre>
-    </details>
-
-    <div class="scene-card">
-        <div class="scene-line">Ray · 任务级资源画像 · 图内任意混编</div>
-        <div class="scene-text">
-            Ray 的核心抽象是<b>"任意函数 + 任意资源声明 + 任意拓扑"</b>。每个节点持有资源向量 <code>{CPU, GPU, memory, ...}</code>，每个任务声明所需向量，Raylet 实时做<b>二维装箱</b>。
-            <b>没有 Stage 概念，资源粒度可以细到 0.25 GPU。</b>
-        </div>
-    </div>
-    <details class="code-snippet" open><summary>Ray 同 DAG 内五种资源画像混编</summary>
-<pre>@ray.remote(num_cpus=2)              def cpu_clean(x): ...        # CPU Task
-@ray.remote(num_gpus=1)              def gpu_ocr(x): ...          # GPU Task
-@ray.remote(num_gpus=0.5)            def gpu_share(x): ...        # 1/2 GPU
-@ray.remote(num_cpus=4, memory=8e9)  def big_mem(x): ...          # 大内存
-@ray.remote(resources={"tpu":1})     def tpu_task(x): ...         # 自定义资源
-
-@ray.remote(num_gpus=1)
-class VectorDB:                                                   # GPU 有状态 Actor
-    def append(self, vec): self.index.add(vec)
-
-# <span class="inc">同一个 DAG 把它们任意拼起来 —— Spark 完全做不到</span>
-raw     = load.remote(uri)                          # CPU
-clean   = cpu_clean.remote(raw)                     # CPU
-ocr     = gpu_ocr.options(num_gpus=1).remote(clean) # GPU
-shared  = [gpu_share.remote(ocr) for _ in range(2)] # 2 个共享 GPU
-db      = VectorDB.remote()                         # 长期 GPU Actor
-ray.get([db.append.remote(s) for s in shared])</pre>
-    </details>
-
-    <div class="intuition-box"><div class="label">⚡ 异构带来的三个能力跃迁</div><div class="text">
-        <ul style="line-height:2; padding-left:22px; margin-top:6px;">
-            <li><b>细粒度 GPU 切分</b>：一张 A100 同时跑 4 个推理副本（<code>num_gpus=0.25</code>）</li>
-            <li><b>CPU/GPU 流水线</b>：CPU 边出数据 GPU 边消费，不需要等 CPU Stage 整体完成</li>
-            <li><b>稀缺资源弹性回收</b>：GPU Actor 用完 <code>ray.kill()</code> 立刻释放，不用等 Stage 结束</li>
-        </ul>
-    </div></div>
-
-    <table class="eco">
-        <tr><th style="width:36%;">能力</th><th>Spark</th><th>Ray</th></tr>
-        <tr><td>同 Stage 内 CPU/GPU 混用</td><td><b style="color:#ff7eb6;">❌</b></td><td><b style="color:#7effaa;">✅</b></td></tr>
-        <tr><td>部分 GPU（0.5 / 0.25 卡）</td><td><b style="color:#ff7eb6;">❌</b></td><td><b style="color:#7effaa;">✅</b></td></tr>
-        <tr><td>自定义资源（TPU / NPU / license）</td><td>⚠️ 仅总量</td><td><b style="color:#7effaa;">✅ 任务级</b></td></tr>
-        <tr><td>长期有状态 GPU 实例</td><td><b style="color:#ff7eb6;">❌</b></td><td><b style="color:#7effaa;">✅ Actor</b></td></tr>
-        <tr><td>资源画像随数据动态调整</td><td><b style="color:#ff7eb6;">❌</b></td><td><b style="color:#7effaa;">✅ <code>.options()</code></b></td></tr>
-    </table>
-
-    <!-- ───── 差异 3：跨范式拼装 ───── -->
-    <div class="concept-box" style="border-left:4px solid #ff7eb6; margin-top:32px;"><div class="label">🅲 差异三 · 跨范式拼装</div><div class="text">
-        <b>"数据处理引擎"</b> vs <b>"通用分布式运行时"</b>——这是上层抽象的设计天花板差异。
-    </div></div>
-
-    <div class="scene-card">
-        <div class="scene-line">Spark · 一切长在 RDD 之上的范式天花板</div>
-        <div class="scene-text">
-            Spark 设计目标是"分布式数据处理"——MLlib / Streaming / GraphX / SparkSQL 全部长在 RDD 之上。
-            一切非"数据集变换"语义的负载都很别扭：<b>在线推理服务、强化学习、超参搜索、Agent 编排、GNN 训练、物理仿真</b>——全部不支持或极困难。
-        </div>
-    </div>
-
-    <div class="stage">
-        <svg viewBox="0 0 900 280" xmlns="http://www.w3.org/2000/svg">
-            <!-- Spark 栈 -->
-            <text x="220" y="28" fill="#ffa07a" font-size="14" text-anchor="middle" font-weight="700">Spark · 数据处理引擎</text>
-            <rect x="60" y="50" width="80" height="40" rx="6" fill="rgba(231,111,81,0.4)" stroke="#e76f51"/>
-            <text x="100" y="74" fill="#fff" font-size="11" text-anchor="middle">MLlib</text>
-            <rect x="150" y="50" width="80" height="40" rx="6" fill="rgba(231,111,81,0.4)" stroke="#e76f51"/>
-            <text x="190" y="74" fill="#fff" font-size="11" text-anchor="middle">Streaming</text>
-            <rect x="240" y="50" width="60" height="40" rx="6" fill="rgba(231,111,81,0.4)" stroke="#e76f51"/>
-            <text x="270" y="74" fill="#fff" font-size="11" text-anchor="middle">GraphX</text>
-            <rect x="310" y="50" width="70" height="40" rx="6" fill="rgba(231,111,81,0.4)" stroke="#e76f51"/>
-            <text x="345" y="74" fill="#fff" font-size="11" text-anchor="middle">SparkSQL</text>
-            <line x1="220" y1="100" x2="220" y2="120" stroke="#ffa07a" stroke-width="1.5"/>
-            <rect x="60" y="125" width="320" height="40" rx="6" fill="#e76f51" opacity="0.85"/>
-            <text x="220" y="149" fill="#fff" font-size="13" text-anchor="middle" font-weight="700">RDD（不可变分区数据集）</text>
-            <line x1="220" y1="170" x2="220" y2="190" stroke="#ffa07a" stroke-width="1.5"/>
-            <rect x="60" y="195" width="320" height="40" rx="6" fill="rgba(231,111,81,0.6)" stroke="#e76f51"/>
-            <text x="220" y="219" fill="#fff" font-size="13" text-anchor="middle">Stage / Shuffle</text>
-            <text x="220" y="265" fill="#a0b0e0" font-size="11" text-anchor="middle">所有上层抽象都被 RDD 范式约束</text>
-
-            <!-- Ray 栈 -->
-            <text x="680" y="28" fill="#7effaa" font-size="14" text-anchor="middle" font-weight="700">Ray · 通用分布式运行时</text>
-            <rect x="510" y="50" width="60" height="40" rx="6" fill="rgba(126,255,170,0.3)" stroke="#36c787"/>
-            <text x="540" y="74" fill="#fff" font-size="10" text-anchor="middle">Data</text>
-            <rect x="580" y="50" width="60" height="40" rx="6" fill="rgba(126,255,170,0.3)" stroke="#36c787"/>
-            <text x="610" y="74" fill="#fff" font-size="10" text-anchor="middle">Train</text>
-            <rect x="650" y="50" width="60" height="40" rx="6" fill="rgba(126,255,170,0.3)" stroke="#36c787"/>
-            <text x="680" y="74" fill="#fff" font-size="10" text-anchor="middle">Tune</text>
-            <rect x="720" y="50" width="60" height="40" rx="6" fill="rgba(126,255,170,0.3)" stroke="#36c787"/>
-            <text x="750" y="74" fill="#fff" font-size="10" text-anchor="middle">RLlib</text>
-            <rect x="790" y="50" width="60" height="40" rx="6" fill="rgba(126,255,170,0.3)" stroke="#36c787"/>
-            <text x="820" y="74" fill="#fff" font-size="10" text-anchor="middle">Serve</text>
-            <text x="680" y="106" fill="#a0b0e0" font-size="10" text-anchor="middle">↑ 都是普通库 · 共享同一内核</text>
-            <line x1="680" y1="112" x2="680" y2="125" stroke="#7effaa" stroke-width="1.5"/>
-            <rect x="510" y="125" width="340" height="40" rx="6" fill="#36c787" opacity="0.85"/>
-            <text x="680" y="149" fill="#0a1530" font-size="13" text-anchor="middle" font-weight="700">Task / Actor / Object Store</text>
-            <line x1="680" y1="170" x2="680" y2="190" stroke="#7effaa" stroke-width="1.5"/>
-            <rect x="510" y="195" width="340" height="40" rx="6" fill="rgba(126,255,170,0.5)" stroke="#36c787"/>
-            <text x="680" y="219" fill="#fff" font-size="13" text-anchor="middle">GCS + Raylet（调度 + 对象 + 故障）</text>
-            <text x="680" y="265" fill="#a0b0e0" font-size="11" text-anchor="middle">5 个库共集群 · 共 ObjectRef · 共故障域</text>
-        </svg>
-        <div class="stage-caption">同一份核心抽象，决定了上层能装下多少种范式</div>
-    </div>
-
-    <div class="intuition-box"><div class="label">🚀 跨范式同图的真实威力（三个例子）</div><div class="text">
-        Ray 的 5 个库可以在<b>同一个集群、同一份 ObjectRef、同一个 Python 程序</b> 里编排——这是 Spark 永远做不到的。
-    </div></div>
-
-    <details class="code-snippet" open><summary>例 1 · 训练 → 调优 → 上线（一个文件搞定）</summary>
-<pre>import ray
-from ray import train, tune, serve
-
-# 1) Ray Data 准备数据
-ds = ray.data.read_parquet("s3://...")
-ds_train = ds.map_batches(preprocess)
-
-# 2) Ray Train 分布式训练
-def train_fn(config):
-    for epoch in range(config["epochs"]):
-        train.report({"loss": loss_fn(...)})
-
-# 3) Ray Tune 超参搜索（直接套在 train_fn 上）
-tuner = tune.Tuner(
-    train_fn,
-    param_space={"lr": tune.loguniform(1e-4, 1e-2)},
-    tune_config=tune.TuneConfig(num_samples=20, scheduler=ASHAScheduler())
-)
-results = tuner.fit()
-best = results.get_best_result()
-
-# 4) Ray Serve 把最佳模型直接上线（同一集群）
-@serve.deployment(num_replicas=4, ray_actor_options={"num_gpus": 0.5})
-class Predictor:
-    def __init__(self): self.model = load(best.checkpoint)
-    async def __call__(self, req): return self.model(req["data"])
-
-serve.run(Predictor.bind())
-# ↑ <span class="inc">端到端零搬运 · 零落盘 · 零进程切换</span>
-
-# Spark 等价实现：MLlib 训练 → 导出 ONNX → Triton/TorchServe → Spark Streaming 调推理
-#                = <span class="dec">4 个系统 + 3 次落盘 + 3 套监控</span></pre>
-    </details>
-
-    <details class="code-snippet"><summary>例 2 · 训练中实时推理 · RLHF（Spark 完全无解）</summary>
-<pre># RLHF：训练时需要旧模型推理生成对比数据 —— 推理 Actor 与训练 Actor 同图协作
-@ray.remote(num_gpus=1)
-class RolloutWorker:
-    def __init__(self, ckpt): self.model = load(ckpt)
-    def rollout(self, prompt): return self.model.generate(prompt)
-    def update(self, ckpt): self.model = load(ckpt)
-
-@ray.remote(num_gpus=4)
-class Trainer:
-    def step(self, rollouts):
-        self.model.update(rollouts)
-        return self.checkpoint()
-
-trainer = Trainer.remote()
-rollouts = [RolloutWorker.remote(init_ckpt) for _ in range(8)]
-
-for it in range(1000):
-    data = ray.get([w.rollout.remote(p) for w, p in zip(rollouts, prompts)])
-    new_ckpt = ray.get(trainer.step.remote(data))
-    # <span class="inc">热更新所有 rollout worker（不重启进程）</span>
-    ray.get([w.update.remote(new_ckpt) for w in rollouts])</pre>
-    </details>
-
-    <details class="code-snippet"><summary>例 3 · 仿真 + 训练同图 · 自动驾驶 / 机器人</summary>
-<pre>@ray.remote
-class Simulator:                         # 物理仿真长期 Actor
-    def step(self, action): ...
-    def get_state(self): ...
-
-@ray.remote(num_gpus=1)
-class Policy:                            # 策略网络 GPU Actor
-    def act(self, obs): ...
-    def learn(self, traj): ...
-
-sims = [Simulator.remote() for _ in range(64)]   # 64 个仿真环境
-policy = Policy.remote()
-
-for step in range(int(1e6)):
-    obs = ray.get([s.get_state.remote() for s in sims])
-    actions = ray.get([policy.act.remote(o) for o in obs])
-    trajs = ray.get([s.step.remote(a) for s, a in zip(sims, actions)])
-    policy.learn.remote(trajs)
-# Spark 不能表达"长期有状态 Actor + 与策略网络环交互"</pre>
-    </details>
-
-    <!-- ───── 边界划分（诚信结论） ───── -->
-    <div class="concept-box" style="border-left:4px solid #a0d8ff; margin-top:32px;"><div class="label">⚖️ 边界划分 · 诚信结论</div><div class="text">
-        承认 Ray 的范式优势 ≠ 否定 Spark。<b>选型看工作负载类型</b>，不看品牌：
-    </div></div>
-    <table class="eco">
-        <tr><th style="width:38%;">工作负载</th><th style="width:14%;">首选</th><th>原因</th></tr>
-        <tr><td>TB 级离线 SQL / ETL</td><td><b style="color:#ffa07a;">Spark</b></td><td>Catalyst + Sort Shuffle 是十年功夫</td></tr>
-        <tr><td>Iceberg / Hudi / Delta 表写入</td><td><b style="color:#ffa07a;">Spark</b></td><td>三大表格式生态都首选 Spark</td></tr>
-        <tr><td>批量特征工程（同质算子）</td><td><b style="color:#ffa07a;">Spark</b></td><td>DataFrame API 表达力 + 性能成熟</td></tr>
-        <tr><td>AI 训练 / 推理 / 调优</td><td><b style="color:#7effaa;">Ray</b></td><td>Spark 没有对应能力</td></tr>
-        <tr><td>含 GPU 的数据预处理</td><td><b style="color:#7effaa;">Ray Data</b></td><td>Spark GPU 支持是补丁式的</td></tr>
-        <tr><td>实时 Agent / RL / 仿真</td><td><b style="color:#7effaa;">Ray</b></td><td>Spark 无法表达动态 DAG + 长期 Actor</td></tr>
-        <tr><td>流批一体 + Stateful 服务</td><td><b style="color:#7effaa;">Ray Serve</b></td><td>Spark Streaming 不是 serving</td></tr>
-        <tr><td>湖仓数据底座 + AI 计算上层</td><td><b style="color:#ff7eb6;">Spark + Ray</b></td><td>Iceberg/Parquet 解耦，各司其职</td></tr>
-    </table>
-
-    <div class="intuition-box"><div class="label">🧠 一句话记忆法</div><div class="text" style="font-size:1.05em; line-height:1.9;">
-        <b>Spark 让你"声明数据怎么变"</b>（查询语言）—— 适合<b>批量同构数据处理</b>。<br>
-        <b>Ray 让你"指挥进程怎么跑"</b>（分布式 Python）—— 适合<b>异构任务图 + 跨范式编排</b>。<br>
-        <b>现代主流架构</b>：Spark 管"湖仓数据底座"，Ray 管"AI 计算上层"，二者通过 Iceberg/Parquet 解耦，<b>不是替代，是分工</b>。
-    </div></div>
-
-    <div class="takeaway-box"><span class="label">📌 售前一句话（CH02.5）</span>
-        客户再说"Spark 不灵活、Ray 才灵活"，要这么纠正：<b>Spark 的不灵活体现在任务模型，不是数据处理</b>。它要求 Stage 内同质、提交前定型、Stage 间有 Barrier；Ray 的灵活体现在<b>异构资源混编 · 运行时动态 DAG · 跨范式同图编排</b>。所以判断标准是<b>工作负载类型</b>——纯批 ETL/SQL 选 Spark，含 GPU/状态/动态控制流/多范式选 Ray，二者并存就是现代 AI Pipeline 的标准答案。
-    </div>
-    <div class="next-chapter"><a href="#ch-2">下一章：客户拍板要 Ray，那 Ray 内部到底长啥样？ ↓</a></div>
+    <div class="next-chapter"><a href="#ch-2">下一章：为什么不是 Spark？设计哲学推导 ↓</a></div>
 </section>
 
 <!-- ============ CH 2 · 设计哲学推导 ============ -->
 <section class="chapter" id="ch-2" data-title="设计哲学">
     <div class="chapter-header">
-        <span class="chapter-num">CHAPTER 03</span>
-        <div><div class="chapter-title">设计哲学 · Ray 是怎么从 0 设计出来的</div><div class="chapter-subtitle">客户问完"为什么是 Ray"，接着问"那它怎么长成这样的"</div></div>
+        <span class="chapter-num">CHAPTER 02</span>
+        <div><div class="chapter-title">设计哲学推导</div><div class="chapter-subtitle">客户问：为什么不是 Spark？为什么是 Ray？</div></div>
     </div>
     <div class="analogy-hook">
         <div class="ah-label">先听个比喻</div>
@@ -2073,7 +1604,7 @@ for step in range(int(1e6)):
 <!-- ============ CH 3 · 四层架构 ============ -->
 <section class="chapter" id="ch-3" data-title="四层架构">
     <div class="chapter-header">
-        <span class="chapter-num">CHAPTER 04</span>
+        <span class="chapter-num">CHAPTER 03</span>
         <div><div class="chapter-title">核心架构 · 四层分层</div><div class="chapter-subtitle">客户集群拓扑：1 Head + 2× GPU 节点 + 4× CPU 节点</div></div>
     </div>
     <div class="analogy-hook">
@@ -3063,7 +2594,7 @@ Worker C（远程节点）→ Object Manager 检测到对象在远程
 <!-- ============ CH 4 · Task vs Actor ============ -->
 <section class="chapter" id="ch-4" data-title="Task vs Actor">
     <div class="chapter-header">
-        <span class="chapter-num">CHAPTER 05</span>
+        <span class="chapter-num">CHAPTER 04</span>
         <div><div class="chapter-title">编程模型 · Task 与 Actor 双引擎</div><div class="chapter-subtitle">OCR/YOLO 模型用 Actor，文本清洗用 Task</div></div>
     </div>
     <div class="analogy-hook">
@@ -3177,7 +2708,7 @@ ref = server.predict.<span class="fn">remote</span>(image_batch)   <span class="
 <!-- ============ CH 5 · 调度机制 ============ -->
 <section class="chapter" id="ch-5" data-title="调度机制">
     <div class="chapter-header">
-        <span class="chapter-num">CHAPTER 06</span>
+        <span class="chapter-num">CHAPTER 05</span>
         <div><div class="chapter-title">调度机制 · 自底向上的两级调度</div><div class="chapter-subtitle">客户疑问：8 张 GPU 同时被抢，谁先谁后？</div></div>
     </div>
     <div class="analogy-hook">
@@ -3810,7 +3341,7 @@ refs = [process.<span class="fn">remote</span>(big_data_ref) <span class="kw">fo
 <!-- ============ CH 6 · 容错机制 ============ -->
 <section class="chapter" id="ch-6" data-title="容错机制">
     <div class="chapter-header">
-        <span class="chapter-num">CHAPTER 07</span>
+        <span class="chapter-num">CHAPTER 06</span>
         <div><div class="chapter-title">容错机制 · 从血缘重建到 Actor 检查点</div><div class="chapter-subtitle">客户最痛点：跑到 80% 时 GPU 节点炸了</div></div>
     </div>
     <div class="analogy-hook">
@@ -3913,7 +3444,7 @@ y = f.<span class="fn">remote</span>(x)        <span class="com"># Driver 拥有
 <!-- ============ CH 7 · Placement Group ============ -->
 <section class="chapter" id="ch-7" data-title="Placement Group">
     <div class="chapter-header">
-        <span class="chapter-num">CHAPTER 08</span>
+        <span class="chapter-num">CHAPTER 07</span>
         <div><div class="chapter-title">高级调度 · Placement Group 与 Gang Scheduling</div><div class="chapter-subtitle">客户新需求：OCR 和 YOLO 必须同节点协同</div></div>
     </div>
     <div class="analogy-hook">
@@ -4024,27 +3555,21 @@ results = ray.<span class="fn">get</span>([
     <div class="takeaway-box"><span class="label">📌 售前一句话</span>
         客户的双模型协同方案：<b>每张 GPU 卡建一个 STRICT_PACK PG，预留 OCR + YOLO 各 0.5 GPU</b>——两个 Actor 同节点共享显存与 CUDA 上下文，中间 Tensor 走 mmap 零拷贝。这是 Spark 永远做不到的事。
     </div>
-    <div class="next-chapter"><a href="#ch-9">下一章：把所有理论拼成全链路实战 · 5 阶段 + 6 跳 ↓</a></div>
+    <div class="next-chapter"><a href="#ch-8">下一章：把所有理论拼成 5 阶段流水线 ↓</a></div>
 </section>
 
-<!-- ============ CH 9 · 全链路实战（含 9.1 五阶段宏观 + 9.2 六跳显微 ============ -->
-<section class="chapter" id="ch-9" data-title="全链路实战 · 5 阶段宏观 + 6 跳显微">
+<!-- ============ CH 8 · 百万图 OCR 五阶段 ============ -->
+<section class="chapter" id="ch-8" data-title="百万图 OCR 五阶段">
     <div class="chapter-header">
-        <span class="chapter-num">CHAPTER 09</span>
-        <div><div class="chapter-title">全链路实战 · 从 5 阶段流水线到单图 6 跳</div><div class="chapter-subtitle">先看宏观（5 阶段范式）→ 再下钻显微（IMG_000123.jpg 的 89ms 一生）</div></div>
+        <span class="chapter-num">CHAPTER 08</span>
+        <div><div class="chapter-title">实战 · 百万级图片 OCR + 目标检测全链路</div><div class="chapter-subtitle">把前 7 章的所有理论拼成一条流水线</div></div>
     </div>
-
     <div class="analogy-hook">
-        <div class="ah-label">本章双视角</div>
-        <div class="ah-text">前 8 章是<b>原理拆解</b>，本章是<b>原理总动员</b>——同一个 OCR + 目标检测项目，<b>用两种镜头看</b>：<br>① <b>9.1 宏观望远镜</b>：100 万图 5 阶段流水线（Storage → Ray Data → Scheduling → Compute → Write），架构师视角；<br>② <b>9.2~ 微观显微镜</b>：单张 IMG_000123.jpg 的 6 跳 89ms 旅程（S3 → Plasma → Worker → GPU → CPU → Lance），工程师视角。<br><b>同一个 pipeline，宏观看吞吐，微观看延迟。</b></div>
+        <div class="ah-label">先听个比喻</div>
+        <div class="ah-text">百万图项目就像<b>双 11 仓库分拣</b>：① 先列<b>清单</b>（哪些包裹）→ ② <b>预处理</b>（剪标签）→ ③ <b>双线分拣</b>（机器扫码 + 人工核对）→ ④ <b>合并入库单</b> → ⑤ <b>归档发货</b>。每段独立赶人手、出错也只重做这一段。</div>
     </div>
-
-    <!-- ════════════════════ 9.1 宏观鸟瞰：5 阶段流水线（旧 CH08 内容下沉为子节）════════════════════ -->
-    <div class="concept-box" id="ch-8" style="border-left:4px solid #ffd166; margin-top:32px;"><div class="label">📡 9.1 宏观鸟瞰 · 100 万图的 5 阶段流水线（架构师视角）</div><div class="text">
-        百万图项目就像<b>双 11 仓库分拣</b>：① 先列<b>清单</b>（哪些包裹）→ ② <b>预处理</b>（剪标签）→ ③ <b>双线分拣</b>（机器扫码 + 人工核对）→ ④ <b>合并入库单</b> → ⑤ <b>归档发货</b>。每段独立赶人手、出错也只重做这一段。
-    </div></div>
     <div class="top-line">
-        <span class="tl-label">TOP-LINE · 9.1 一句话</span>
+        <span class="tl-label">TOP-LINE · 本章一句话</span>
         <div class="tl-text">100 万图任务被切成 <b>5 段流水线</b>：<b>列清单 → 预处理 → 双模型同时跑 → 合并结果 → 写到数据湖</b>——<b>每段单独加机器、单独容错</b>，最终 <b>3 小时 47 分</b>跑完。</div>
     </div>
     <div class="scene-card">
@@ -4180,22 +3705,24 @@ ds_result.<span class="fn">write_parquet</span>(<span class="str">"s3://bucket/o
 <span class="com"># N 个 Block → N 个 part-xxxxx.lance 文件，并行上传</span></pre>
     </details>
 
-    <div class="takeaway-box"><span class="label">📌 9.1 售前一句话</span>
-        客户技术委员会过审的 5 阶段范式：<b>S3 分 Block → Ray Data 加载 → 自底向上调度 → OCRActor/YOLOActor + 后处理 Task → 并行写 Lance</b>。整套代码 50 行内，就是 14 天→4 小时的全部秘密。<b>这是宏观吞吐视角</b>——下一节切到显微镜，看单张图怎么走完这 5 阶段。
+    <div class="takeaway-box"><span class="label">📌 售前一句话</span>
+        客户技术委员会过审的 5 阶段范式：<b>S3 分 Block → Ray Data 加载 → 自底向上调度 → OCRActor/YOLOActor + 后处理 Task → 并行写 Lance</b>。整套代码 50 行内，就是 14 天→4 小时的全部秘密。
     </div>
+    <div class="next-chapter"><a href="#ch-9">下一章：从客户视角追踪一张图的 6 跳旅程 ↓</a></div>
+</section>
 
-    <!-- ════════════════════ 9.2 微观显微镜：单图 6 跳 89ms（旧 CH09 内容续接）════════════════════ -->
-    <div class="concept-box" style="border-left:4px solid #7effaa; margin-top:48px; padding-top:24px; border-top:1px dashed rgba(126,255,170,0.3);"><div class="label">🔬 9.2 微观显微镜 · 单张 IMG_000123.jpg 的 6 跳 89ms（工程师视角）</div><div class="text">
-        9.1 讲完<b>整个 pipeline 怎么跑</b>，现在镜头切到<b>这条流水线上随便一张图</b>——把它从 S3 取出、过 OCRActor、写到 Lance 的全过程<b>逐毫秒拆开</b>。<br>
-        <b>同一个项目、同一个 Pipeline、同一份代码——只是镜头从望远镜换成显微镜。</b>
-    </div></div>
-
+<!-- ============ CH 9 · ObjectRef 一生（压轴） ============ -->
+<section class="chapter" id="ch-9" data-title="ObjectRef 一生 · 6 跳压轴">
+    <div class="chapter-header">
+        <span class="chapter-num">CHAPTER 09</span>
+        <div><div class="chapter-title">压轴 · 追踪 IMG_000123.jpg 的一生 · 6 跳</div><div class="chapter-subtitle">客户工程师最爱的灵魂图：单图视角的 89ms</div></div>
+    </div>
     <div class="analogy-hook">
         <div class="ah-label">先听个比喻</div>
-        <div class="ah-text">这节是<b>"包裹追踪"</b>：跟着一张 IMG_000123.jpg 走完全程——从云仓库下架（5ms）→ 进本地货架（10ms）→ 扫码识别（50ms）→ 内部传单（1ms）→ 整理装箱（15ms）→ 入库归档（8ms）。<b>每一毫秒都说得清去哪了</b>，客户工程师最爱看这张图。</div>
+        <div class="ah-text">这章是<b>"包裹追踪"</b>：跟着一张 IMG_000123.jpg 走完全程——从云仓库下架（5ms）→ 进本地货架（10ms）→ 扫码识别（50ms）→ 内部传单（1ms）→ 整理装箱（15ms）→ 入库归档（8ms）。<b>每一毫秒都说得清去哪了</b>，客户工程师最爱看这张图。</div>
     </div>
     <div class="top-line">
-        <span class="tl-label">TOP-LINE · 9.2 一句话</span>
+        <span class="tl-label">TOP-LINE · 本章一句话</span>
         <div class="tl-text">单张图片 <b>89 毫秒走完 6 步</b>：<span class="jargon" data-plain="S3 = 云存储，亚马逊出的对象存储服务，全球标准">云存储</span>取图 5ms → 本地仓库 10ms → 模型识别 50ms → 内部传输 1ms → CPU 整理 15ms → 写到<span class="jargon" data-plain="Lance = 新一代列式数据湖格式，专为 AI / ML 数据集优化">数据湖</span> 8ms。<b>每一毫秒都有理论支撑，能给客户算清账</b>。</div>
     </div>
     <div class="scene-card">
@@ -4956,14 +4483,485 @@ CPU 节点变化: <span class="dec">2 → 8 → 4 → 2</span>（后处理量小
     <div class="takeaway-box"><span class="label">📌 售前一句话</span>
         给客户技术委员会的最终答辩：<b>IMG_000123.jpg 这张图，89 毫秒走完 6 跳</b>——本地优先调度 · mmap 零拷贝 · Actor 模型常驻 · Owner 模型容错 · Autoscaler 弹性，每一毫秒都有架构依据。看懂这 6 跳，就看懂了为什么 14 天能压到 4 小时。
     </div>
-    <div class="next-chapter"><a href="#ch-11">下一章：把方案交付到客户工程师手上 ↓</a></div>
+    <div class="next-chapter"><a href="#ch-10">下一章：客户回头质疑 · Ray vs Spark vs Dask ↓</a></div>
 </section>
 
-
-<!-- ============ CH 11 · 入门 + 深层思考 ============ -->
-<section class="chapter" id="ch-11" data-title="交付上线 + 深层思考">
+<!-- ============ CH 10 · 选型对比 ============ -->
+<section class="chapter" id="ch-10" data-title="选型 · Ray vs Spark vs Dask">
     <div class="chapter-header">
         <span class="chapter-num">CHAPTER 10</span>
+        <div><div class="chapter-title">选型速查 · Ray vs Spark vs Dask</div><div class="chapter-subtitle">客户回头复盘：那 Spark 到底什么时候用？</div></div>
+    </div>
+    <div class="analogy-hook">
+        <div class="ah-label">先听个比喻</div>
+        <div class="ah-text">三家工具像<b>厨房三台机器</b>：Spark 是<b>大锅蒸笼</b>（量大、稳）、Dask 是<b>多档电饭煲</b>（科学家用 NumPy / Pandas 顺手扩展）、Ray 是<b>分子料理机</b>（AI 推理 / 模型服务 / 强化学习专用）。<b>不是替代，是各管一摊</b>。</div>
+    </div>
+    <div class="top-line">
+        <span class="tl-label">TOP-LINE · 本章一句话</span>
+        <div class="tl-text">三家分工井水不犯河水：<b>Spark 守夜批报表</b>（每天跑一次的财务对账）、<span class="jargon" data-plain="Dask = Python 生态分布式框架，专门把 NumPy/Pandas 单机算力扩展到集群">Dask 守科学计算</span>（实验室常用）、<b>Ray 守 AI 推理 + 模型服务</b>（这次的 OCR/YOLO）。<b>同一份数据三家共用，不重复存</b>。</div>
+    </div>
+    <div class="scene-card">
+        <div class="scene-line">第 10 幕 · 客户复盘 · 给 Spark 一个公道</div>
+        <div class="scene-text">
+            方案过审了，但客户技术副总私下问售前：<b>"那我们的 Spark 集群以后是不是要拆掉？"</b>
+            <b>不是。</b>资深售前架构师不是"全 Ray 论"——
+            报表分析、月度结算、数仓 ETL 这些<b>分钟级粗粒度批处理</b>，Spark 仍然是性价比之王。
+            <b>Ray 主场是 AI 工作负载</b>（OCR/YOLO/训练/RL/推理），<b>Spark 主场是 SQL/批处理</b>，<b>Dask 主场是单机 pandas 装不下</b>。
+            三家工具的边界要给客户讲清——这是售前的诚信底线。
+        </div>
+    </div>
+    <div class="intuition-box"><div class="label">💡 别再纠结了</div><div class="text">
+        三个框架不是替代关系，是<b>不同问题的最优解</b>。看完这张表你就知道怎么选了。
+    </div></div>
+    <table class="eco">
+        <tr><th style="width:18%;">维度</th><th>Ray</th><th>Spark</th><th>Dask</th></tr>
+        <tr><td>设计目标</td><td>AI/ML 通用分布式运行时</td><td>大数据处理引擎</td><td>Python 原生并行计算</td></tr>
+        <tr><td>调度模型</td><td>自底向上两级调度</td><td>中心化 DAG 调度</td><td>中心化动态任务调度</td></tr>
+        <tr><td>数据模型</td><td>不可变对象 + 共享内存</td><td>不可变 RDD/DataFrame</td><td>分块 Array/DataFrame</td></tr>
+        <tr><td>有状态支持</td><td><b style="color:#7effaa;">一等公民（Actor）</b></td><td>有限（Streaming State）</td><td>有限</td></tr>
+        <tr><td>GPU 支持</td><td><b style="color:#7effaa;">原生、细粒度</b></td><td>通过 RAPIDS 间接</td><td>基本支持</td></tr>
+        <tr><td>延迟</td><td><b style="color:#7effaa;">毫秒级任务启动</b></td><td>秒级</td><td>百毫秒级</td></tr>
+        <tr><td>序列化</td><td>Arrow 零拷贝 + CloudPickle</td><td>JVM 序列化 + Py4J</td><td>CloudPickle</td></tr>
+        <tr><td>容错</td><td>血缘重建 + Actor 检查点</td><td>RDD 血缘重新计算</td><td>有限重试</td></tr>
+        <tr><td>Python 亲和性</td><td><b style="color:#7effaa;">原生 Python</b></td><td>PySpark 有 JVM 开销</td><td>原生 Python</td></tr>
+    </table>
+    <div class="concept-box"><div class="label">🎯 选型原则（30 秒速决）</div><div class="text">
+        按【任务粒度 × 是否 GPU/Actor】两个维度分四象限：
+        <ul style="line-height:2; padding-left:22px; margin-top:6px;">
+            <li><b style="color:#7effaa;">细粒度 + GPU/Actor</b>（毫秒级 / 有状态 / 异构）→ <b>Ray</b>（本项目）</li>
+            <li><b style="color:#ffa07a;">粗粒度 + 无状态</b>（TB+ ETL / SQL / 报表批处理）→ <b>Spark</b></li>
+            <li><b style="color:#a0d8ff;">细粒度 + 无状态</b>（中等规模 Pythonic 数据科学 / NumPy 风格）→ <b>Dask</b></li>
+            <li><b style="color:#ff7eb6;">混合场景</b>（数据预处理 + AI 训练）→ <b>Ray Data + Ray Train</b>（一站式）</li>
+        </ul>
+    </div></div>
+    <div class="stage">
+        <svg viewBox="0 0 900 260" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <radialGradient id="g-ray-c"><stop offset="0" stop-color="#7effaa"/><stop offset="1" stop-color="#36c787"/></radialGradient>
+                <radialGradient id="g-sp-c"><stop offset="0" stop-color="#ffa07a"/><stop offset="1" stop-color="#e76f51"/></radialGradient>
+                <radialGradient id="g-dk-c"><stop offset="0" stop-color="#a0d8ff"/><stop offset="1" stop-color="#5a99cf"/></radialGradient>
+            </defs>
+            <circle cx="170" cy="130" r="90" fill="url(#g-ray-c)" opacity="0.85"/>
+            <text x="170" y="115" fill="#0a1530" font-size="18" text-anchor="middle" font-weight="700">Ray</text>
+            <text x="170" y="138" fill="#0a1530" font-size="11" text-anchor="middle">AI / ML</text>
+            <text x="170" y="155" fill="#0a1530" font-size="11" text-anchor="middle">GPU + Actor</text>
+            <text x="170" y="172" fill="#0a1530" font-size="11" text-anchor="middle">毫秒级</text>
+            <circle cx="450" cy="130" r="90" fill="url(#g-sp-c)" opacity="0.85"/>
+            <text x="450" y="115" fill="#0a1530" font-size="18" text-anchor="middle" font-weight="700">Spark</text>
+            <text x="450" y="138" fill="#0a1530" font-size="11" text-anchor="middle">Big Data</text>
+            <text x="450" y="155" fill="#0a1530" font-size="11" text-anchor="middle">SQL / ETL</text>
+            <text x="450" y="172" fill="#0a1530" font-size="11" text-anchor="middle">秒级</text>
+            <circle cx="730" cy="130" r="90" fill="url(#g-dk-c)" opacity="0.85"/>
+            <text x="730" y="115" fill="#0a1530" font-size="18" text-anchor="middle" font-weight="700">Dask</text>
+            <text x="730" y="138" fill="#0a1530" font-size="11" text-anchor="middle">Python 原生</text>
+            <text x="730" y="155" fill="#0a1530" font-size="11" text-anchor="middle">数据科学</text>
+            <text x="730" y="172" fill="#0a1530" font-size="11" text-anchor="middle">百毫秒级</text>
+            <text x="450" y="245" fill="#a0b0e0" font-size="13" text-anchor="middle">三个框架不竞争同一块蛋糕，看你切的是哪块</text>
+        </svg>
+        <div class="stage-caption">Ray 不是 "更快的 Spark"，是面向 AI 时代的全新范式</div>
+    </div>
+    <div class="takeaway-box"><span class="label">📌 售前一句话</span>
+        给客户的诚信结论：<b>选 Ray 的理由从来不是"它比 Spark 快"</b>——而是 GPU 异构、毫秒级、有状态 Actor 这三件 Spark 做不了的事。客户原有 Spark 集群继续跑数仓 ETL，Ray 接管 OCR/YOLO/训练/推理，<b>各取所长</b>。
+    </div>
+
+    <!-- ============ CH 10.5 · 与 Spark 的边界本质（三大差异深透） ============ -->
+    <div id="ch-10-5" class="chapter-header" style="margin-top:56px; padding-top:28px; border-top:1px dashed rgba(255,255,255,0.18);">
+        <span class="chapter-num">CHAPTER 10.5</span>
+        <div><div class="chapter-title">与 Spark 的边界本质 · 三大差异深透</div><div class="chapter-subtitle">客户追问："Spark 不能灵活拼装、Ray 才能？" —— 这话只对一半</div></div>
+    </div>
+    <div class="analogy-hook">
+        <div class="ah-label">先把命题摆正</div>
+        <div class="ah-text">"Spark 不支持任务灵活拼装"这句话<b>不严谨</b>。Spark 支持<b>算子级</b>的灵活拼装（DataFrame chain 任意接），但不支持<b>任务级</b>的异构拼装。真正的差距在三件事：<b>DAG 是静态还是动态</b>、<b>任务能不能异构混编</b>、<b>能不能跨范式同图</b>。这一节把这三件事讲透——以后客户再问，5 分钟把人讲服。</div>
+    </div>
+    <div class="top-line">
+        <span class="tl-label">TOP-LINE · 本节一句话</span>
+        <div class="tl-text"><b>Spark 让你"声明数据怎么变"</b>（查询语言风格），<b>Ray 让你"指挥进程怎么跑"</b>（分布式 Python 风格）。前者是数据处理引擎，后者是通用分布式运行时——这是<b>范式差异</b>，不是性能差异。</div>
+    </div>
+
+    <div class="intuition-box"><div class="label">🧭 命题分层判定</div><div class="text">
+        客户那句"Spark 不灵活、Ray 才灵活"必须分三层判，不能一刀切：
+    </div></div>
+    <table class="eco">
+        <tr><th style="width:20%;">层次</th><th style="width:40%;">命题</th><th>判定</th></tr>
+        <tr><td><b>L1 · 计算图灵活性</b></td><td>"Spark 不支持灵活拼装"</td><td><b style="color:#ff7eb6;">❌ 不成立</b> · Spark DAG 也很灵活，map/filter/join/agg 任意 chain</td></tr>
+        <tr><td><b>L2 · 执行模型动态性</b></td><td>"Spark 静态 / Ray 动态"</td><td><b style="color:#ffd166;">✅ 基本成立</b> · Ray 真正运行时生成 DAG，Spark 只能 AQE 微调</td></tr>
+        <tr><td><b>L3 · 任务异构性</b></td><td>"Spark 同质 / Ray 异质"</td><td><b style="color:#7effaa;">✅ 完全成立</b> · Ray 的核心优势所在</td></tr>
+    </table>
+    <div class="concept-box"><div class="label">🎯 精确表述</div><div class="text">
+        Spark 支持<b>同质 Stage DAG</b> 的灵活拼装（要求：批量数据 + 同构算子 + 静态计划）；Ray 支持<b>异构任务图</b> 的灵活拼装（允许：Task/Actor/PG 自由混合 + 运行时动态展开 + 细粒度依赖）。<b>差距在任务模型，不在数据处理。</b>
+    </div></div>
+
+    <!-- ───── 差异 1：DAG 静态 vs 动态 ───── -->
+    <div class="concept-box" style="border-left:4px solid #ffd166; margin-top:32px;"><div class="label">🅰️ 差异一 · DAG 静态 vs 动态</div><div class="text">
+        <b>"提交前定稿"</b> 还是 <b>"边跑边画"</b>——这是两种引擎最根本的世界观分歧。
+    </div></div>
+
+    <div class="scene-card">
+        <div class="scene-line">Spark · 编译期定稿的 DAG（声明式）</div>
+        <div class="scene-text">
+            用户写的是<b>逻辑计划</b>（LogicalPlan），不是执行流程。Catalyst 优化器把它编成 PhysicalPlan，DAGScheduler 按 Shuffle 切 Stage——
+            <b>提交那一刻 DAG 形状已 100% 确定</b>。AQE 能做的只是局部微调（partition coalesce / skew join / broadcast 切换），
+            <b>不能新增节点、不能删除节点、不能改变拓扑</b>。
+        </div>
+    </div>
+    <details class="code-snippet" open><summary>Spark 编译期 DAG 定稿流程</summary>
+<pre>用户代码
+   │
+   ▼
+LogicalPlan（df.filter().join().groupBy()）
+   │
+   ▼ Catalyst 优化器（谓词下推 / 列裁剪 / Join 重排 / CBO）
+   │
+   ▼
+PhysicalPlan（SortMergeJoin / HashAgg / Exchange）
+   │
+   ▼ DAGScheduler 切 Stage（以 Shuffle 为边界）
+   │
+   ▼
+TaskSet 提交执行 ◄── <span class="dec">此刻 DAG 形状已 100% 确定</span>
+
+# 关键约束：if/else/while/递归 这些 Python 控制流
+# 只在 Driver 端跑一次，决定的是"画哪张 DAG"
+# 而不是"DAG 里有什么节点"</pre>
+    </details>
+
+    <div class="scene-card">
+        <div class="scene-line">Ray · 运行时按代码流展开的 DAG（命令式）</div>
+        <div class="scene-text">
+            Ray 程序写的就是<b>执行流程本身</b>——DAG 是 Python 解释器跑代码时<b>副作用式生成</b>的。
+            DAG <b>没有"提交时刻"</b>，整个 Driver 程序的运行过程 = DAG 的生成过程。
+            执行到 <code>task.remote()</code> 就长出一个节点；执行到 <code>if</code> / <code>while</code> / 递归就决定接下来长什么。
+        </div>
+    </div>
+    <details class="code-snippet" open><summary>Ray 真正动态的三个体现</summary>
+<pre># 1) <span class="inc">数据驱动的分支</span>：DAG 形状由数据内容决定
+@ray.remote
+def route(item):
+    if item.confidence &lt; 0.6:
+        return human_review.remote(item)        # 走人工
+    elif item.type == "video":
+        segments = split_video.remote(item)
+        return [process_seg.remote(s) for s in ray.get(segments)]
+    else:
+        return auto_tag.remote(item)
+
+# 2) <span class="inc">递归 DAG</span>：节点数无限，编译期画不出
+@ray.remote
+def fib_dag(n):
+    if n &lt; 2: return n
+    a = fib_dag.remote(n-1)
+    b = fib_dag.remote(n-2)
+    return ray.get(a) + ray.get(b)
+# 注：fib_dag(20) 动态展开 6700+ 个节点，Spark 完全无法表达
+
+# 3) <span class="inc">Actor 状态驱动</span>：DAG 形状随 Actor 内部状态变化
+@ray.remote
+class AdaptiveScheduler:
+    def submit(self, batch):
+        if self.error_rate &gt; 0.1:
+            return retry_with_backoff.remote(batch)  # 异常率高切容错路径
+        else:
+            return fast_path.remote(batch)</pre>
+    </details>
+
+    <div class="stage">
+        <svg viewBox="0 0 900 300" xmlns="http://www.w3.org/2000/svg">
+            <!-- Spark 侧 -->
+            <text x="220" y="30" fill="#ffa07a" font-size="15" text-anchor="middle" font-weight="700">Spark · 静态地图</text>
+            <rect x="60" y="50" width="320" height="220" rx="10" fill="rgba(231,111,81,0.08)" stroke="#e76f51" stroke-width="1.5" stroke-dasharray="4 3"/>
+            <text x="220" y="78" fill="#e8ecff" font-size="12" text-anchor="middle">t=0 · Driver 写完代码 → DAG 节点全部已知</text>
+            <rect x="100" y="100" width="50" height="36" rx="4" fill="#e76f51"/><text x="125" y="123" fill="#fff" font-size="12" text-anchor="middle">T1</text>
+            <rect x="170" y="100" width="50" height="36" rx="4" fill="#e76f51"/><text x="195" y="123" fill="#fff" font-size="12" text-anchor="middle">T2</text>
+            <rect x="240" y="100" width="50" height="36" rx="4" fill="#e76f51"/><text x="265" y="123" fill="#fff" font-size="12" text-anchor="middle">T3</text>
+            <text x="305" y="123" fill="#ffa07a" font-size="11">Stage 0</text>
+            <line x1="220" y1="148" x2="220" y2="172" stroke="#ffd166" stroke-width="2" stroke-dasharray="3 3"/>
+            <text x="270" y="165" fill="#ffd166" font-size="10">Shuffle Barrier</text>
+            <rect x="100" y="180" width="50" height="36" rx="4" fill="#e76f51"/><text x="125" y="203" fill="#fff" font-size="12" text-anchor="middle">T4</text>
+            <rect x="170" y="180" width="50" height="36" rx="4" fill="#e76f51"/><text x="195" y="203" fill="#fff" font-size="12" text-anchor="middle">T5</text>
+            <rect x="240" y="180" width="50" height="36" rx="4" fill="#e76f51"/><text x="265" y="203" fill="#fff" font-size="12" text-anchor="middle">T6</text>
+            <text x="305" y="203" fill="#ffa07a" font-size="11">Stage 1</text>
+            <text x="220" y="248" fill="#a0b0e0" font-size="11" text-anchor="middle">Driver 把整张地图交给集群</text>
+
+            <!-- Ray 侧 -->
+            <text x="680" y="30" fill="#7effaa" font-size="15" text-anchor="middle" font-weight="700">Ray · 动态足迹</text>
+            <rect x="520" y="50" width="320" height="220" rx="10" fill="rgba(126,255,170,0.06)" stroke="#36c787" stroke-width="1.5"/>
+            <text x="680" y="78" fill="#e8ecff" font-size="12" text-anchor="middle">t=0..N · Driver 边跑边长出 DAG</text>
+            <circle cx="560" cy="115" r="14" fill="#36c787"/><text x="560" y="119" fill="#0a1530" font-size="11" text-anchor="middle">A</text>
+            <line x1="574" y1="115" x2="616" y2="115" stroke="#7effaa" stroke-width="1.5"/>
+            <circle cx="630" cy="115" r="14" fill="#36c787"/><text x="630" y="119" fill="#0a1530" font-size="11" text-anchor="middle">B</text>
+            <line x1="630" y1="129" x2="630" y2="160" stroke="#7effaa" stroke-width="1.5" stroke-dasharray="3 2"/>
+            <text x="660" y="115" fill="#a0b0e0" font-size="10">t=1 if 真</text>
+            <line x1="574" y1="125" x2="616" y2="170" stroke="#7effaa" stroke-width="1.5" stroke-dasharray="3 2"/>
+            <circle cx="630" cy="180" r="14" fill="#ffd166"/><text x="630" y="184" fill="#0a1530" font-size="11" text-anchor="middle">C</text>
+            <text x="660" y="183" fill="#a0b0e0" font-size="10">t=2 if 假</text>
+            <circle cx="720" cy="115" r="14" fill="#36c787"/><text x="720" y="119" fill="#0a1530" font-size="11" text-anchor="middle">D</text>
+            <line x1="644" y1="115" x2="706" y2="115" stroke="#7effaa" stroke-width="1.5"/>
+            <text x="750" y="119" fill="#a0b0e0" font-size="10">t=3 循环</text>
+            <circle cx="780" cy="180" r="14" fill="#36c787"/><text x="780" y="184" fill="#0a1530" font-size="11" text-anchor="middle">E</text>
+            <text x="680" y="248" fill="#a0b0e0" font-size="11" text-anchor="middle">DAG 是 Driver 跑步时身后留下的脚印</text>
+        </svg>
+        <div class="stage-caption">同样是 DAG，一个是"地图"，一个是"脚印"——这是世界观差异</div>
+    </div>
+
+    <div class="intuition-box"><div class="label">📋 工程含义对照</div><div class="text">
+        <table class="eco" style="margin-top:8px;">
+            <tr><th style="width:34%;">场景</th><th style="width:18%;">Spark</th><th>原因</th></tr>
+            <tr><td>批量 ETL / SQL</td><td><b style="color:#7effaa;">✅ 完美</b></td><td>DAG 编译期可定 + Catalyst 优化器加成</td></tr>
+            <tr><td>AQE 自适应 Join</td><td>✅ 部分</td><td>局部微调够用</td></tr>
+            <tr><td>数据驱动分支（不同数据走不同 Pipeline）</td><td><b style="color:#ff7eb6;">❌ 困难</b></td><td>需拆多个 Job + 中间落盘</td></tr>
+            <tr><td>递归算法（树搜索 / 分治）</td><td><b style="color:#ff7eb6;">❌ 不可</b></td><td>DAG 形状不可知</td></tr>
+            <tr><td>Agent 多轮规划</td><td><b style="color:#ff7eb6;">❌ 不可</b></td><td>下一步任务取决于上一步 LLM 输出</td></tr>
+            <tr><td>强化学习 rollout</td><td><b style="color:#ff7eb6;">❌ 不可</b></td><td>环境反馈决定下一动作</td></tr>
+        </table>
+    </div></div>
+
+    <!-- ───── 差异 2：任务异构性 ───── -->
+    <div class="concept-box" style="border-left:4px solid #7effaa; margin-top:32px;"><div class="label">🅱️ 差异二 · 任务异构性</div><div class="text">
+        <b>"Stage 内同质"</b> vs <b>"图内任意混编"</b>——这是 RDD 模型的天生限制 vs Ray 资源向量装箱的根本差异。
+    </div></div>
+
+    <div class="scene-card">
+        <div class="scene-line">Spark · RDD 同质化约束</div>
+        <div class="scene-text">
+            RDD 抽象的本质是 <code>(Partition[], Function)</code>——每个 Partition 跑同一个 Function、用同一份资源画像、在同一个 Executor 池里调度。
+            <b>一个 Stage 内的 1000 个 Task 必须穿同一身衣服</b>：要么都 1c2g、要么都 GPU，<b>不能混</b>。
+            想"一部分用 GPU、一部分用 CPU"<b>必须拆 Stage + 中间落盘 + 双集群</b>。
+        </div>
+    </div>
+    <details class="code-snippet"><summary>Spark 实现"OCR 用 GPU、过滤用 CPU"的真实代价</summary>
+<pre># Step 1：CPU 集群跑过滤
+df_raw = spark.read.parquet("...")
+df_filtered = df_raw.filter(...)
+df_filtered.write.parquet("/tmp/middle")    # ❗ 必须落盘
+
+# Step 2：重新启动 GPU 集群
+gpu_spark = SparkSession.builder \
+    .config("spark.executor.resource.gpu.amount", 1) \
+    .getOrCreate()
+df = gpu_spark.read.parquet("/tmp/middle")  # ❗ 重新读
+df.mapInPandas(ocr_udf).write.parquet("...")
+
+# 代价：<span class="dec">中间落盘 IO 放大 + 双集群资源浪费 + GPU 集群常驻成本</span></pre>
+    </details>
+
+    <div class="scene-card">
+        <div class="scene-line">Ray · 任务级资源画像 · 图内任意混编</div>
+        <div class="scene-text">
+            Ray 的核心抽象是<b>"任意函数 + 任意资源声明 + 任意拓扑"</b>。每个节点持有资源向量 <code>{CPU, GPU, memory, ...}</code>，每个任务声明所需向量，Raylet 实时做<b>二维装箱</b>。
+            <b>没有 Stage 概念，资源粒度可以细到 0.25 GPU。</b>
+        </div>
+    </div>
+    <details class="code-snippet" open><summary>Ray 同 DAG 内五种资源画像混编</summary>
+<pre>@ray.remote(num_cpus=2)              def cpu_clean(x): ...        # CPU Task
+@ray.remote(num_gpus=1)              def gpu_ocr(x): ...          # GPU Task
+@ray.remote(num_gpus=0.5)            def gpu_share(x): ...        # 1/2 GPU
+@ray.remote(num_cpus=4, memory=8e9)  def big_mem(x): ...          # 大内存
+@ray.remote(resources={"tpu":1})     def tpu_task(x): ...         # 自定义资源
+
+@ray.remote(num_gpus=1)
+class VectorDB:                                                   # GPU 有状态 Actor
+    def append(self, vec): self.index.add(vec)
+
+# <span class="inc">同一个 DAG 把它们任意拼起来 —— Spark 完全做不到</span>
+raw     = load.remote(uri)                          # CPU
+clean   = cpu_clean.remote(raw)                     # CPU
+ocr     = gpu_ocr.options(num_gpus=1).remote(clean) # GPU
+shared  = [gpu_share.remote(ocr) for _ in range(2)] # 2 个共享 GPU
+db      = VectorDB.remote()                         # 长期 GPU Actor
+ray.get([db.append.remote(s) for s in shared])</pre>
+    </details>
+
+    <div class="intuition-box"><div class="label">⚡ 异构带来的三个能力跃迁</div><div class="text">
+        <ul style="line-height:2; padding-left:22px; margin-top:6px;">
+            <li><b>细粒度 GPU 切分</b>：一张 A100 同时跑 4 个推理副本（<code>num_gpus=0.25</code>）</li>
+            <li><b>CPU/GPU 流水线</b>：CPU 边出数据 GPU 边消费，不需要等 CPU Stage 整体完成</li>
+            <li><b>稀缺资源弹性回收</b>：GPU Actor 用完 <code>ray.kill()</code> 立刻释放，不用等 Stage 结束</li>
+        </ul>
+    </div></div>
+
+    <table class="eco">
+        <tr><th style="width:36%;">能力</th><th>Spark</th><th>Ray</th></tr>
+        <tr><td>同 Stage 内 CPU/GPU 混用</td><td><b style="color:#ff7eb6;">❌</b></td><td><b style="color:#7effaa;">✅</b></td></tr>
+        <tr><td>部分 GPU（0.5 / 0.25 卡）</td><td><b style="color:#ff7eb6;">❌</b></td><td><b style="color:#7effaa;">✅</b></td></tr>
+        <tr><td>自定义资源（TPU / NPU / license）</td><td>⚠️ 仅总量</td><td><b style="color:#7effaa;">✅ 任务级</b></td></tr>
+        <tr><td>长期有状态 GPU 实例</td><td><b style="color:#ff7eb6;">❌</b></td><td><b style="color:#7effaa;">✅ Actor</b></td></tr>
+        <tr><td>资源画像随数据动态调整</td><td><b style="color:#ff7eb6;">❌</b></td><td><b style="color:#7effaa;">✅ <code>.options()</code></b></td></tr>
+    </table>
+
+    <!-- ───── 差异 3：跨范式拼装 ───── -->
+    <div class="concept-box" style="border-left:4px solid #ff7eb6; margin-top:32px;"><div class="label">🅲 差异三 · 跨范式拼装</div><div class="text">
+        <b>"数据处理引擎"</b> vs <b>"通用分布式运行时"</b>——这是上层抽象的设计天花板差异。
+    </div></div>
+
+    <div class="scene-card">
+        <div class="scene-line">Spark · 一切长在 RDD 之上的范式天花板</div>
+        <div class="scene-text">
+            Spark 设计目标是"分布式数据处理"——MLlib / Streaming / GraphX / SparkSQL 全部长在 RDD 之上。
+            一切非"数据集变换"语义的负载都很别扭：<b>在线推理服务、强化学习、超参搜索、Agent 编排、GNN 训练、物理仿真</b>——全部不支持或极困难。
+        </div>
+    </div>
+
+    <div class="stage">
+        <svg viewBox="0 0 900 280" xmlns="http://www.w3.org/2000/svg">
+            <!-- Spark 栈 -->
+            <text x="220" y="28" fill="#ffa07a" font-size="14" text-anchor="middle" font-weight="700">Spark · 数据处理引擎</text>
+            <rect x="60" y="50" width="80" height="40" rx="6" fill="rgba(231,111,81,0.4)" stroke="#e76f51"/>
+            <text x="100" y="74" fill="#fff" font-size="11" text-anchor="middle">MLlib</text>
+            <rect x="150" y="50" width="80" height="40" rx="6" fill="rgba(231,111,81,0.4)" stroke="#e76f51"/>
+            <text x="190" y="74" fill="#fff" font-size="11" text-anchor="middle">Streaming</text>
+            <rect x="240" y="50" width="60" height="40" rx="6" fill="rgba(231,111,81,0.4)" stroke="#e76f51"/>
+            <text x="270" y="74" fill="#fff" font-size="11" text-anchor="middle">GraphX</text>
+            <rect x="310" y="50" width="70" height="40" rx="6" fill="rgba(231,111,81,0.4)" stroke="#e76f51"/>
+            <text x="345" y="74" fill="#fff" font-size="11" text-anchor="middle">SparkSQL</text>
+            <line x1="220" y1="100" x2="220" y2="120" stroke="#ffa07a" stroke-width="1.5"/>
+            <rect x="60" y="125" width="320" height="40" rx="6" fill="#e76f51" opacity="0.85"/>
+            <text x="220" y="149" fill="#fff" font-size="13" text-anchor="middle" font-weight="700">RDD（不可变分区数据集）</text>
+            <line x1="220" y1="170" x2="220" y2="190" stroke="#ffa07a" stroke-width="1.5"/>
+            <rect x="60" y="195" width="320" height="40" rx="6" fill="rgba(231,111,81,0.6)" stroke="#e76f51"/>
+            <text x="220" y="219" fill="#fff" font-size="13" text-anchor="middle">Stage / Shuffle</text>
+            <text x="220" y="265" fill="#a0b0e0" font-size="11" text-anchor="middle">所有上层抽象都被 RDD 范式约束</text>
+
+            <!-- Ray 栈 -->
+            <text x="680" y="28" fill="#7effaa" font-size="14" text-anchor="middle" font-weight="700">Ray · 通用分布式运行时</text>
+            <rect x="510" y="50" width="60" height="40" rx="6" fill="rgba(126,255,170,0.3)" stroke="#36c787"/>
+            <text x="540" y="74" fill="#fff" font-size="10" text-anchor="middle">Data</text>
+            <rect x="580" y="50" width="60" height="40" rx="6" fill="rgba(126,255,170,0.3)" stroke="#36c787"/>
+            <text x="610" y="74" fill="#fff" font-size="10" text-anchor="middle">Train</text>
+            <rect x="650" y="50" width="60" height="40" rx="6" fill="rgba(126,255,170,0.3)" stroke="#36c787"/>
+            <text x="680" y="74" fill="#fff" font-size="10" text-anchor="middle">Tune</text>
+            <rect x="720" y="50" width="60" height="40" rx="6" fill="rgba(126,255,170,0.3)" stroke="#36c787"/>
+            <text x="750" y="74" fill="#fff" font-size="10" text-anchor="middle">RLlib</text>
+            <rect x="790" y="50" width="60" height="40" rx="6" fill="rgba(126,255,170,0.3)" stroke="#36c787"/>
+            <text x="820" y="74" fill="#fff" font-size="10" text-anchor="middle">Serve</text>
+            <text x="680" y="106" fill="#a0b0e0" font-size="10" text-anchor="middle">↑ 都是普通库 · 共享同一内核</text>
+            <line x1="680" y1="112" x2="680" y2="125" stroke="#7effaa" stroke-width="1.5"/>
+            <rect x="510" y="125" width="340" height="40" rx="6" fill="#36c787" opacity="0.85"/>
+            <text x="680" y="149" fill="#0a1530" font-size="13" text-anchor="middle" font-weight="700">Task / Actor / Object Store</text>
+            <line x1="680" y1="170" x2="680" y2="190" stroke="#7effaa" stroke-width="1.5"/>
+            <rect x="510" y="195" width="340" height="40" rx="6" fill="rgba(126,255,170,0.5)" stroke="#36c787"/>
+            <text x="680" y="219" fill="#fff" font-size="13" text-anchor="middle">GCS + Raylet（调度 + 对象 + 故障）</text>
+            <text x="680" y="265" fill="#a0b0e0" font-size="11" text-anchor="middle">5 个库共集群 · 共 ObjectRef · 共故障域</text>
+        </svg>
+        <div class="stage-caption">同一份核心抽象，决定了上层能装下多少种范式</div>
+    </div>
+
+    <div class="intuition-box"><div class="label">🚀 跨范式同图的真实威力（三个例子）</div><div class="text">
+        Ray 的 5 个库可以在<b>同一个集群、同一份 ObjectRef、同一个 Python 程序</b> 里编排——这是 Spark 永远做不到的。
+    </div></div>
+
+    <details class="code-snippet" open><summary>例 1 · 训练 → 调优 → 上线（一个文件搞定）</summary>
+<pre>import ray
+from ray import train, tune, serve
+
+# 1) Ray Data 准备数据
+ds = ray.data.read_parquet("s3://...")
+ds_train = ds.map_batches(preprocess)
+
+# 2) Ray Train 分布式训练
+def train_fn(config):
+    for epoch in range(config["epochs"]):
+        train.report({"loss": loss_fn(...)})
+
+# 3) Ray Tune 超参搜索（直接套在 train_fn 上）
+tuner = tune.Tuner(
+    train_fn,
+    param_space={"lr": tune.loguniform(1e-4, 1e-2)},
+    tune_config=tune.TuneConfig(num_samples=20, scheduler=ASHAScheduler())
+)
+results = tuner.fit()
+best = results.get_best_result()
+
+# 4) Ray Serve 把最佳模型直接上线（同一集群）
+@serve.deployment(num_replicas=4, ray_actor_options={"num_gpus": 0.5})
+class Predictor:
+    def __init__(self): self.model = load(best.checkpoint)
+    async def __call__(self, req): return self.model(req["data"])
+
+serve.run(Predictor.bind())
+# ↑ <span class="inc">端到端零搬运 · 零落盘 · 零进程切换</span>
+
+# Spark 等价实现：MLlib 训练 → 导出 ONNX → Triton/TorchServe → Spark Streaming 调推理
+#                = <span class="dec">4 个系统 + 3 次落盘 + 3 套监控</span></pre>
+    </details>
+
+    <details class="code-snippet"><summary>例 2 · 训练中实时推理 · RLHF（Spark 完全无解）</summary>
+<pre># RLHF：训练时需要旧模型推理生成对比数据 —— 推理 Actor 与训练 Actor 同图协作
+@ray.remote(num_gpus=1)
+class RolloutWorker:
+    def __init__(self, ckpt): self.model = load(ckpt)
+    def rollout(self, prompt): return self.model.generate(prompt)
+    def update(self, ckpt): self.model = load(ckpt)
+
+@ray.remote(num_gpus=4)
+class Trainer:
+    def step(self, rollouts):
+        self.model.update(rollouts)
+        return self.checkpoint()
+
+trainer = Trainer.remote()
+rollouts = [RolloutWorker.remote(init_ckpt) for _ in range(8)]
+
+for it in range(1000):
+    data = ray.get([w.rollout.remote(p) for w, p in zip(rollouts, prompts)])
+    new_ckpt = ray.get(trainer.step.remote(data))
+    # <span class="inc">热更新所有 rollout worker（不重启进程）</span>
+    ray.get([w.update.remote(new_ckpt) for w in rollouts])</pre>
+    </details>
+
+    <details class="code-snippet"><summary>例 3 · 仿真 + 训练同图 · 自动驾驶 / 机器人</summary>
+<pre>@ray.remote
+class Simulator:                         # 物理仿真长期 Actor
+    def step(self, action): ...
+    def get_state(self): ...
+
+@ray.remote(num_gpus=1)
+class Policy:                            # 策略网络 GPU Actor
+    def act(self, obs): ...
+    def learn(self, traj): ...
+
+sims = [Simulator.remote() for _ in range(64)]   # 64 个仿真环境
+policy = Policy.remote()
+
+for step in range(int(1e6)):
+    obs = ray.get([s.get_state.remote() for s in sims])
+    actions = ray.get([policy.act.remote(o) for o in obs])
+    trajs = ray.get([s.step.remote(a) for s, a in zip(sims, actions)])
+    policy.learn.remote(trajs)
+# Spark 不能表达"长期有状态 Actor + 与策略网络环交互"</pre>
+    </details>
+
+    <!-- ───── 边界划分（诚信结论） ───── -->
+    <div class="concept-box" style="border-left:4px solid #a0d8ff; margin-top:32px;"><div class="label">⚖️ 边界划分 · 诚信结论</div><div class="text">
+        承认 Ray 的范式优势 ≠ 否定 Spark。<b>选型看工作负载类型</b>，不看品牌：
+    </div></div>
+    <table class="eco">
+        <tr><th style="width:38%;">工作负载</th><th style="width:14%;">首选</th><th>原因</th></tr>
+        <tr><td>TB 级离线 SQL / ETL</td><td><b style="color:#ffa07a;">Spark</b></td><td>Catalyst + Sort Shuffle 是十年功夫</td></tr>
+        <tr><td>Iceberg / Hudi / Delta 表写入</td><td><b style="color:#ffa07a;">Spark</b></td><td>三大表格式生态都首选 Spark</td></tr>
+        <tr><td>批量特征工程（同质算子）</td><td><b style="color:#ffa07a;">Spark</b></td><td>DataFrame API 表达力 + 性能成熟</td></tr>
+        <tr><td>AI 训练 / 推理 / 调优</td><td><b style="color:#7effaa;">Ray</b></td><td>Spark 没有对应能力</td></tr>
+        <tr><td>含 GPU 的数据预处理</td><td><b style="color:#7effaa;">Ray Data</b></td><td>Spark GPU 支持是补丁式的</td></tr>
+        <tr><td>实时 Agent / RL / 仿真</td><td><b style="color:#7effaa;">Ray</b></td><td>Spark 无法表达动态 DAG + 长期 Actor</td></tr>
+        <tr><td>流批一体 + Stateful 服务</td><td><b style="color:#7effaa;">Ray Serve</b></td><td>Spark Streaming 不是 serving</td></tr>
+        <tr><td>湖仓数据底座 + AI 计算上层</td><td><b style="color:#ff7eb6;">Spark + Ray</b></td><td>Iceberg/Parquet 解耦，各司其职</td></tr>
+    </table>
+
+    <div class="intuition-box"><div class="label">🧠 一句话记忆法</div><div class="text" style="font-size:1.05em; line-height:1.9;">
+        <b>Spark 让你"声明数据怎么变"</b>（查询语言）—— 适合<b>批量同构数据处理</b>。<br>
+        <b>Ray 让你"指挥进程怎么跑"</b>（分布式 Python）—— 适合<b>异构任务图 + 跨范式编排</b>。<br>
+        <b>现代主流架构</b>：Spark 管"湖仓数据底座"，Ray 管"AI 计算上层"，二者通过 Iceberg/Parquet 解耦，<b>不是替代，是分工</b>。
+    </div></div>
+
+    <div class="takeaway-box"><span class="label">📌 售前一句话（CH10.5）</span>
+        客户再说"Spark 不灵活、Ray 才灵活"，要这么纠正：<b>Spark 的不灵活体现在任务模型，不是数据处理</b>。它要求 Stage 内同质、提交前定型、Stage 间有 Barrier；Ray 的灵活体现在<b>异构资源混编 · 运行时动态 DAG · 跨范式同图编排</b>。所以判断标准是<b>工作负载类型</b>——纯批 ETL/SQL 选 Spark，含 GPU/状态/动态控制流/多范式选 Ray，二者并存就是现代 AI Pipeline 的标准答案。
+    </div>
+    <div class="next-chapter"><a href="#ch-11">下一章：把方案交付到客户手上 ↓</a></div>
+</section>
+
+<!-- ============ CH 11 · 入门 + 深层思考 ============ -->
+<section class="chapter" id="ch-11" data-title="入门 + 深层思考">
+    <div class="chapter-header">
+        <span class="chapter-num">CHAPTER 11</span>
         <div><div class="chapter-title">交付上线 · 5 分钟启动 + 三个深层思考</div><div class="chapter-subtitle">客户工程师接手 · 售前最后一公里</div></div>
     </div>
     <div class="analogy-hook">
