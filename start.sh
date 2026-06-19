@@ -48,40 +48,47 @@ color_warn(){ printf "\033[33m%s\033[0m\n" "$*"; }
 color_err() { printf "\033[31m%s\033[0m\n" "$*"; }
 
 kill_port() {
-    local pids=""
+    # 注意：这里不用 `local`，并且所有变量引用都用 ${var} 显式花括号界定。
+    # 历史血泪教训（已踩过 N 次）：
+    #   1) bash 3.2 (macOS /bin/sh) 在某些 locale 下，会把中文/全角标点的
+    #      UTF-8 首字节误并入紧邻的变量名（例如 dollar-pids 后跟全角逗号），
+    #      变量名变成 "pids\xef..."；叠加 `set -u` 直接报 `pids: unbound variable`。
+    #   2) 解决：所有 $var 后面紧跟中文/全角标点的位置，**必须**写成 ${var}。
+    #   3) 不依赖 `local`：dash/某些受限 shell 不支持 `local`，避免再次踩坑。
+    pids=""
     pids=$(lsof -ti :"$PORT" 2>/dev/null || true)
-    if [ -n "$pids" ]; then
-        color_warn "端口 $PORT 被占用，PID: $pids，强制终止..."
+    if [ -n "${pids}" ]; then
+        color_warn "端口 ${PORT} 被占用，PID: ${pids}，强制终止..."
         # shellcheck disable=SC2086
-        kill -9 $pids 2>/dev/null || true
+        kill -9 ${pids} 2>/dev/null || true
         sleep 1
         # 二次确认
-        local left=""
+        left=""
         left=$(lsof -ti :"$PORT" 2>/dev/null || true)
-        if [ -n "$left" ]; then
-            color_err "端口 $PORT 仍被占用：$left，请手动处理"
+        if [ -n "${left}" ]; then
+            color_err "端口 ${PORT} 仍被占用：${left}，请手动处理"
             return 1
         fi
-        color_ok "端口 $PORT 已释放"
+        color_ok "端口 ${PORT} 已释放"
     else
-        color_ok "端口 $PORT 空闲"
+        color_ok "端口 ${PORT} 空闲"
     fi
     # 兜底：杀掉残留的同名 app.py 进程（同目录）
-    local app_pids=""
-    app_pids=$(pgrep -f "python.* $ROOT_DIR/$APP_FILE" 2>/dev/null || true)
-    if [ -n "$app_pids" ]; then
-        color_warn "发现残留 $APP_FILE 进程：$app_pids，一并清理"
+    app_pids=""
+    app_pids=$(pgrep -f "python.* ${ROOT_DIR}/${APP_FILE}" 2>/dev/null || true)
+    if [ -n "${app_pids}" ]; then
+        color_warn "发现残留 ${APP_FILE} 进程：${app_pids}，一并清理"
         # shellcheck disable=SC2086
-        kill -9 $app_pids 2>/dev/null || true
+        kill -9 ${app_pids} 2>/dev/null || true
         sleep 1
     fi
 }
 
 show_status() {
-    echo "----- 端口 $PORT -----"
-    lsof -i :"$PORT" 2>/dev/null || echo "（无监听）"
-    echo "----- $APP_FILE 进程 -----"
-    pgrep -fl "$APP_FILE" || echo "（无进程）"
+    echo "----- 端口 ${PORT} -----"
+    lsof -i :"${PORT}" 2>/dev/null || echo "（无监听）"
+    echo "----- ${APP_FILE} 进程 -----"
+    pgrep -fl "${APP_FILE}" || echo "（无进程）"
 }
 
 check_env() {
@@ -102,6 +109,37 @@ check_env() {
     color_ok "依赖检查完成"
 }
 
+open_browser() {
+    # 在端口可访问后自动打开默认浏览器
+    # macOS: open / Linux: xdg-open / WSL: wslview，依次降级
+    url="$1"
+    if command -v open >/dev/null 2>&1; then
+        open "$url" >/dev/null 2>&1 &
+    elif command -v xdg-open >/dev/null 2>&1; then
+        xdg-open "$url" >/dev/null 2>&1 &
+    elif command -v wslview >/dev/null 2>&1; then
+        wslview "$url" >/dev/null 2>&1 &
+    else
+        color_warn "未找到浏览器打开命令，请手动访问: $url"
+        return 1
+    fi
+    color_ok "已在默认浏览器打开: $url"
+}
+
+wait_for_port() {
+    # 轮询端口直到可用，最多 30 秒
+    url="$1"
+    i=0
+    while [ "$i" -lt 60 ]; do
+        if curl -fs --max-time 1 "$url" >/dev/null 2>&1; then
+            return 0
+        fi
+        sleep 0.5
+        i=$((i + 1))
+    done
+    return 1
+}
+
 start_server() {
     cd "$ROOT_DIR" || exit 1
     echo ""
@@ -116,7 +154,23 @@ start_server() {
     echo ""
     echo "按 Ctrl+C 停止服务"
     echo ""
-    exec python3 "$APP_FILE"
+
+    # 后台拉起 app.py，前台保留日志输出
+    python3 "$APP_FILE" &
+    APP_PID=$!
+
+    # Ctrl+C 时联动杀掉子进程，避免端口残留
+    trap 'echo ""; color_warn "收到中断信号，正在停止 (PID=$APP_PID)..."; kill "$APP_PID" 2>/dev/null || true; wait "$APP_PID" 2>/dev/null || true; exit 0' INT TERM
+
+    # 等待端口就绪后打开浏览器
+    if wait_for_port "http://127.0.0.1:$PORT/"; then
+        open_browser "http://localhost:$PORT/"
+    else
+        color_err "服务在 30s 内未就绪，跳过自动打开浏览器（请手动访问 http://localhost:$PORT/）"
+    fi
+
+    # 回到前台等待 app 进程退出（保持 Ctrl+C 可控、保持日志可见）
+    wait "$APP_PID"
 }
 
 case "${1:-start}" in
