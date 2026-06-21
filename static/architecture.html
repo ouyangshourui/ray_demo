@@ -3256,25 +3256,25 @@ ref = server.predict.<span class="fn">remote</span>(image_batch)   <span class="
                 <g font-family="'PingFang SC',sans-serif" font-size="14" font-weight="700">
                     <!-- 6 句解说，每句 2s，第 6 句到 14s -->
                     <text x="78" y="22" fill="#fff" opacity="0">客户运维问：100 万图同时排队，8 张 GPU 怎么分？分错就阻塞全局
-                        <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="2s" begin="0s;14s" fill="freeze"/>
+                        <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="2s" begin="0s;14s;28s;42s;56s;70s;84s;98s;112s" fill="freeze"/>
                     </text>
                     <text x="78" y="22" fill="#fff" opacity="0">第 1 步 · Driver 把 100 万图切成任务包，提交到<b>本地 Raylet</b>（不是 GCS · 自底向上调度的起点）
-                        <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="2s" begin="2s;16s" fill="freeze"/>
+                        <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="2s" begin="2s;16s;30s;44s;58s;72s;86s;100s;114s" fill="freeze"/>
                     </text>
                     <text x="78" y="22" fill="#7effaa" opacity="0">第 2 步 · 本地 Raylet 抢答（~100μs）→ 99% 任务直接命中本机 GPU
-                        <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="2s" begin="4s;18s" fill="freeze"/>
+                        <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="2s" begin="4s;18s;32s;46s;60s;74s;88s;102s;116s" fill="freeze"/>
                     </text>
                     <text x="78" y="22" fill="#ffd166" opacity="0">第 3 步 · 1% 本机资源紧张 → 黄色路径上报 GCS 全局调度（~5ms）
-                        <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="2s" begin="6s;20s" fill="freeze"/>
+                        <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="2s" begin="6s;20s;34s;48s;62s;76s;90s;104s;118s" fill="freeze"/>
                     </text>
                     <text x="78" y="22" fill="#ff7eb6" opacity="0">第 4 步 · GCS 扫全局资源视图 → 派往最空闲节点的 GPU
-                        <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="2s" begin="8s;22s" fill="freeze"/>
+                        <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="2s" begin="8s;22s;36s;50s;64s;78s;92s;106s;120s" fill="freeze"/>
                     </text>
                     <text x="78" y="22" fill="#c850ff" opacity="0">第 5 步 · 8 张 GPU 并行处理，利用率拉满到 95%
-                        <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="2s" begin="10s;24s" fill="freeze"/>
+                        <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="2s" begin="10s;24s;38s;52s;66s;80s;94s;108s;122s" fill="freeze"/>
                     </text>
                     <text x="78" y="22" fill="#7effaa" opacity="0">✅ 完成 · 1,000,000 张图全部处理完成，全局调度队列贴底线
-                        <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="2s" begin="12s;26s" fill="freeze"/>
+                        <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="2s" begin="12s;26s;40s;54s;68s;82s;96s;110s;124s" fill="freeze"/>
                     </text>
                 </g>
             </g>
@@ -3287,25 +3287,25 @@ ref = server.predict.<span class="fn">remote</span>(image_batch)   <span class="
                 <!-- 进度计数器：6 段 text 切换模拟数字翻滚 -->
                 <g font-size="22" text-anchor="middle" font-weight="800" font-family="'JetBrains Mono',monospace">
                     <text x="100" y="72" fill="#5ae0ff" opacity="0">0
-                        <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="2s" begin="0s;14s" fill="freeze"/>
+                        <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="2s" begin="0s;14s;28s;42s;56s;70s;84s;98s;112s" fill="freeze"/>
                     </text>
                     <text x="100" y="72" fill="#5ae0ff" opacity="0">12,400
-                        <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="2s" begin="2s;16s" fill="freeze"/>
+                        <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="2s" begin="2s;16s;30s;44s;58s;72s;86s;100s;114s" fill="freeze"/>
                     </text>
                     <text x="100" y="72" fill="#7effaa" opacity="0">386,000
-                        <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="2s" begin="4s;18s" fill="freeze"/>
+                        <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="2s" begin="4s;18s;32s;46s;60s;74s;88s;102s;116s" fill="freeze"/>
                     </text>
                     <text x="100" y="72" fill="#ffd166" opacity="0">512,800
-                        <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="2s" begin="6s;20s" fill="freeze"/>
+                        <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="2s" begin="6s;20s;34s;48s;62s;76s;90s;104s;118s" fill="freeze"/>
                     </text>
                     <text x="100" y="72" fill="#ff7eb6" opacity="0">748,300
-                        <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="2s" begin="8s;22s" fill="freeze"/>
+                        <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="2s" begin="8s;22s;36s;50s;64s;78s;92s;106s;120s" fill="freeze"/>
                     </text>
                     <text x="100" y="72" fill="#c850ff" opacity="0">962,500
-                        <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="2s" begin="10s;24s" fill="freeze"/>
+                        <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="2s" begin="10s;24s;38s;52s;66s;80s;94s;108s;122s" fill="freeze"/>
                     </text>
                     <text x="100" y="72" fill="#7effaa" opacity="0">1,000,000 ✓
-                        <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="2s" begin="12s;26s" fill="freeze"/>
+                        <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="2s" begin="12s;26s;40s;54s;68s;82s;96s;110s;124s" fill="freeze"/>
                     </text>
                 </g>
                 <text x="100" y="92" fill="#a0d8ff" font-size="10" text-anchor="middle">已提交任务数 / 1,000,000</text>
@@ -3322,28 +3322,28 @@ ref = server.predict.<span class="fn">remote</span>(image_batch)   <span class="
                 <!-- 任务包路径定义：从 Driver(240, 125) → Node1/2/3 入口 -->
                 <!-- Node 1 中心 ~ (380, 220) ; Node 2 ~ (560, 220) ; Node 3 ~ (740, 220) -->
                 <use href="#sched-icon-img" x="-8" y="-8" width="16" height="16" opacity="0">
-                    <animateMotion path="M 240 125 Q 320 170 380 220" dur="1.4s" begin="2.0s;16s" fill="freeze"/>
-                    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="1.4s" begin="2.0s;16s" fill="freeze"/>
+                    <animateMotion path="M 240 125 Q 320 170 380 220" dur="1.4s" begin="2.0s;16.0s;30.0s;44.0s;58.0s;72.0s;86.0s;100.0s;114.0s" fill="freeze"/>
+                    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="1.4s" begin="2.0s;16.0s;30.0s;44.0s;58.0s;72.0s;86.0s;100.0s;114.0s" fill="freeze"/>
                 </use>
                 <use href="#sched-icon-img" x="-8" y="-8" width="16" height="16" opacity="0">
-                    <animateMotion path="M 240 125 Q 320 170 380 220" dur="1.4s" begin="2.3s;16.3s" fill="freeze"/>
-                    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="1.4s" begin="2.3s;16.3s" fill="freeze"/>
+                    <animateMotion path="M 240 125 Q 320 170 380 220" dur="1.4s" begin="2.3s;16.3s;30.3s;44.3s;58.3s;72.3s;86.3s;100.3s;114.3s" fill="freeze"/>
+                    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="1.4s" begin="2.3s;16.3s;30.3s;44.3s;58.3s;72.3s;86.3s;100.3s;114.3s" fill="freeze"/>
                 </use>
                 <use href="#sched-icon-img" x="-8" y="-8" width="16" height="16" opacity="0">
-                    <animateMotion path="M 240 125 Q 400 165 560 220" dur="1.4s" begin="2.15s;16.15s" fill="freeze"/>
-                    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="1.4s" begin="2.15s;16.15s" fill="freeze"/>
+                    <animateMotion path="M 240 125 Q 400 165 560 220" dur="1.4s" begin="2.1s;16.1s;30.1s;44.1s;58.1s;72.2s;86.2s;100.2s;114.2s" fill="freeze"/>
+                    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="1.4s" begin="2.1s;16.1s;30.1s;44.1s;58.1s;72.2s;86.2s;100.2s;114.2s" fill="freeze"/>
                 </use>
                 <use href="#sched-icon-img" x="-8" y="-8" width="16" height="16" opacity="0">
-                    <animateMotion path="M 240 125 Q 400 165 560 220" dur="1.4s" begin="2.5s;16.5s" fill="freeze"/>
-                    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="1.4s" begin="2.5s;16.5s" fill="freeze"/>
+                    <animateMotion path="M 240 125 Q 400 165 560 220" dur="1.4s" begin="2.5s;16.5s;30.5s;44.5s;58.5s;72.5s;86.5s;100.5s;114.5s" fill="freeze"/>
+                    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="1.4s" begin="2.5s;16.5s;30.5s;44.5s;58.5s;72.5s;86.5s;100.5s;114.5s" fill="freeze"/>
                 </use>
                 <use href="#sched-icon-img" x="-8" y="-8" width="16" height="16" opacity="0">
-                    <animateMotion path="M 240 125 Q 480 160 740 220" dur="1.4s" begin="2.4s;16.4s" fill="freeze"/>
-                    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="1.4s" begin="2.4s;16.4s" fill="freeze"/>
+                    <animateMotion path="M 240 125 Q 480 160 740 220" dur="1.4s" begin="2.4s;16.4s;30.4s;44.4s;58.4s;72.4s;86.4s;100.4s;114.4s" fill="freeze"/>
+                    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="1.4s" begin="2.4s;16.4s;30.4s;44.4s;58.4s;72.4s;86.4s;100.4s;114.4s" fill="freeze"/>
                 </use>
                 <use href="#sched-icon-img" x="-8" y="-8" width="16" height="16" opacity="0">
-                    <animateMotion path="M 240 125 Q 480 160 740 220" dur="1.4s" begin="2.7s;16.7s" fill="freeze"/>
-                    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="1.4s" begin="2.7s;16.7s" fill="freeze"/>
+                    <animateMotion path="M 240 125 Q 480 160 740 220" dur="1.4s" begin="2.7s;16.7s;30.7s;44.7s;58.7s;72.7s;86.7s;100.7s;114.7s" fill="freeze"/>
+                    <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="1.4s" begin="2.7s;16.7s;30.7s;44.7s;58.7s;72.7s;86.7s;100.7s;114.7s" fill="freeze"/>
                 </use>
             </g>
 
@@ -3354,37 +3354,37 @@ ref = server.predict.<span class="fn">remote</span>(image_batch)   <span class="
                 <text x="70" y="-6" fill="#7effaa" font-size="12" text-anchor="middle" font-weight="700">Node 1（GPU × 4）</text>
                 <!-- 本地 Raylet -->
                 <rect x="10" y="10" width="120" height="34" rx="6" fill="url(#sched-grad-fast)" opacity="0.3">
-                    <animate attributeName="opacity" values="0.3;1;1;0.6" keyTimes="0;0.15;0.85;1" dur="2s" begin="4s;18s" fill="freeze"/>
+                    <animate attributeName="opacity" values="0.3;1;1;0.6" keyTimes="0;0.15;0.85;1" dur="2s" begin="4s;18s;32s;46s;60s;74s;88s;102s;116s" fill="freeze"/>
                 </rect>
                 <text x="70" y="26" fill="#0a1530" font-size="11" text-anchor="middle" font-weight="700">本地 Raylet</text>
                 <text x="70" y="38" fill="#0a1530" font-size="9" text-anchor="middle">⚡ ~100μs 抢答</text>
                 <!-- 抢答脉冲（4-6s 出现） -->
                 <circle cx="70" cy="27" r="0" fill="url(#sched-pulse-fast)" opacity="0">
-                    <animate attributeName="r" values="0;55;0" dur="1s" begin="4.2s;18.2s" repeatCount="2"/>
-                    <animate attributeName="opacity" values="0;0.7;0" dur="1s" begin="4.2s;18.2s" repeatCount="2"/>
+                    <animate attributeName="r" values="0;55;0" dur="1s" begin="4.2s;18.2s;32.2s;46.2s;60.2s;74.2s;88.2s;102.2s;116.2s" repeatCount="2"/>
+                    <animate attributeName="opacity" values="0;0.7;0" dur="1s" begin="4.2s;18.2s;32.2s;46.2s;60.2s;74.2s;88.2s;102.2s;116.2s" repeatCount="2"/>
                 </circle>
                 <!-- 本地 GPU × 4 -->
                 <g transform="translate(10, 56)">
                     <use href="#sched-icon-gpu" x="0" y="0" width="55" height="28" opacity="0.35">
-                        <animate attributeName="opacity" values="0.35;1" begin="4.5s;18.5s" dur="0.4s" fill="freeze"/>
+                        <animate attributeName="opacity" values="0.35;1" begin="4.5s;18.5s;32.5s;46.5s;60.5s;74.5s;88.5s;102.5s;116.5s" dur="0.4s" fill="freeze"/>
                         <animate attributeName="opacity" values="1;0.35" begin="13.7s" dur="0.3s" fill="freeze"/>
                     </use>
                     <use href="#sched-icon-gpu" x="65" y="0" width="55" height="28" opacity="0.35">
-                        <animate attributeName="opacity" values="0.35;1" begin="4.7s;18.7s" dur="0.4s" fill="freeze"/>
+                        <animate attributeName="opacity" values="0.35;1" begin="4.7s;18.7s;32.7s;46.7s;60.7s;74.7s;88.7s;102.7s;116.7s" dur="0.4s" fill="freeze"/>
                         <animate attributeName="opacity" values="1;0.35" begin="13.7s" dur="0.3s" fill="freeze"/>
                     </use>
                     <use href="#sched-icon-gpu" x="0" y="34" width="55" height="28" opacity="0.35">
-                        <animate attributeName="opacity" values="0.35;1" begin="4.9s;18.9s" dur="0.4s" fill="freeze"/>
+                        <animate attributeName="opacity" values="0.35;1" begin="4.9s;18.9s;32.9s;46.9s;60.9s;74.9s;88.9s;102.9s;116.9s" dur="0.4s" fill="freeze"/>
                         <animate attributeName="opacity" values="1;0.35" begin="13.7s" dur="0.3s" fill="freeze"/>
                     </use>
                     <use href="#sched-icon-gpu" x="65" y="34" width="55" height="28" opacity="0.35">
-                        <animate attributeName="opacity" values="0.35;1" begin="5.1s;19.1s" dur="0.4s" fill="freeze"/>
+                        <animate attributeName="opacity" values="0.35;1" begin="5.1s;19.1s;33.1s;47.1s;61.1s;75.1s;89.1s;103.1s;117.1s" dur="0.4s" fill="freeze"/>
                         <animate attributeName="opacity" values="1;0.35" begin="13.7s" dur="0.3s" fill="freeze"/>
                     </use>
                 </g>
                 <!-- 节点状态标签 -->
                 <text x="70" y="132" fill="#7effaa" font-size="9" text-anchor="middle" opacity="0">✓ 本地命中 · 4 GPU 满载
-                    <animate attributeName="opacity" values="0;1" begin="5.2s;19.2s" dur="0.4s" fill="freeze"/>
+                    <animate attributeName="opacity" values="0;1" begin="5.2s;19.2s;33.2s;47.2s;61.2s;75.2s;89.2s;103.2s;117.2s" dur="0.4s" fill="freeze"/>
                     <animate attributeName="opacity" values="1;0" begin="13.7s" dur="0.3s" fill="freeze"/>
                 </text>
             </g>
@@ -3395,39 +3395,39 @@ ref = server.predict.<span class="fn">remote</span>(image_batch)   <span class="
                 <text x="70" y="-6" fill="#ffd166" font-size="12" text-anchor="middle" font-weight="700">Node 2（GPU × 2，吃紧）</text>
                 <!-- 本地 Raylet（先绿后黄）-->
                 <rect x="10" y="10" width="120" height="34" rx="6" fill="url(#sched-grad-fast)" opacity="0.3">
-                    <animate attributeName="opacity" values="0.3;1" keyTimes="0;1" dur="0.4s" begin="4s;18s" fill="freeze"/>
-                    <animate attributeName="fill-opacity" values="1;0.4" keyTimes="0;1" dur="0.4s" begin="6s;20s" fill="freeze"/>
+                    <animate attributeName="opacity" values="0.3;1" keyTimes="0;1" dur="0.4s" begin="4s;18s;32s;46s;60s;74s;88s;102s;116s" fill="freeze"/>
+                    <animate attributeName="fill-opacity" values="1;0.4" keyTimes="0;1" dur="0.4s" begin="6s;20s;34s;48s;62s;76s;90s;104s;118s" fill="freeze"/>
                 </rect>
                 <rect x="10" y="10" width="120" height="34" rx="6" fill="url(#sched-grad-slow)" opacity="0">
-                    <animate attributeName="opacity" values="0;0.95;0.95;0.6" keyTimes="0;0.15;0.85;1" dur="2s" begin="6s;20s" fill="freeze"/>
+                    <animate attributeName="opacity" values="0;0.95;0.95;0.6" keyTimes="0;0.15;0.85;1" dur="2s" begin="6s;20s;34s;48s;62s;76s;90s;104s;118s" fill="freeze"/>
                 </rect>
                 <text x="70" y="26" fill="#0a1530" font-size="11" text-anchor="middle" font-weight="700">本地 Raylet</text>
                 <text x="70" y="38" fill="#0a1530" font-size="9" text-anchor="middle">
                     <tspan opacity="1">⚡ 抢答中...
-                        <animate attributeName="opacity" values="1;0" begin="6s;20s" dur="0.3s" fill="freeze"/>
+                        <animate attributeName="opacity" values="1;0" begin="6s;20s;34s;48s;62s;76s;90s;104s;118s" dur="0.3s" fill="freeze"/>
                     </tspan>
                 </text>
                 <text x="70" y="38" fill="#0a1530" font-size="9" text-anchor="middle" opacity="0">⚠ 资源不足 → GCS
-                    <animate attributeName="opacity" values="0;1" begin="6s;20s" dur="0.3s" fill="freeze"/>
+                    <animate attributeName="opacity" values="0;1" begin="6s;20s;34s;48s;62s;76s;90s;104s;118s" dur="0.3s" fill="freeze"/>
                 </text>
                 <!-- 黄色脉冲（6-8s）-->
                 <circle cx="70" cy="27" r="0" fill="url(#sched-pulse-slow)" opacity="0">
-                    <animate attributeName="r" values="0;60;0" dur="1.2s" begin="6.2s;20.2s" repeatCount="2"/>
-                    <animate attributeName="opacity" values="0;0.7;0" dur="1.2s" begin="6.2s;20.2s" repeatCount="2"/>
+                    <animate attributeName="r" values="0;60;0" dur="1.2s" begin="6.2s;20.2s;34.2s;48.2s;62.2s;76.2s;90.2s;104.2s;118.2s" repeatCount="2"/>
+                    <animate attributeName="opacity" values="0;0.7;0" dur="1.2s" begin="6.2s;20.2s;34.2s;48.2s;62.2s;76.2s;90.2s;104.2s;118.2s" repeatCount="2"/>
                 </circle>
                 <!-- GPU × 2，先少量亮（4.5s 本地命中 1 个），后被 GCS 派来填满 -->
                 <g transform="translate(38, 56)">
                     <use href="#sched-icon-gpu" x="0" y="0" width="55" height="28" opacity="0.35">
-                        <animate attributeName="opacity" values="0.35;1" begin="4.6s;18.6s" dur="0.4s" fill="freeze"/>
+                        <animate attributeName="opacity" values="0.35;1" begin="4.6s;18.6s;32.6s;46.6s;60.6s;74.6s;88.6s;102.6s;116.6s" dur="0.4s" fill="freeze"/>
                         <animate attributeName="opacity" values="1;0.35" begin="13.7s" dur="0.3s" fill="freeze"/>
                     </use>
                     <use href="#sched-icon-gpu" x="0" y="34" width="55" height="28" opacity="0.35">
-                        <animate attributeName="opacity" values="0.35;1" begin="9.6s;23.6s" dur="0.4s" fill="freeze"/>
+                        <animate attributeName="opacity" values="0.35;1" begin="9.6s;23.6s;37.6s;51.6s;65.6s;79.6s;93.6s;107.6s;121.6s" dur="0.4s" fill="freeze"/>
                         <animate attributeName="opacity" values="1;0.35" begin="13.7s" dur="0.3s" fill="freeze"/>
                     </use>
                 </g>
                 <text x="70" y="132" fill="#ffd166" font-size="9" text-anchor="middle" opacity="0">↑ 上报 GCS 全局调度
-                    <animate attributeName="opacity" values="0;1" begin="6.3s;20.3s" dur="0.4s" fill="freeze"/>
+                    <animate attributeName="opacity" values="0;1" begin="6.3s;20.3s;34.3s;48.3s;62.3s;76.3s;90.3s;104.3s;118.3s" dur="0.4s" fill="freeze"/>
                     <animate attributeName="opacity" values="1;0" begin="13.7s" dur="0.3s" fill="freeze"/>
                 </text>
             </g>
@@ -3437,26 +3437,26 @@ ref = server.predict.<span class="fn">remote</span>(image_batch)   <span class="
                 <rect x="0" y="0" width="140" height="140" rx="10" fill="rgba(126,255,170,0.05)" stroke="#7effaa" stroke-width="1.2" stroke-dasharray="4,3"/>
                 <text x="70" y="-6" fill="#7effaa" font-size="12" text-anchor="middle" font-weight="700">Node 3（GPU × 2，空闲）</text>
                 <rect x="10" y="10" width="120" height="34" rx="6" fill="url(#sched-grad-fast)" opacity="0.3">
-                    <animate attributeName="opacity" values="0.3;1;1;0.6" keyTimes="0;0.15;0.85;1" dur="2s" begin="4s;18s" fill="freeze"/>
+                    <animate attributeName="opacity" values="0.3;1;1;0.6" keyTimes="0;0.15;0.85;1" dur="2s" begin="4s;18s;32s;46s;60s;74s;88s;102s;116s" fill="freeze"/>
                 </rect>
                 <text x="70" y="26" fill="#0a1530" font-size="11" text-anchor="middle" font-weight="700">本地 Raylet</text>
                 <text x="70" y="38" fill="#0a1530" font-size="9" text-anchor="middle">⚡ ~100μs 抢答</text>
                 <circle cx="70" cy="27" r="0" fill="url(#sched-pulse-fast)" opacity="0">
-                    <animate attributeName="r" values="0;55;0" dur="1s" begin="4.4s;18.4s" repeatCount="2"/>
-                    <animate attributeName="opacity" values="0;0.7;0" dur="1s" begin="4.4s;18.4s" repeatCount="2"/>
+                    <animate attributeName="r" values="0;55;0" dur="1s" begin="4.4s;18.4s;32.4s;46.4s;60.4s;74.4s;88.4s;102.4s;116.4s" repeatCount="2"/>
+                    <animate attributeName="opacity" values="0;0.7;0" dur="1s" begin="4.4s;18.4s;32.4s;46.4s;60.4s;74.4s;88.4s;102.4s;116.4s" repeatCount="2"/>
                 </circle>
                 <g transform="translate(38, 56)">
                     <use href="#sched-icon-gpu" x="0" y="0" width="55" height="28" opacity="0.35">
-                        <animate attributeName="opacity" values="0.35;1" begin="4.8s;18.8s" dur="0.4s" fill="freeze"/>
+                        <animate attributeName="opacity" values="0.35;1" begin="4.8s;18.8s;32.8s;46.8s;60.8s;74.8s;88.8s;102.8s;116.8s" dur="0.4s" fill="freeze"/>
                         <animate attributeName="opacity" values="1;0.35" begin="13.7s" dur="0.3s" fill="freeze"/>
                     </use>
                     <use href="#sched-icon-gpu" x="0" y="34" width="55" height="28" opacity="0.35">
-                        <animate attributeName="opacity" values="0.35;1" begin="5.0s;19s" dur="0.4s" fill="freeze"/>
+                        <animate attributeName="opacity" values="0.35;1" begin="5.0s;19.0s;33.0s;47.0s;61.0s;75.0s;89.0s;103.0s;117.0s" dur="0.4s" fill="freeze"/>
                         <animate attributeName="opacity" values="1;0.35" begin="13.7s" dur="0.3s" fill="freeze"/>
                     </use>
                 </g>
                 <text x="70" y="132" fill="#7effaa" font-size="9" text-anchor="middle" opacity="0">✓ 本地命中 · 接收 GCS 转发
-                    <animate attributeName="opacity" values="0;1" begin="9.4s;23.4s" dur="0.4s" fill="freeze"/>
+                    <animate attributeName="opacity" values="0;1" begin="9.4s;23.4s;37.4s;51.4s;65.4s;79.4s;93.4s;107.4s;121.4s" dur="0.4s" fill="freeze"/>
                     <animate attributeName="opacity" values="1;0" begin="13.7s" dur="0.3s" fill="freeze"/>
                 </text>
             </g>
@@ -3464,14 +3464,14 @@ ref = server.predict.<span class="fn">remote</span>(image_batch)   <span class="
             <!-- ============ GCS 全局调度（底部中央）· 高度 60→82，底部预留 top-k 决策栏 ============ -->
             <g transform="translate(380, 380)">
                 <rect x="0" y="0" width="220" height="82" rx="10" fill="url(#sched-grad-gcs)" opacity="0.3">
-                    <animate attributeName="opacity" values="0.3;1;1;0.45" keyTimes="0;0.15;0.85;1" dur="2s" begin="6.2s;20.2s" fill="freeze"/>
+                    <animate attributeName="opacity" values="0.3;1;1;0.45" keyTimes="0;0.15;0.85;1" dur="2s" begin="6.2s;20.2s;34.2s;48.2s;62.2s;76.2s;90.2s;104.2s;118.2s" fill="freeze"/>
                 </rect>
                 <text x="110" y="22" fill="#fff" font-size="13" text-anchor="middle" font-weight="800">🌐 GCS · 全局调度</text>
                 <text x="110" y="40" fill="#fff" font-size="10" text-anchor="middle" opacity="0.85">扫描全集群资源视图 · ~5ms</text>
                 <!-- 全局视图扫描线 -->
                 <rect x="10" y="48" width="200" height="2" rx="1" fill="rgba(255,255,255,0.15)"/>
                 <rect x="10" y="48" width="0" height="2" rx="1" fill="#fff" opacity="0.9">
-                    <animate attributeName="width" values="0;200" dur="2s" begin="6.2s;20.2s" fill="freeze"/>
+                    <animate attributeName="width" values="0;200" dur="2s" begin="6.2s;20.2s;34.2s;48.2s;62.2s;76.2s;90.2s;104.2s;118.2s" fill="freeze"/>
                     <animate attributeName="width" values="200;0" begin="13.7s" dur="0.3s" fill="freeze"/>
                 </rect>
                 <!-- top-k 决策栏（GCS 框底部内嵌，8s 出现）-->
@@ -3481,7 +3481,7 @@ ref = server.predict.<span class="fn">remote</span>(image_batch)   <span class="
                     <text x="110" y="71" fill="#ff7eb6" font-size="10.5" text-anchor="middle" font-weight="700">
                         🎯 选定 Node 3（top-k 最低负载）
                     </text>
-                    <animate attributeName="opacity" values="0;1" begin="8s;22s" dur="0.4s" fill="freeze"/>
+                    <animate attributeName="opacity" values="0;1" begin="8s;22s;36s;50s;64s;78s;92s;106s;120s" dur="0.4s" fill="freeze"/>
                     <animate attributeName="opacity" values="1;0" begin="13.7s" dur="0.3s" fill="freeze"/>
                 </g>
             </g>
@@ -3489,52 +3489,52 @@ ref = server.predict.<span class="fn">remote</span>(image_batch)   <span class="
             <!-- ============ 路径线：本地命中（绿）& GCS 上报（黄）& GCS 派发（粉） ============ -->
             <!-- 本地命中：Driver → 各 Node Raylet（4s 时显现，绿色实线） -->
             <path d="M 240 125 Q 290 165 320 215" stroke="#7effaa" stroke-width="2.2" fill="none" opacity="0" stroke-dasharray="6,4" marker-end="url(#sched-arr-green)">
-                <animate attributeName="opacity" values="0;0.85" begin="3.8s;17.8s" dur="0.3s" fill="freeze"/>
+                <animate attributeName="opacity" values="0;0.85" begin="3.8s;17.8s;31.8s;45.8s;59.8s;73.8s;87.8s;101.8s;115.8s" dur="0.3s" fill="freeze"/>
                 <animate attributeName="opacity" values="0.85;0" begin="13.7s" dur="0.3s" fill="freeze"/>
                 <animate attributeName="stroke-dashoffset" values="0;-30" dur="1.5s" begin="3.8s" repeatCount="indefinite"/>
             </path>
             <path d="M 240 125 Q 380 160 500 215" stroke="#7effaa" stroke-width="2.2" fill="none" opacity="0" stroke-dasharray="6,4" marker-end="url(#sched-arr-green)">
-                <animate attributeName="opacity" values="0;0.85" begin="3.8s;17.8s" dur="0.3s" fill="freeze"/>
+                <animate attributeName="opacity" values="0;0.85" begin="3.8s;17.8s;31.8s;45.8s;59.8s;73.8s;87.8s;101.8s;115.8s" dur="0.3s" fill="freeze"/>
                 <animate attributeName="opacity" values="0.85;0" begin="13.7s" dur="0.3s" fill="freeze"/>
                 <animate attributeName="stroke-dashoffset" values="0;-30" dur="1.5s" begin="3.8s" repeatCount="indefinite"/>
             </path>
             <path d="M 240 125 Q 460 155 680 215" stroke="#7effaa" stroke-width="2.2" fill="none" opacity="0" stroke-dasharray="6,4" marker-end="url(#sched-arr-green)">
-                <animate attributeName="opacity" values="0;0.85" begin="3.8s;17.8s" dur="0.3s" fill="freeze"/>
+                <animate attributeName="opacity" values="0;0.85" begin="3.8s;17.8s;31.8s;45.8s;59.8s;73.8s;87.8s;101.8s;115.8s" dur="0.3s" fill="freeze"/>
                 <animate attributeName="opacity" values="0.85;0" begin="13.7s" dur="0.3s" fill="freeze"/>
                 <animate attributeName="stroke-dashoffset" values="0;-30" dur="1.5s" begin="3.8s" repeatCount="indefinite"/>
             </path>
 
             <!-- GCS 上报路径：Node 2 → GCS（黄色，6-8s） -->
             <path d="M 560 335 Q 560 360 490 410" stroke="#ffd166" stroke-width="2.5" fill="none" opacity="0" stroke-dasharray="5,3" marker-end="url(#sched-arr-yellow)">
-                <animate attributeName="opacity" values="0;0.95" begin="6.2s;20.2s" dur="0.3s" fill="freeze"/>
+                <animate attributeName="opacity" values="0;0.95" begin="6.2s;20.2s;34.2s;48.2s;62.2s;76.2s;90.2s;104.2s;118.2s" dur="0.3s" fill="freeze"/>
                 <animate attributeName="opacity" values="0.95;0" begin="13.7s" dur="0.3s" fill="freeze"/>
                 <animate attributeName="stroke-dashoffset" values="0;-24" dur="0.8s" begin="6.2s" repeatCount="indefinite"/>
             </path>
             <text x="510" y="370" fill="#ffd166" font-size="10" font-weight="700" opacity="0">↑ 上报 ~5ms
-                <animate attributeName="opacity" values="0;1" begin="6.4s;20.4s" dur="0.3s" fill="freeze"/>
+                <animate attributeName="opacity" values="0;1" begin="6.4s;20.4s;34.4s;48.4s;62.4s;76.4s;90.4s;104.4s;118.4s" dur="0.3s" fill="freeze"/>
                 <animate attributeName="opacity" values="1;0" begin="13.7s" dur="0.3s" fill="freeze"/>
             </text>
 
             <!-- GCS 派发路径：GCS → Node 3（粉色，8-10s） -->
             <path d="M 600 410 Q 670 360 740 335" stroke="#ff7eb6" stroke-width="2.5" fill="none" opacity="0" stroke-dasharray="5,3" marker-end="url(#sched-arr-pink)">
-                <animate attributeName="opacity" values="0;0.95" begin="8.2s;22.2s" dur="0.3s" fill="freeze"/>
+                <animate attributeName="opacity" values="0;0.95" begin="8.2s;22.2s;36.2s;50.2s;64.2s;78.2s;92.2s;106.2s;120.2s" dur="0.3s" fill="freeze"/>
                 <animate attributeName="opacity" values="0.95;0" begin="13.7s" dur="0.3s" fill="freeze"/>
                 <animate attributeName="stroke-dashoffset" values="0;-24" dur="0.8s" begin="8.2s" repeatCount="indefinite"/>
             </path>
             <text x="700" y="370" fill="#ff7eb6" font-size="10" font-weight="700" opacity="0">↓ 派发到 Node 3
-                <animate attributeName="opacity" values="0;1" begin="8.4s;22.4s" dur="0.3s" fill="freeze"/>
+                <animate attributeName="opacity" values="0;1" begin="8.4s;22.4s;36.4s;50.4s;64.4s;78.4s;92.4s;106.4s;120.4s" dur="0.3s" fill="freeze"/>
                 <animate attributeName="opacity" values="1;0" begin="13.7s" dur="0.3s" fill="freeze"/>
             </text>
 
             <!-- 黄色任务包：Node 2 → GCS（6.5s） -->
             <use href="#sched-icon-img" x="-8" y="-8" width="14" height="14" opacity="0">
-                <animateMotion path="M 560 335 Q 560 360 490 410" dur="1.2s" begin="6.4s;20.4s" fill="freeze"/>
-                <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.15;0.85;1" dur="1.2s" begin="6.4s;20.4s" fill="freeze"/>
+                <animateMotion path="M 560 335 Q 560 360 490 410" dur="1.2s" begin="6.4s;20.4s;34.4s;48.4s;62.4s;76.4s;90.4s;104.4s;118.4s" fill="freeze"/>
+                <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.15;0.85;1" dur="1.2s" begin="6.4s;20.4s;34.4s;48.4s;62.4s;76.4s;90.4s;104.4s;118.4s" fill="freeze"/>
             </use>
             <!-- 粉色任务包：GCS → Node 3（8.5s） -->
             <use href="#sched-icon-img" x="-8" y="-8" width="14" height="14" opacity="0">
-                <animateMotion path="M 600 410 Q 670 360 740 335" dur="1.2s" begin="8.4s;22.4s" fill="freeze"/>
-                <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.15;0.85;1" dur="1.2s" begin="8.4s;22.4s" fill="freeze"/>
+                <animateMotion path="M 600 410 Q 670 360 740 335" dur="1.2s" begin="8.4s;22.4s;36.4s;50.4s;64.4s;78.4s;92.4s;106.4s;120.4s" fill="freeze"/>
+                <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.15;0.85;1" dur="1.2s" begin="8.4s;22.4s;36.4s;50.4s;64.4s;78.4s;92.4s;106.4s;120.4s" fill="freeze"/>
             </use>
 
             <!-- ============ 右侧：8 张 GPU 卡阵（4×2 网格） ============ -->
@@ -3553,49 +3553,49 @@ ref = server.predict.<span class="fn">remote</span>(image_batch)   <span class="
                 <g transform="translate(14, 56)">
                     <!-- G1 -->
                     <rect x="0" y="0" width="44" height="34" rx="4" fill="#1a2950" stroke="#7effaa" stroke-width="1" opacity="0.35">
-                        <animate attributeName="opacity" values="0.35;1" begin="4.5s;18.5s" dur="0.4s" fill="freeze"/>
+                        <animate attributeName="opacity" values="0.35;1" begin="4.5s;18.5s;32.5s;46.5s;60.5s;74.5s;88.5s;102.5s;116.5s" dur="0.4s" fill="freeze"/>
                         <animate attributeName="opacity" values="1;0.35" begin="13.7s" dur="0.3s" fill="freeze"/>
                     </rect>
                     <use href="#sched-icon-gpu" x="2" y="3" width="40" height="28" opacity="0.4">
-                        <animate attributeName="opacity" values="0.4;1" begin="4.5s;18.5s" dur="0.4s" fill="freeze"/>
+                        <animate attributeName="opacity" values="0.4;1" begin="4.5s;18.5s;32.5s;46.5s;60.5s;74.5s;88.5s;102.5s;116.5s" dur="0.4s" fill="freeze"/>
                         <animate attributeName="opacity" values="1;0.4" begin="13.7s" dur="0.3s" fill="freeze"/>
                     </use>
                     <text x="22" y="22" fill="#fff" font-size="9" text-anchor="middle" font-weight="800" pointer-events="none">G1</text>
                     <!-- 满载脉冲 -->
                     <circle cx="22" cy="17" r="0" fill="#7effaa" opacity="0">
-                        <animate attributeName="r" values="0;25;0" dur="1s" begin="4.7s;18.7s" repeatCount="3"/>
-                        <animate attributeName="opacity" values="0;0.4;0" dur="1s" begin="4.7s;18.7s" repeatCount="3"/>
+                        <animate attributeName="r" values="0;25;0" dur="1s" begin="4.7s;18.7s;32.7s;46.7s;60.7s;74.7s;88.7s;102.7s;116.7s" repeatCount="3"/>
+                        <animate attributeName="opacity" values="0;0.4;0" dur="1s" begin="4.7s;18.7s;32.7s;46.7s;60.7s;74.7s;88.7s;102.7s;116.7s" repeatCount="3"/>
                     </circle>
 
                     <!-- G2 -->
                     <rect x="48" y="0" width="44" height="34" rx="4" fill="#1a2950" stroke="#7effaa" stroke-width="1" opacity="0.35">
-                        <animate attributeName="opacity" values="0.35;1" begin="4.6s;18.6s" dur="0.4s" fill="freeze"/>
+                        <animate attributeName="opacity" values="0.35;1" begin="4.6s;18.6s;32.6s;46.6s;60.6s;74.6s;88.6s;102.6s;116.6s" dur="0.4s" fill="freeze"/>
                         <animate attributeName="opacity" values="1;0.35" begin="13.7s" dur="0.3s" fill="freeze"/>
                     </rect>
                     <use href="#sched-icon-gpu" x="50" y="3" width="40" height="28" opacity="0.4">
-                        <animate attributeName="opacity" values="0.4;1" begin="4.6s;18.6s" dur="0.4s" fill="freeze"/>
+                        <animate attributeName="opacity" values="0.4;1" begin="4.6s;18.6s;32.6s;46.6s;60.6s;74.6s;88.6s;102.6s;116.6s" dur="0.4s" fill="freeze"/>
                         <animate attributeName="opacity" values="1;0.4" begin="13.7s" dur="0.3s" fill="freeze"/>
                     </use>
                     <text x="70" y="22" fill="#fff" font-size="9" text-anchor="middle" font-weight="800" pointer-events="none">G2</text>
 
                     <!-- G3 -->
                     <rect x="0" y="40" width="44" height="34" rx="4" fill="#1a2950" stroke="#7effaa" stroke-width="1" opacity="0.35">
-                        <animate attributeName="opacity" values="0.35;1" begin="4.7s;18.7s" dur="0.4s" fill="freeze"/>
+                        <animate attributeName="opacity" values="0.35;1" begin="4.7s;18.7s;32.7s;46.7s;60.7s;74.7s;88.7s;102.7s;116.7s" dur="0.4s" fill="freeze"/>
                         <animate attributeName="opacity" values="1;0.35" begin="13.7s" dur="0.3s" fill="freeze"/>
                     </rect>
                     <use href="#sched-icon-gpu" x="2" y="43" width="40" height="28" opacity="0.4">
-                        <animate attributeName="opacity" values="0.4;1" begin="4.7s;18.7s" dur="0.4s" fill="freeze"/>
+                        <animate attributeName="opacity" values="0.4;1" begin="4.7s;18.7s;32.7s;46.7s;60.7s;74.7s;88.7s;102.7s;116.7s" dur="0.4s" fill="freeze"/>
                         <animate attributeName="opacity" values="1;0.4" begin="13.7s" dur="0.3s" fill="freeze"/>
                     </use>
                     <text x="22" y="62" fill="#fff" font-size="9" text-anchor="middle" font-weight="800" pointer-events="none">G3</text>
 
                     <!-- G4 -->
                     <rect x="48" y="40" width="44" height="34" rx="4" fill="#1a2950" stroke="#7effaa" stroke-width="1" opacity="0.35">
-                        <animate attributeName="opacity" values="0.35;1" begin="4.8s;18.8s" dur="0.4s" fill="freeze"/>
+                        <animate attributeName="opacity" values="0.35;1" begin="4.8s;18.8s;32.8s;46.8s;60.8s;74.8s;88.8s;102.8s;116.8s" dur="0.4s" fill="freeze"/>
                         <animate attributeName="opacity" values="1;0.35" begin="13.7s" dur="0.3s" fill="freeze"/>
                     </rect>
                     <use href="#sched-icon-gpu" x="50" y="43" width="40" height="28" opacity="0.4">
-                        <animate attributeName="opacity" values="0.4;1" begin="4.8s;18.8s" dur="0.4s" fill="freeze"/>
+                        <animate attributeName="opacity" values="0.4;1" begin="4.8s;18.8s;32.8s;46.8s;60.8s;74.8s;88.8s;102.8s;116.8s" dur="0.4s" fill="freeze"/>
                         <animate attributeName="opacity" values="1;0.4" begin="13.7s" dur="0.3s" fill="freeze"/>
                     </use>
                     <text x="70" y="62" fill="#fff" font-size="9" text-anchor="middle" font-weight="800" pointer-events="none">G4</text>
@@ -3605,49 +3605,49 @@ ref = server.predict.<span class="fn">remote</span>(image_batch)   <span class="
                 <g transform="translate(14, 146)">
                     <!-- G5 本地命中 -->
                     <rect x="0" y="0" width="44" height="34" rx="4" fill="#1a2950" stroke="#ffd166" stroke-width="1" opacity="0.35">
-                        <animate attributeName="opacity" values="0.35;1" begin="4.9s;18.9s" dur="0.4s" fill="freeze"/>
+                        <animate attributeName="opacity" values="0.35;1" begin="4.9s;18.9s;32.9s;46.9s;60.9s;74.9s;88.9s;102.9s;116.9s" dur="0.4s" fill="freeze"/>
                         <animate attributeName="opacity" values="1;0.35" begin="13.7s" dur="0.3s" fill="freeze"/>
                     </rect>
                     <use href="#sched-icon-gpu" x="2" y="3" width="40" height="28" opacity="0.4">
-                        <animate attributeName="opacity" values="0.4;1" begin="4.9s;18.9s" dur="0.4s" fill="freeze"/>
+                        <animate attributeName="opacity" values="0.4;1" begin="4.9s;18.9s;32.9s;46.9s;60.9s;74.9s;88.9s;102.9s;116.9s" dur="0.4s" fill="freeze"/>
                         <animate attributeName="opacity" values="1;0.4" begin="13.7s" dur="0.3s" fill="freeze"/>
                     </use>
                     <text x="22" y="22" fill="#fff" font-size="9" text-anchor="middle" font-weight="800" pointer-events="none">G5</text>
 
                     <!-- G6 等待中 → GCS 派发后亮 -->
                     <rect x="48" y="0" width="44" height="34" rx="4" fill="#1a2950" stroke="#ff7eb6" stroke-width="1.5" opacity="0.35">
-                        <animate attributeName="opacity" values="0.35;1" begin="9.6s;23.6s" dur="0.4s" fill="freeze"/>
+                        <animate attributeName="opacity" values="0.35;1" begin="9.6s;23.6s;37.6s;51.6s;65.6s;79.6s;93.6s;107.6s;121.6s" dur="0.4s" fill="freeze"/>
                         <animate attributeName="opacity" values="1;0.35" begin="13.7s" dur="0.3s" fill="freeze"/>
                     </rect>
                     <use href="#sched-icon-gpu" x="50" y="3" width="40" height="28" opacity="0.4">
-                        <animate attributeName="opacity" values="0.4;1" begin="9.6s;23.6s" dur="0.4s" fill="freeze"/>
+                        <animate attributeName="opacity" values="0.4;1" begin="9.6s;23.6s;37.6s;51.6s;65.6s;79.6s;93.6s;107.6s;121.6s" dur="0.4s" fill="freeze"/>
                         <animate attributeName="opacity" values="1;0.4" begin="13.7s" dur="0.3s" fill="freeze"/>
                     </use>
                     <text x="70" y="22" fill="#fff" font-size="9" text-anchor="middle" font-weight="800" pointer-events="none">G6</text>
                     <!-- "等待 GCS"提示 -->
                     <text x="70" y="22" fill="#ffd166" font-size="7" text-anchor="middle" font-weight="700" opacity="0">⏳
-                        <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="3.6s" begin="6s;20s" fill="freeze"/>
+                        <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="3.6s" begin="6s;20s;34s;48s;62s;76s;90s;104s;118s" fill="freeze"/>
                     </text>
                 </g>
 
                 <!-- N3: G7-G8（4.8-5.0s 本地命中） -->
                 <g transform="translate(14, 236)">
                     <rect x="0" y="0" width="44" height="34" rx="4" fill="#1a2950" stroke="#7effaa" stroke-width="1" opacity="0.35">
-                        <animate attributeName="opacity" values="0.35;1" begin="4.8s;18.8s" dur="0.4s" fill="freeze"/>
+                        <animate attributeName="opacity" values="0.35;1" begin="4.8s;18.8s;32.8s;46.8s;60.8s;74.8s;88.8s;102.8s;116.8s" dur="0.4s" fill="freeze"/>
                         <animate attributeName="opacity" values="1;0.35" begin="13.7s" dur="0.3s" fill="freeze"/>
                     </rect>
                     <use href="#sched-icon-gpu" x="2" y="3" width="40" height="28" opacity="0.4">
-                        <animate attributeName="opacity" values="0.4;1" begin="4.8s;18.8s" dur="0.4s" fill="freeze"/>
+                        <animate attributeName="opacity" values="0.4;1" begin="4.8s;18.8s;32.8s;46.8s;60.8s;74.8s;88.8s;102.8s;116.8s" dur="0.4s" fill="freeze"/>
                         <animate attributeName="opacity" values="1;0.4" begin="13.7s" dur="0.3s" fill="freeze"/>
                     </use>
                     <text x="22" y="22" fill="#fff" font-size="9" text-anchor="middle" font-weight="800" pointer-events="none">G7</text>
 
                     <rect x="48" y="0" width="44" height="34" rx="4" fill="#1a2950" stroke="#7effaa" stroke-width="1" opacity="0.35">
-                        <animate attributeName="opacity" values="0.35;1" begin="5.0s;19s" dur="0.4s" fill="freeze"/>
+                        <animate attributeName="opacity" values="0.35;1" begin="5.0s;19.0s;33.0s;47.0s;61.0s;75.0s;89.0s;103.0s;117.0s" dur="0.4s" fill="freeze"/>
                         <animate attributeName="opacity" values="1;0.35" begin="13.7s" dur="0.3s" fill="freeze"/>
                     </rect>
                     <use href="#sched-icon-gpu" x="50" y="3" width="40" height="28" opacity="0.4">
-                        <animate attributeName="opacity" values="0.4;1" begin="5.0s;19s" dur="0.4s" fill="freeze"/>
+                        <animate attributeName="opacity" values="0.4;1" begin="5.0s;19.0s;33.0s;47.0s;61.0s;75.0s;89.0s;103.0s;117.0s" dur="0.4s" fill="freeze"/>
                         <animate attributeName="opacity" values="1;0.4" begin="13.7s" dur="0.3s" fill="freeze"/>
                     </use>
                     <text x="70" y="22" fill="#fff" font-size="9" text-anchor="middle" font-weight="800" pointer-events="none">G8</text>
@@ -3664,50 +3664,50 @@ ref = server.predict.<span class="fn">remote</span>(image_batch)   <span class="
                 <!-- 百分比数字（按阶段切换） -->
                 <text x="60" y="346" font-size="16" font-weight="800" text-anchor="middle" font-family="'JetBrains Mono',monospace">
                     <tspan fill="#5ae0ff" opacity="0">3%
-                        <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="2s" begin="0s;14s" fill="freeze"/>
+                        <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="2s" begin="0s;14s;28s;42s;56s;70s;84s;98s;112s" fill="freeze"/>
                     </tspan>
                     <tspan fill="#5ae0ff" opacity="0">12%
-                        <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="2s" begin="2s;16s" fill="freeze"/>
+                        <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="2s" begin="2s;16s;30s;44s;58s;72s;86s;100s;114s" fill="freeze"/>
                     </tspan>
                     <tspan fill="#7effaa" opacity="0">68%
-                        <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="2s" begin="4s;18s" fill="freeze"/>
+                        <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="2s" begin="4s;18s;32s;46s;60s;74s;88s;102s;116s" fill="freeze"/>
                     </tspan>
                     <tspan fill="#ffd166" opacity="0">82%
-                        <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="2s" begin="6s;20s" fill="freeze"/>
+                        <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="2s" begin="6s;20s;34s;48s;62s;76s;90s;104s;118s" fill="freeze"/>
                     </tspan>
                     <tspan fill="#ff7eb6" opacity="0">90%
-                        <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="2s" begin="8s;22s" fill="freeze"/>
+                        <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="2s" begin="8s;22s;36s;50s;64s;78s;92s;106s;120s" fill="freeze"/>
                     </tspan>
                     <tspan fill="#c850ff" opacity="0">95%
-                        <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="2s" begin="10s;24s" fill="freeze"/>
+                        <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="2s" begin="10s;24s;38s;52s;66s;80s;94s;108s;122s" fill="freeze"/>
                     </tspan>
                     <tspan fill="#7effaa" opacity="0">✓ 100%
-                        <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="2s" begin="12s;26s" fill="freeze"/>
+                        <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="2s" begin="12s;26s;40s;54s;68s;82s;96s;110s;124s" fill="freeze"/>
                     </tspan>
                 </text>
                 <!-- "8/8"统计 -->
                 <text x="60" y="366" fill="#a0d8ff" font-size="9" text-anchor="middle">
                     已分配 <tspan fill="#c850ff" font-weight="800">
                         <tspan opacity="0">0
-                            <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="2s" begin="0s;14s" fill="freeze"/>
+                            <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="2s" begin="0s;14s;28s;42s;56s;70s;84s;98s;112s" fill="freeze"/>
                         </tspan>
                         <tspan opacity="0">0
-                            <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="2s" begin="2s;16s" fill="freeze"/>
+                            <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="2s" begin="2s;16s;30s;44s;58s;72s;86s;100s;114s" fill="freeze"/>
                         </tspan>
                         <tspan opacity="0">7
-                            <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="2s" begin="4s;18s" fill="freeze"/>
+                            <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="2s" begin="4s;18s;32s;46s;60s;74s;88s;102s;116s" fill="freeze"/>
                         </tspan>
                         <tspan opacity="0">7
-                            <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="2s" begin="6s;20s" fill="freeze"/>
+                            <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="2s" begin="6s;20s;34s;48s;62s;76s;90s;104s;118s" fill="freeze"/>
                         </tspan>
                         <tspan opacity="0">7
-                            <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="2s" begin="8s;22s" fill="freeze"/>
+                            <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="2s" begin="8s;22s;36s;50s;64s;78s;92s;106s;120s" fill="freeze"/>
                         </tspan>
                         <tspan opacity="0">8
-                            <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="2s" begin="10s;24s" fill="freeze"/>
+                            <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="2s" begin="10s;24s;38s;52s;66s;80s;94s;108s;122s" fill="freeze"/>
                         </tspan>
                         <tspan opacity="0">8
-                            <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="2s" begin="12s;26s" fill="freeze"/>
+                            <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.05;0.95;1" dur="2s" begin="12s;26s;40s;54s;68s;82s;96s;110s;124s" fill="freeze"/>
                         </tspan>
                     </tspan>/8 GPU
                 </text>
@@ -3718,25 +3718,25 @@ ref = server.predict.<span class="fn">remote</span>(image_batch)   <span class="
                 <text x="0" y="-6" fill="#a0d8ff" font-size="10" font-weight="700" letter-spacing="0.1em">PROGRESS · 14 秒一轮 · 每步停留 2 秒（可调）</text>
                 <!-- 6 段彩色 rect -->
                 <rect x="0" y="0" width="130" height="10" rx="3" fill="#5ae0ff" opacity="0.25">
-                    <animate attributeName="opacity" values="0.25;1;1;0.4" keyTimes="0;0.15;0.85;1" dur="2s" begin="0s;14s" fill="freeze"/>
+                    <animate attributeName="opacity" values="0.25;1;1;0.4" keyTimes="0;0.15;0.85;1" dur="2s" begin="0s;14s;28s;42s;56s;70s;84s;98s;112s" fill="freeze"/>
                 </rect>
                 <rect x="135" y="0" width="130" height="10" rx="3" fill="#5ae0ff" opacity="0.25">
-                    <animate attributeName="opacity" values="0.25;1;1;0.4" keyTimes="0;0.15;0.85;1" dur="2s" begin="2s;16s" fill="freeze"/>
+                    <animate attributeName="opacity" values="0.25;1;1;0.4" keyTimes="0;0.15;0.85;1" dur="2s" begin="2s;16s;30s;44s;58s;72s;86s;100s;114s" fill="freeze"/>
                 </rect>
                 <rect x="270" y="0" width="130" height="10" rx="3" fill="#7effaa" opacity="0.25">
-                    <animate attributeName="opacity" values="0.25;1;1;0.4" keyTimes="0;0.15;0.85;1" dur="2s" begin="4s;18s" fill="freeze"/>
+                    <animate attributeName="opacity" values="0.25;1;1;0.4" keyTimes="0;0.15;0.85;1" dur="2s" begin="4s;18s;32s;46s;60s;74s;88s;102s;116s" fill="freeze"/>
                 </rect>
                 <rect x="405" y="0" width="130" height="10" rx="3" fill="#ffd166" opacity="0.25">
-                    <animate attributeName="opacity" values="0.25;1;1;0.4" keyTimes="0;0.15;0.85;1" dur="2s" begin="6s;20s" fill="freeze"/>
+                    <animate attributeName="opacity" values="0.25;1;1;0.4" keyTimes="0;0.15;0.85;1" dur="2s" begin="6s;20s;34s;48s;62s;76s;90s;104s;118s" fill="freeze"/>
                 </rect>
                 <rect x="540" y="0" width="130" height="10" rx="3" fill="#ff7eb6" opacity="0.25">
-                    <animate attributeName="opacity" values="0.25;1;1;0.4" keyTimes="0;0.15;0.85;1" dur="2s" begin="8s;22s" fill="freeze"/>
+                    <animate attributeName="opacity" values="0.25;1;1;0.4" keyTimes="0;0.15;0.85;1" dur="2s" begin="8s;22s;36s;50s;64s;78s;92s;106s;120s" fill="freeze"/>
                 </rect>
                 <rect x="675" y="0" width="130" height="10" rx="3" fill="#c850ff" opacity="0.25">
-                    <animate attributeName="opacity" values="0.25;1;1;0.4" keyTimes="0;0.15;0.85;1" dur="2s" begin="10s;24s" fill="freeze"/>
+                    <animate attributeName="opacity" values="0.25;1;1;0.4" keyTimes="0;0.15;0.85;1" dur="2s" begin="10s;24s;38s;52s;66s;80s;94s;108s;122s" fill="freeze"/>
                 </rect>
                 <rect x="810" y="0" width="90" height="10" rx="3" fill="#7effaa" opacity="0.25">
-                    <animate attributeName="opacity" values="0.25;1;1;0.4" keyTimes="0;0.15;0.85;1" dur="2s" begin="12s;26s" fill="freeze"/>
+                    <animate attributeName="opacity" values="0.25;1;1;0.4" keyTimes="0;0.15;0.85;1" dur="2s" begin="12s;26s;40s;54s;68s;82s;96s;110s;124s" fill="freeze"/>
                 </rect>
                 <!-- 阶段标签 -->
                 <g font-size="9.5" font-weight="700" letter-spacing="0.05em">
